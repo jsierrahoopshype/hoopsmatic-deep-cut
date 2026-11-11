@@ -93,9 +93,32 @@ function fameOf(p) {
 }
 export const tierOf = (fame) => (fame >= 25 ? 'star' : fame >= 8 ? 'known' : 'deep');
 
+// Birth country from a Born & Died birthplace ("Melbourne, Australia",
+// "Portland, Oregon"). Birthplace only: nationality and national teams never
+// count (Jorge, Nov 11, 2026). The 50 states and D.C. are the United States;
+// territories (Puerto Rico, U.S. Virgin Islands) are not. null = unknown.
+const US_STATES = new Set(['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming','D.C.','District of Columbia','United States']);
+const CA_PROVINCES = new Set(['Ontario','Quebec','British Columbia','Alberta','Manitoba','Saskatchewan','Nova Scotia','New Brunswick','Newfoundland and Labrador','Prince Edward Island']);
+// The few rows whose last part is a city, checked by hand. Panama City is
+// left unknown (Panama or Florida).
+const CITY_COUNTRY = { Northridge: 'United States', 'Glens Falls': 'United States', Chatsworth: 'United States', 'Las Cruces': 'United States',
+  Southaven: 'United States', 'New Orleans': 'United States', 'San Juan': 'Puerto Rico', Hermosillo: 'Mexico', Frankston: 'Australia',
+  'Luperon pto pta': 'Dominican Republic', 'The Bahamas': 'Bahamas', 'Soviet Union': 'Soviet Union' };
+export function birthCountry(place) {
+  if (!place) return null;
+  const last = place.split(',').pop().trim();
+  if (!last || last === 'Panama City') return null;
+  if (US_STATES.has(last)) return 'United States';
+  if (CA_PROVINCES.has(last)) return 'Canada';
+  return CITY_COUNTRY[last] || last;
+}
+const normName = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
 export function buildPlayers() {
   const bio = src('bio'), awards = src('awards'), rs = src('rsStats'), po = src('poStats');
   const ssf = src('ssf').seasons, slugs = src('slugs').slugs.player, careers = src('careers');
+  const births = new Map();
+  for (const [n, pl] of Object.entries(src('births'))) births.set(normName(n), pl);
 
   const ssfBy = new Map();
   for (const s of ssf) if (!ssfBy.has(s.player) || (s.draft_pick && !ssfBy.get(s.player).draft_pick) || (s.college && !ssfBy.get(s.player).college)) ssfBy.set(s.player, s);
@@ -128,6 +151,8 @@ export function buildPlayers() {
     const p = {
       id: slug || slugify(b.PLAYER), name: b.PLAYER, link,
       country: b.NATIONALITY || null,
+      birthplace: births.get(normName(b.PLAYER)) || null,
+      bornIn: birthCountry(births.get(normName(b.PLAYER))),
       draftYear: /^\d{4}$/.test(b.DRAFT || '') ? +b.DRAFT : null,
       pick: s?.draft_pick || null, college,
       seasons: [], units: new Set(), gp: 0, min: 0,
@@ -170,10 +195,16 @@ export function buildPlayers() {
     }
     for (const [y, x] of Object.entries(v)) champ[y] = Object.entries(x).sort((a, b) => b[1] - a[1])[0][0];
   }
-  // Season awards are tied to the team(s) the player played for that season
-  // (awards.json TEAM is unreliable too). A player traded in an award season
-  // counts for each team he played for that season.
-  const unitsIn = (p, y) => [...new Set(p.seasons.filter((s) => s.y === y).map((s) => s.unit))];
+  // Season awards are tied to the team the player played the most games for
+  // that season (awards.json TEAM is unreliable too; Jorge, Nov 11, 2026). A
+  // tie goes to the later row in rsStats. Kept as a one-item list.
+  const unitsIn = (p, y) => {
+    const rows = p.seasons.filter((s) => s.y === y);
+    if (!rows.length) return [];
+    let best = rows[0];
+    for (const r of rows) if (r.gp >= best.gp) best = r;
+    return [best.unit];
+  };
   const LIST = { 'All-Star': 'allStar', 'All-Rookie First Team': 'allRookie', 'All-Rookie Second Team': 'allRookie',
     'All-Defensive First Team': 'allDefense', 'All-Defensive Second Team': 'allDefense',
     'All-NBA First Team': 'allNba', 'All-NBA Second Team': 'allNba', 'All-NBA Third Team': 'allNba' };

@@ -2,13 +2,14 @@
 // job runs.
 //
 //   node scripts/pull-data.mjs          (pinned source files -> .cache/sources/)
-//   node scripts/generate-prompts.mjs   [--samples 14] [--days 365] [--start 2026-12-01]
+//   node scripts/generate-prompts.mjs   [--samples 14]
+//   node scripts/build.mjs              (the schedule and the day locks)
 //
 // Writes
-//   .cache/prompts.json          every scheduled day with its full answer list
-//                                (answers stay out of git until step 2 locks them)
 //   .cache/candidates.json       every prompt that passed the rules, by type
 //   docs/step1-samples.md        the sample prompts with full answer lists
+//   data/excluded.json           their keys, never scheduled
+//   public/players.json          the suggestion list
 //
 // Rules for a prompt (Jorge, Nov 11, 2026):
 //   - built only from Jorge's data; team names as they were in those seasons
@@ -22,13 +23,13 @@ import { instantScore, tierOf } from './lib/score.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
-const DAYS = +arg('days', 365);
 const SAMPLES = +arg('samples', 14);
-const START = arg('start', '2026-12-01');   // placeholder until Jorge picks launch day
 const MIN_ANSWERS = 15, MAX_ANSWERS = 150, MIN_STARS = 2, MIN_DEEP = 3;
 
 const { players } = buildPlayers();
 const the = (u) => 'the ' + unitName(u);
+// Decade of the first NBA season, by its starting year (1979-80 -> 1970).
+const startDecade = (p) => Math.floor((p.firstYear - 1) / 10) * 10;
 
 // ---------- candidate prompts ----------
 // Each: { key, type, text, units:[...], test(p) -> bool }
@@ -61,25 +62,19 @@ for (const u of UNITS) for (const c of COLLEGES) add({ key: `college:${u}:${c}`,
 // rarely reaches 15 answers, so these carry the college days.
 for (const c of COLLEGES) {
   for (let d = 1950; d <= 2020; d += 10) add({ key: `coldec:${c}:${d}`, type: 'team-college', units: [],
-    text: `Name a player who went to college at ${collegeName(c)} and came from a ${d}s draft class (drafted or undrafted).`,
-    test: (p) => p.college === c && p.draftYear >= d && p.draftYear <= d + 9 });
+    text: `Name a player who went to college at ${collegeName(c)} and started his NBA career in the ${d}s.`,
+    test: (p) => p.college === c && startDecade(p) === d });
   add({ key: `colstar:${c}`, type: 'team-college', units: [],
     text: `Name a player who went to college at ${collegeName(c)} and made at least one All-Star team.`,
     test: (p) => p.college === c && p.allStar.length > 0 });
 }
 
-// 3. Team + draft class (a run of draft classes when one year is too thin).
-// bio.json DRAFT is the player's draft class, undrafted players included
-// (Ben Wallace: 1996), so the prompt says so.
-for (const u of UNITS) for (let y = 1950; y <= 2025; y++) {
-  add({ key: `draft:${u}:${y}`, type: 'team-draft', units: [u],
-    text: `Name a player from the ${y} draft class (drafted or undrafted) who played for ${the(u)}.`,
-    test: (p) => p.draftYear === y && p.units.has(u) });
-}
-for (const u of UNITS) for (let d = 1950; d <= 2020; d += 10) {
-  add({ key: `draftdec:${u}:${d}`, type: 'team-draft', units: [u],
-    text: `Name a player from a ${d}s draft class (drafted or undrafted) who played for ${the(u)}.`,
-    test: (p) => p.draftYear >= d && p.draftYear <= d + 9 && p.units.has(u) });
+// 3. Team + decade the player's NBA career started (first NBA season, by the
+// year it began: 1979-80 is the 1970s). Replaces draft class (Jorge, Nov 11).
+for (const u of UNITS) for (let d = 1940; d <= 2020; d += 10) {
+  add({ key: `start:${u}:${d}`, type: 'team-draft', units: [u],
+    text: `Name a player who started his NBA career in the ${d}s and played for ${the(u)}.`,
+    test: (p) => startDecade(p) === d && p.units.has(u) });
 }
 // Lottery-era top-10 picks with a team
 for (const u of UNITS) add({ key: `top10:${u}`, type: 'team-draft', units: [u],
@@ -98,27 +93,19 @@ for (const u of UNITS) for (const [k, t] of AWARDS) add({ key: `award:${k}:${u}`
   text: t(u),
   test: (p) => p[k].some((a) => (a.units ? a.units.includes(u) : a.unit === u)) });
 
-// 5. Country + team (one country, or "born outside the U.S." when no single
-// country has 15 for that team)
+// 5. Birth country + team: born in one country, or born outside the United
+// States. Birthplace only (Born & Died), never nationality or national team.
 const countryCount = new Map();
-for (const p of players) if (p.country && p.country !== 'United States') countryCount.set(p.country, (countryCount.get(p.country) || 0) + 1);
+for (const p of players) if (p.bornIn && p.bornIn !== 'United States') countryCount.set(p.bornIn, (countryCount.get(p.bornIn) || 0) + 1);
 const COUNTRIES = [...countryCount.keys()].filter((c) => countryCount.get(c) >= 15);
-const DEMONYM = { Canada: 'Canadian', France: 'French', Australia: 'Australian', Serbia: 'Serbian', Spain: 'Spanish',
-  Germany: 'German', Nigeria: 'Nigerian', Brazil: 'Brazilian', Croatia: 'Croatian', Lithuania: 'Lithuanian',
-  Argentina: 'Argentine', Greece: 'Greek', Turkey: 'Turkish', Italy: 'Italian', Senegal: 'Senegalese', Slovenia: 'Slovenian',
-  Cameroon: 'Cameroonian', Russia: 'Russian', Latvia: 'Latvian', 'Democratic Republic of the Congo': 'Congolese (DR Congo)',
-  'United Kingdom': 'British', Ukraine: 'Ukrainian', China: 'Chinese', Israel: 'Israeli', Montenegro: 'Montenegrin',
-  'Bosnia and Herzegovina': 'Bosnian', Japan: 'Japanese', Sudan: 'Sudanese', Georgia: 'Georgian', 'Dominican Republic': 'Dominican',
-  'Puerto Rico': 'Puerto Rican', 'New Zealand': 'New Zealander', 'Czech Republic': 'Czech', Mali: 'Malian', Jamaica: 'Jamaican' };
 for (const u of UNITS) {
-  for (const c of COUNTRIES) if (DEMONYM[c]) add({ key: `country:${u}:${c}`, type: 'country-team', units: [u],
-    text: `Name a ${DEMONYM[c]} player who played for ${the(u)}.`,
-    test: (p) => p.country === c && p.units.has(u) });
-  add({ key: `intl:${u}`, type: 'country-team', units: [u],
-    text: `Name a player from outside the United States who played for ${the(u)}.`,
-    test: (p) => p.country && p.country !== 'United States' && p.units.has(u) });
+  for (const c of COUNTRIES) add({ key: `born:${u}:${c}`, type: 'country-team', units: [u],
+    text: `Name a player born in ${c} who played for ${the(u)}.`,
+    test: (p) => p.bornIn === c && p.units.has(u) });
+  add({ key: `bornout:${u}`, type: 'country-team', units: [u],
+    text: `Name a player born outside the United States who played for ${the(u)}.`,
+    test: (p) => p.bornIn && p.bornIn !== 'United States' && p.units.has(u) });
 }
-// Country + college-or-draft would also work; kept to Jorge's list for now.
 
 // 6. Teammate of a star (same team, same season)
 const stars = players.filter((p) => p.fame >= 60);
@@ -157,7 +144,7 @@ for (const c of cands) {
 }
 
 function answerOf(p) {
-  return { id: p.id, name: p.name, score: instantScore(p), tier: tierOf(p.fame), fame: p.fame, gp: p.gp, min: Math.round(p.min),
+  return { id: p.id, name: p.name.replace(/ \(\d{4}\)$/, ''), score: instantScore(p), tier: tierOf(p.fame), fame: p.fame, gp: p.gp, min: Math.round(p.min),
     years: `${seasonLabel(p.firstYear)} to ${seasonLabel(p.lastYear)}`, link: p.link };
 }
 
@@ -201,38 +188,30 @@ const samples = [];
   }
 }
 
-const days = [];
-const recentDays = [];
-for (let d = 0; d < DAYS; d++) {
-  const date = new Date(Date.parse(START + 'T00:00:00Z') + d * 86400000).toISOString().slice(0, 10);
-  const recentUnits = new Set(recentDays.slice(-6).flatMap((c) => c.units));
-  const recentStars = new Set(recentDays.slice(-30).map((c) => c.star).filter(Boolean));
-  let c = null;
-  for (let k = 0; k < ROTATION.length && !c; k++) c = pick(ROTATION[(d + k) % ROTATION.length], recentUnits, usedKeys, recentStars);
-  if (!c) throw new Error(`ran out of prompts on day ${d + 1}`);
-  usedKeys.add(c.key);
-  recentDays.push(c);
-  days.push({ n: d + 1, date, ...strip(c) });
-}
-
-function strip(c) { return { key: c.key, type: c.type, text: c.text, count: c.n, tiers: c.tiers, answers: c.answers }; }
+function strip(c) { return { key: c.key, type: c.type, text: c.text, units: c.units, star: c.star || null, count: c.n, tiers: c.tiers, answers: c.answers }; }
 
 mkdirSync(ROOT + '.cache', { recursive: true });
-writeFileSync(ROOT + '.cache/prompts.json', JSON.stringify({ v: 1, start: START, days }, null, 1) + '\n');
+// The sample prompts are public (docs/step1-samples.md), so the schedule
+// never uses them (scripts/build.mjs reads this).
+// --keep-samples (the weekly refresh): the published samples and their
+// excluded keys stay as they are.
+const KEEP = process.argv.includes('--keep-samples');
+if (!KEEP) writeFileSync(ROOT + 'data/excluded.json', JSON.stringify({ _about: 'Prompt keys shown in docs/step1-samples.md; never scheduled.', keys: samples.map((c) => c.key) }, null, 1) + '\n');
+// The suggestion list (public): every player, id, name without the data's
+// birth-year tag, that tag as "b" (shown only in the list), and career years.
+const plist = players.map((p) => { const m = p.name.match(/^(.*) \((\d{4})\)$/); return [p.id, m ? m[1] : p.name, `${p.firstYear - 1}-${String(p.lastYear).slice(2)}`, m ? +m[2] : 0]; })
+  .sort((a, b) => a[1].localeCompare(b[1]));
+mkdirSync(ROOT + 'public', { recursive: true });
+writeFileSync(ROOT + 'public/players.json', JSON.stringify({ v: 1, players: plist }));
 writeFileSync(ROOT + '.cache/candidates.json', JSON.stringify(Object.fromEntries(Object.entries(byType).map(([t, l]) => [t, l.map(strip)]))) + '\n');
 
 // ---------- report ----------
-const typeCount = {};
-for (const d of days) typeCount[d.type] = (typeCount[d.type] || 0) + 1;
 console.log('players', players.length, 'candidates', cands.length, 'passed', passed.length);
 console.log('by type (checked):', JSON.stringify(reasons, null, 1));
-console.log('schedule by type:', typeCount);
-const counts = days.map((d) => d.count).sort((a, b) => a - b);
-console.log('answers per day: min', counts[0], 'median', counts[counts.length >> 1], 'max', counts[counts.length - 1]);
 
 const md = [];
 md.push('# Deep Cut, step 1: sample prompts', '');
-md.push(`Built by \`node scripts/generate-prompts.mjs\` from the files pinned in \`data/sources.lock.json\`. These ${samples.length} prompts are taken out of the 365-day schedule, so this page spoils no real day.`, '');
+md.push(`Built by \`node scripts/generate-prompts.mjs\` from the files pinned in \`data/sources.lock.json\`. These ${samples.length} prompts are never scheduled (data/excluded.json), so this page spoils no real day.`, '');
 md.push('Score = instant score (0-100, obscurity in the data; formula in `scripts/lib/score.mjs`). Tier: star = fame 25+, known = 8 to 25, deep = under 8 (the NBA Crossword\'s fame formula). Each list is sorted from most to least famous.', '');
 samples.forEach((c, i) => {
   const ex = examples(c.answers);
@@ -241,7 +220,7 @@ samples.forEach((c, i) => {
   md.push(`Examples: star **${ex.star.name}** ${ex.star.score} · mid **${ex.mid.name}** ${ex.mid.score} · deep cut **${ex.deep.name}** ${ex.deep.score}`, '');
   md.push(c.answers.map((a) => `${a.name} (${a.score})`).join(', '), '');
 });
-writeFileSync(ROOT + 'docs/step1-samples.md', md.join('\n'));
+if (!KEEP) writeFileSync(ROOT + 'docs/step1-samples.md', md.join('\n'));
 
 // Star: the lowest-scoring (most famous) answer. Mid: the known-tier answer
 // in the middle (else the median). Deep cut: the highest-scoring answer.

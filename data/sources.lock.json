@@ -64,5 +64,10 @@
    "bytes": 8652248,
    "rows": 5196
   }
- ]
+ ],
+ "births": {
+  "repo": "jsierrahoopshype/nba-born-died",
+  "commit": "dd1de9db0da0188ffb6e4f4013ae97869ce63d95",
+  "pages": "born/<year>/index.html (Birthplace column)"
+ }
 }

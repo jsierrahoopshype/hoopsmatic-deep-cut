@@ -1,6 +1,6 @@
 # Deep Cut, step 1: sample prompts
 
-Built by `node scripts/generate-prompts.mjs` from the files pinned in `data/sources.lock.json`. These 14 prompts are taken out of the 365-day schedule, so this page spoils no real day.
+Built by `node scripts/generate-prompts.mjs` from the files pinned in `data/sources.lock.json`. These 14 prompts are never scheduled (data/excluded.json), so this page spoils no real day.
 
 Score = instant score (0-100, obscurity in the data; formula in `scripts/lib/score.mjs`). Tier: star = fame 25+, known = 8 to 25, deep = under 8 (the NBA Crossword's fame formula). Each list is sorted from most to least famous.
 
@@ -10,7 +10,7 @@ Type: two-teams. Valid answers: 48 (3 stars, 19 known, 26 deep cuts).
 
 Examples: star **Kyrie Irving** 13 · mid **Dwight Powell** 48 · deep cut **Jonathan Gibson** 90
 
-Kyrie Irving (13), Rajon Rondo (16), Kemba Walker (18), Antoine Walker (40), Jason Terry (40), Sam Cassell (40), Michael Finley (41), David Lee (42), Isaiah Thomas (44), Kristaps Porzingis (46), Jae Crowder (47), Jameer Nelson (47), Dwight Powell (48), Josh Richardson (50), Courtney Lee (51), Fred Roberts (51), Kris Humphries (51), Mark Bryant (51), Stacey King (51), Grant Williams (52), Mike James (1975) (52), Justin Jackson (53), Brandon Bass (68), Troy Murphy (68), Damon Jones (70), Gerald Green (70), Aleksandar Pavlovic (72), Marquis Daniels (72), Popeye Jones (72), Raef LaFrentz (72), Tony Delk (72), Erick Strickland (73), Adrian Griffin (74), Eric Montross (74), Ryan Hollins (74), Brandan Wright (75), Danny Fortson (75), Delonte West (75), Dan Dickau (78), Doug Smith (78), Lorenzo Williams (79), Shane Larkin (79), Terry Duerod (80), Eric Riley (82), Sean Williams (83), Kelvin Upshaw (84), Bruno Sundov (86), Jonathan Gibson (90)
+Kyrie Irving (13), Rajon Rondo (16), Kemba Walker (18), Antoine Walker (40), Jason Terry (40), Sam Cassell (40), Michael Finley (41), David Lee (42), Isaiah Thomas (44), Kristaps Porzingis (46), Jae Crowder (47), Jameer Nelson (47), Dwight Powell (48), Josh Richardson (50), Courtney Lee (51), Fred Roberts (51), Kris Humphries (51), Mark Bryant (51), Stacey King (51), Grant Williams (52), Mike James (52), Justin Jackson (53), Brandon Bass (68), Troy Murphy (68), Damon Jones (70), Gerald Green (70), Aleksandar Pavlovic (72), Marquis Daniels (72), Popeye Jones (72), Raef LaFrentz (72), Tony Delk (72), Erick Strickland (73), Adrian Griffin (74), Eric Montross (74), Ryan Hollins (74), Brandan Wright (75), Danny Fortson (75), Delonte West (75), Dan Dickau (78), Doug Smith (78), Lorenzo Williams (79), Shane Larkin (79), Terry Duerod (80), Eric Riley (82), Sean Williams (83), Kelvin Upshaw (84), Bruno Sundov (86), Jonathan Gibson (90)
 
 ## 2. Name a player who played for the Cleveland Cavaliers and the Phoenix Suns.
 
@@ -26,7 +26,7 @@ Type: two-teams. Valid answers: 35 (3 stars, 20 known, 12 deep cuts).
 
 Examples: star **Joe Johnson** 13 · mid **James Posey** 47 · deep cut **Briante Weber** 87
 
-Joe Johnson (13), Kyle Lowry (14), Glen Rice (17), Goran Dragic (39), Kevin Willis (39), Juwan Howard (41), Otis Thorpe (42), Trevor Ariza (42), Victor Oladipo (42), PJ Tucker (45), Shane Battier (45), Brent Barry (46), Rod Strickland (46), James Posey (47), Kelly Olynyk (47), Avery Bradley (49), Clarence Weatherspoon (49), Jim Jackson (50), Ryan Anderson (50), Shandon Anderson (50), Derek Anderson (51), Mike James (1975) (52), James Ennis (53), Rafer Alston (69), Walt Williams (69), Gerald Green (70), Michael Beasley (71), Josh Christopher (76), Toney Douglas (76), Luther Head (77), Daequan Cook (78), Sam Mack (79), Loren Woods (81), Bobby Jones (1984) (85), Briante Weber (87)
+Joe Johnson (13), Kyle Lowry (14), Glen Rice (17), Goran Dragic (39), Kevin Willis (39), Juwan Howard (41), Otis Thorpe (42), Trevor Ariza (42), Victor Oladipo (42), PJ Tucker (45), Shane Battier (45), Brent Barry (46), Rod Strickland (46), James Posey (47), Kelly Olynyk (47), Avery Bradley (49), Clarence Weatherspoon (49), Jim Jackson (50), Ryan Anderson (50), Shandon Anderson (50), Derek Anderson (51), Mike James (52), James Ennis (53), Rafer Alston (69), Walt Williams (69), Gerald Green (70), Michael Beasley (71), Josh Christopher (76), Toney Douglas (76), Luther Head (77), Daequan Cook (78), Sam Mack (79), Loren Woods (81), Bobby Jones (85), Briante Weber (87)
 
 ## 4. Name a player who played for the Los Angeles Clippers and went to college at UCLA.
 
@@ -36,7 +36,7 @@ Examples: star **Russell Westbrook** 4 · mid **Darren Collison** 48 · deep cut
 
 Russell Westbrook (4), Bill Walton (13), Jamaal Wilkes (16), Marques Johnson (17), Baron Davis (44), Norman Powell (45), Kiki Vandeweghe (46), Darren Collison (48), Matt Barnes (48), Jordan Farmar (51), Luc Mbah a Moute (69), Pooh Richardson (70), Darrick Martin (73), Ryan Hollins (74), Moses Brown (76), Kenny Fields (82)
 
-## 5. Name a player who went to college at Duke and came from a 2010s draft class (drafted or undrafted).
+## 5. Name a player who went to college at Duke and started his NBA career in the 2010s.
 
 Type: team-college. Valid answers: 32 (2 stars, 12 known, 18 deep cuts).
 
@@ -44,74 +44,74 @@ Examples: star **Kyrie Irving** 13 · mid **Luke Kennard** 51 · deep cut **Trev
 
 Kyrie Irving (13), Jayson Tatum (14), Brandon Ingram (43), Mason Plumlee (47), Tyus Jones (48), Austin Rivers (49), Zion Williamson (49), Gary Trent Jr (51), Luke Kennard (51), Seth Curry (51), Wendell Carter Jr (51), Grayson Allen (52), RJ Barrett (52), Rodney Hood (52), Justise Winslow (70), Marvin Bagley (70), Jabari Parker (71), Cam Reddish (72), Jahlil Okafor (73), Frank Jackson (74), Harry Giles (75), Quinn Cook (75), Lance Thomas (76), Kyle Singler (77), Miles Plumlee (77), Ryan Kelly (82), Marques Bolden (84), Nolan Smith (86), Marshall Plumlee (89), Amile Jefferson (90), Andre Dawkins (95), Trevon Duval (96)
 
-## 6. Name a player from a 1970s draft class (drafted or undrafted) who played for the Atlanta Hawks.
+## 6. Name a player who started his NBA career in the 2010s and played for the Philadelphia 76ers.
 
-Type: team-draft. Valid answers: 65 (4 stars, 13 known, 48 deep cuts).
+Type: team-draft. Valid answers: 126 (4 stars, 36 known, 86 deep cuts).
 
-Examples: star **Moses Malone** 0 · mid **Fast Eddie Johnson** 47 · deep cut **Bob Riley** 93
+Examples: star **Paul George** 10 · mid **Landry Shamet** 50 · deep cut **Jacob Pullen** 96
 
-Moses Malone (0), Pete Maravich (13), Sidney Moncrief (13), Maurice Cheeks (15), Gus Williams (39), Dan Roundfield (42), Randy Smith (42), Reggie Theus (43), Truck Robinson (43), John Drew (46), Fast Eddie Johnson (47), Tree Rollins (47), George Johnson (1948) (48), John Long (48), Johnny Davis (1955) (50), Tom Henderson (51), Mark Landsberger (52), Dwight Jones (68), Ollie Johnson (69), Steve Hawes (69), Tom McMillen (69), Billy Paultz (70), Joe Meriweather (70), Ray Williams (70), Dudley Bradley (71), Dean Meminger (72), Mike Glenn (72), Don Adams (73), Armond Hill (74), Bill Willoughby (74), John Brown (74), Charlie Criss (75), Jim McElroy (75), Ron Lee (75), Tom Burleson (75), George Trapp (76), Ron Behagen (76), Freeman Williams (78), Kenny Charles (78), Sly Williams (78), Steve Bracey (78), Wilbur Holland (78), Terry Furlow (80), Butch Lee (81), Mike Sojourner (81), Sam Pellom (81), Jack Givens (82), Keith Herron (83), John Tschogl (84), Tom Barker (84), Jeff Halliburton (85), John Vallely (85), Claude Terry (86), Ron Davis (86), Tony Robertson (86), Randy Denton (87), Rick Wilson (87), Dennis DuVal (88), Tom Ingelsby (88), Art Collins (89), Herb White (89), Jim Creighton (89), Tom Payne (89), Henry Dickerson (90), Bob Riley (93)
+Paul George (10), Jimmy Butler (13), Joel Embiid (13), Jaylen Brown (16), Andre Drummond (39), Nikola Vucevic (40), Ben Simmons (41), Kentavious Caldwell-Pope (42), Reggie Jackson (45), Tobias Harris (45), Ishmael Smith (46), Justin Holiday (47), Marcus Morris (47), Alec Burks (48), Buddy Hield (48), Jerami Grant (48), TJ McConnell (48), Greg Monroe (49), Kelly Oubre (49), Montrezl Harrell (49), Patrick Beverley (49), Josh Richardson (50), Landry Shamet (50), Michael Carter-Williams (50), Robert Covington (50), Dario Saric (51), Dewayne Dedmon (51), Georges Niang (51), Mike Muscala (51), Seth Curry (51), Trey Burke (51), Anfernee Simons (52), Cameron Payne (52), De'Anthony Melton (52), Nerlens Noel (52), Raul Neto (52), Richaun Holmes (52), Willie Cauley-Stein (52), James Ennis (53), Oshae Brissett (54), Caleb Martin (69), Evan Turner (69), Matisse Thybulle (69), Christian Wood (70), Dean Wade (70), Lonnie Walker (70), Mo Bamba (70), Nik Stauskas (70), Shake Milton (70), Tyler Johnson (70), Boban Marjanovic (71), Danuel House (71), Furkan Korkmaz (71), Timothe Luwawu (71), Markelle Fultz (72), Mike Scott (72), Tim Frazier (72), Darius Bazley (73), Haywood Highsmith (73), Jahlil Okafor (73), Jalen McDaniels (73), Justin Anderson (73), Tiago Splitter (73), Tony Bradley (73), Trevor Booker (73), Guerschon Yabusele (74), Kyle O'Quinn (74), Shelvin Mack (74), Gary Clark (75), DJ Wilson (76), Lavoy Allen (76), Glenn Robinson III (78), James Michael McAdoo (78), Thomas Robinson (78), Hollis Thompson (79), Ignas Brazdeikis (79), Jonathon Simmons (79), Isaiah Canaan (80), JaKarr Sampson (80), James Anderson (80), Charlie Brown (81), Norvel Pelle (81), Terrance Ferguson (81), Alexey Shved (82), Kendall Marshall (82), Louis King (82), Rayjon Tucker (82), Tacko Fall (82), Tony Wroten (82), Christapher Johnson (83), Henry Sims (83), KJ McDaniels (83), Phil Pressey (83), Charles Jenkins (84), Chasson Randle (84), Darius Morris (84), Elliot Williams (84), James Young (85), Jeremy Pargo (85), Lorenzo Brown (85), Brandon Davies (86), Alex Poythress (87), Arnett Moultrie (87), Daniel Orton (87), Jonah Bolden (87), Furkan Aldemir (88), Jarvis Varnado (88), Malcolm Lee (88), Malcolm Thomas (88), James Nunnally (89), Maalik Wayns (89), Demetrius Jackson (90), Justin Harper (90), Justin Patton (90), Larry Drew II (90), Shawn Long (90), Vincent Poirier (90), Craig Brackins (91), Zhaire Smith (91), Casper Ware (92), Drew Gordon (92), Adonis Thomas (94), Darius Johnson-Odom (94), Marial Shayok (94), Xavier Silas (94), Jacob Pullen (96)
 
-## 7. Name a player from a 2000s draft class (drafted or undrafted) who played for the San Antonio Spurs.
+## 7. Name a player who started his NBA career in the 1960s and played for the Milwaukee Bucks.
 
-Type: team-draft. Valid answers: 74 (5 stars, 18 known, 51 deep cuts).
+Type: team-draft. Valid answers: 37 (3 stars, 12 known, 22 deep cuts).
 
-Examples: star **Chris Paul** 1 · mid **Hidayet Turkoglu** 46 · deep cut **Alex Scales** 99
+Examples: star **Kareem Abdul-Jabbar** 0 · mid **Lucius Allen** 50 · deep cut **John Arthurs** 92
 
-Chris Paul (1), Tony Parker (9), Pau Gasol (11), DeMar DeRozan (13), LaMarcus Aldridge (13), David West (40), Danny Green (42), David Lee (42), Boris Diaw (44), Rudy Gay (44), Thaddeus Young (44), Patrick Mills (45), Richard Jefferson (45), George Hill (46), Hidayet Turkoglu (46), Beno Udrih (47), Garrett Temple (48), Matt Bonner (48), Marco Belinelli (49), Rasual Butler (51), Ian Mahinmi (52), Joel Anthony (52), Shannon Brown (53), Drew Gooden (67), Anthony Tolliver (69), Bobby Simmons (69), Dante Cunningham (69), Kevin Martin (69), Aron Baynes (70), Keith Bogans (70), Devin Brown (71), DeMarre Carroll (72), Roger Mason (73), Tiago Splitter (73), Speedy Claxton (74), Alonzo Gee (75), Austin Daye (75), DeJuan Blair (75), Matt Carroll (75), Steve Novak (75), TJ Ford (75), Melvin Ely (76), DerMarr Johnson (77), Gary Neal (77), Jason Hart (77), Jeff Ayres (77), Ime Udoka (78), Chris Quinn (80), Ike Diogu (81), Mike Wilks (81), Reggie Williams (1986) (81), Linton Johnson (83), Nando De Colo (84), Bobby Jones (1984) (85), Marcus Haislip (85), Jackie Butler (86), James White (87), Malik Hairston (87), Pops Mensah-Bonsu (87), Jeremy Richardson (88), Othyus Jeffers (88), Blake Ahearn (90), Larry Owens (90), Darius Washington (91), Melvin Sanders (91), Alex Garcia (92), Cedric Jackson (92), Desmon Farmer (92), Justin Dentmon (92), Marcus E. Williams (92), Eric Dawson (94), Derrick Byars (95), Keith Langford (96), Alex Scales (99)
+Kareem Abdul-Jabbar (0), Oscar Robertson (1), Bob Dandridge (16), Bob Love (40), Norm Van Lier (42), Bob Boozer (46), Jon McGlocklin (47), Steve Mix (49), Bob Weiss (50), Lucius Allen (50), Flynn Robinson (51), John Block (51), Len Chappell (51), Steve Kuberski (51), Wali Jones (52), Jim Fox (68), McCoy McLemore (68), Greg Smith (69), Bob Rule (70), Fred Carter (71), Toby Kimball (72), Walt Wesley (72), Ron Williams (73), Zaid Abdul-Aziz (73), Dick Cunningham (74), Fred Hetzel (75), Dick Garrett (77), Freddie Crawford (78), Gary Gregor (78), Bill Dinwiddie (81), Bob Warlick (82), Charlie Paulk (84), Bob Greacen (85), Samuel Williams (86), Rich Niemann (89), Jay Miller (92), John Arthurs (92)
 
-## 8. Name a player who won an NBA title with the Milwaukee Bucks.
+## 8. Name a player who won an NBA title with the Philadelphia Warriors.
 
-Type: award-team. Valid answers: 29 (5 stars, 15 known, 9 deep cuts).
+Type: award-team. Valid answers: 20 (4 stars, 2 known, 14 deep cuts).
 
-Examples: star **Kareem Abdul-Jabbar** 0 · mid **Pat Connaughton** 48 · deep cut **Marv Winkler** 92
+Examples: star **Paul Arizin** 9 · mid **Joe Graboski** 49 · deep cut **Petey Rosenberg** 83
 
-Kareem Abdul-Jabbar (0), Oscar Robertson (1), Giannis Antetokounmpo (2), Bob Dandridge (16), Jrue Holiday (17), Khris Middleton (38), Brook Lopez (39), PJ Tucker (45), Bob Boozer (46), Jeff Teague (46), Bobby Portis (47), Jon McGlocklin (47), Pat Connaughton (48), Donte DiVincenzo (49), Lucius Allen (50), Bryn Forbes (51), Justin Jackson (53), Jordan Nwora (54), Sam Merrill (54), Thanasis Antetokounmpo (55), McCoy McLemore (68), Greg Smith (1947) (69), Dick Cunningham (74), Mamadi Diakite (77), Jeff Webb (83), Axel Toupane (85), Bob Greacen (85), Elijah Bryant (92), Marv Winkler (92)
+Paul Arizin (9), Neil Johnston (13), Tom Gola (16), Joe Fulks (18), Jack George (46), Joe Graboski (49), George Senesky (70), Walt Davis (71), Howie Dallmar (72), Ernie Beck (73), George Dempsey (74), Jerry Fleishman (76), Angelo Musi (79), Jackie Moore (80), Jerry Rullo (81), Ralph Kaplowitz (81), Art Hillhouse (82), Larry Hennessy (83), Matt Guokas, Sr. (83), Petey Rosenberg (83)
 
-## 9. Name a player who made an All-Rookie team as a member of the Orlando Magic.
+## 9. Name a player who made an All-Rookie team as a member of the Los Angeles Lakers.
 
-Type: award-team. Valid answers: 16 (3 stars, 5 known, 8 deep cuts).
+Type: award-team. Valid answers: 18 (3 stars, 11 known, 4 deep cuts).
 
-Examples: star **Shaquille O'Neal** 1 · mid **Victor Oladipo** 42 · deep cut **Stanley Roberts** 78
+Examples: star **Kobe Bryant** 0 · mid **Norm Nixon** 43 · deep cut **Dick Garrett** 77
 
-Shaquille O'Neal (1), Dwight Howard (4), Anfernee Hardaway (17), Paolo Banchero (39), Mike Miller (40), Victor Oladipo (42), Jameer Nelson (47), Elfrid Payton (51), Drew Gooden (67), Michael Doleac (68), Chucky Atkins (69), Dennis Scott (70), Franz Wagner (70), Matt Harpring (70), Gordan Giricek (76), Stanley Roberts (78)
+Kobe Bryant (0), Magic Johnson (1), James Worthy (9), Vlade Divac (38), Eddie Jones (40), Brandon Ingram (43), Byron Scott (43), Jordan Clarkson (43), Norm Nixon (43), Brian Winters (47), D'Angelo Russell (47), Nick Van Exel (47), Kyle Kuzma (48), Jim Price (52), Lonzo Ball (70), Travis Knight (73), Bill Hewitt (77), Dick Garrett (77)
 
-## 10. Name a player from outside the United States who played for the Los Angeles Lakers.
+## 10. Name a player born outside the United States who played for the Oklahoma City Thunder.
 
-Type: country-team. Valid answers: 54 (4 stars, 19 known, 31 deep cuts).
+Type: country-team. Valid answers: 40 (2 stars, 13 known, 25 deep cuts).
 
-Examples: star **Steve Nash** 2 · mid **Chris Kaman** 49 · deep cut **Elias Harris** 96
+Examples: star **Shai Gilgeous-Alexander** 10 · mid **Steven Adams** 48 · deep cut **Saer Sene** 88
 
-Steve Nash (2), Pau Gasol (11), Luka Doncic (13), Marc Gasol (17), Vlade Divac (38), Jordan Clarkson (43), Rick Fox (44), Luol Deng (45), Dennis Schroeder (46), Mychal Thompson (46), Roy Hibbert (48), Alex Len (49), Andrew Bogut (49), Chris Kaman (49), Ivica Zubac (50), Jose Calderon (50), Deandre Ayton (51), Sasha Vujacic (51), Sviatoslav Mykhailiuk (51), Maxi Kleber (52), Rui Hachimura (52), Moritz Wagner (53), Juan Toscano-Anderson (55), Vladimir Radmanovic (68), Matisse Thybulle (69), Gabe Vincent (70), Ronny Turiaf (71), Timofey Mozgov (71), Sandro Mamukelashvili (72), Swen Nater (73), Didier Ilunga-Mbenga (74), Mike Smrek (75), Isaac Bonga (76), Stanislav Medvedenko (76), Wenyen Gabriel (76), Christian Koloko (77), Rumeal Robinson (77), Ime Udoka (78), Sekou Doumbouya (78), Butch Lee (81), Robert Sacre (82), Tyler Ennis (82), Xavier Henry (82), Petur Gudmundsson (83), Armel Traore (85), D'Moi Hodge (86), Marcelo Huertas (86), Christian Eyenga (87), Soumaila Samake (88), Kostas Antetokounmpo (91), Steve Bucknall (91), Scott Machado (93), Sun Yue (93), Elias Harris (96)
+Shai Gilgeous-Alexander (10), Al Horford (15), Reggie Jackson (45), Serge Ibaka (45), Dennis Schroeder (46), Bismack Biyombo (47), Danilo Gallinari (48), Enes Kanter (48), Steven Adams (48), Luguentz Dort (50), Thabo Sefolosha (50), Dario Saric (51), Ersan Ilyasova (51), Sviatoslav Mykhailiuk (51), Davis Bertans (52), Josh Giddey (70), Timothe Luwawu (71), Ousmane Dieng (72), Abdel Nader (74), Ajay Mitchell (74), Johan Petro (74), Theo Maledon (74), Vit Krejci (74), Aleksej Pokusevski (75), Nenad Krstic (75), Mamadi Diakite (77), Vasilije Micic (77), Eugene Omoruyi (78), Olivier Sarr (80), Hasheem Thabeet (81), Jaylen Hoard (81), Joffrey Lauvergne (81), Alex Abrines (82), Malevy Leons (82), Gabriel Deck (83), Aday Mara (84), Alex Ducas (84), Georgios Kalaitzakis (84), Nikola Topic (84), Saer Sene (88)
 
-## 11. Name a player from outside the United States who played for the Denver Nuggets.
+## 11. Name a player born outside the United States who played for the San Antonio Spurs.
 
-Type: country-team. Valid answers: 52 (2 stars, 13 known, 37 deep cuts).
+Type: country-team. Valid answers: 54 (6 stars, 17 known, 31 deep cuts).
 
-Examples: star **Nikola Jokic** 2 · mid **Trey Lyles** 49 · deep cut **Garth Joseph** 95
+Examples: star **Tim Duncan** 0 · mid **Jakob Poeltl** 49 · deep cut **Alex Garcia** 92
 
-Nikola Jokic (2), Dikembe Mutombo (9), Jamal Murray (44), Jonas Valanciunas (45), Danilo Gallinari (48), Roy Hibbert (48), Evan Fournier (49), Nenê (49), Trey Lyles (49), Jusuf Nurkic (50), Sarunas Marciulionis (50), Dario Saric (51), Isaiah Hartenstein (51), Carl Herrera (52), Monte Morris (52), Juan Hernangomez (70), Kosta Koufos (70), Eduardo Najera (71), Emmanuel Mudiay (71), Francisco Elson (71), Timofey Mozgov (71), Carlos Arroyo (72), Vlatko Cancar (73), Johan Petro (74), Julian Strawther (75), Facundo Campazzo (76), Linas Kleiza (76), Rudy Fernandez (79), Ryan Nembhard (79), Tariq Abdul-Wahad (80), Joffrey Lauvergne (81), Renaldo Balkman (81), Jan Vesely (82), Nikoloz Tskitishvili (82), Yakhouba Diawara (82), Gary Forbes (84), George Zidek (84), Jack White (84), Axel Toupane (85), Carlik Jones (85), Kostas Papanikolaou (86), Petr Cornelie (86), Alpha Diallo (88), Mengke Bateer (88), Darnell Mee (89), Predrag Savovic (89), Cheikh Samb (91), Julius Hodge (91), Luis Flores (91), Rastko Cvetkovic (92), DeVaughn Akoon-Purcell (94), Garth Joseph (95)
+Tim Duncan (0), Dominique Wilkins (7), Tony Parker (9), Pau Gasol (11), Manu Ginobili (14), Victor Wembanyama (20), Steve Kerr (42), Boris Diaw (44), Cory Joseph (45), Hidayet Turkoglu (46), Mychal Thompson (46), Beno Udrih (47), Bismack Biyombo (47), Kelly Olynyk (47), Jakob Poeltl (49), Marco Belinelli (49), Trey Lyles (49), Gorgui Dieng (50), Carl Herrera (52), Cedi Osman (52), Davis Bertans (52), Ian Mahinmi (52), Joel Anthony (52), Tomas Satoransky (69), Aron Baynes (70), Juan Hernangomez (70), Boban Marjanovic (71), Francisco Elson (71), Jock Landale (71), Tiago Splitter (73), Fabricio Oberto (74), Matt Carroll (75), Mike Smrek (75), Charles Bassey (77), Mamadi Diakite (77), Sidy Cissoko (77), Luka Samanic (78), Josh Primo (79), Donatas Motiejunas (80), Joffrey Lauvergne (81), Sean Marks (81), Uwe Blab (81), Petur Gudmundsson (83), Nando De Colo (84), Chris Welp (85), David Jones (85), Emanuel Miller (85), Pops Mensah-Bonsu (87), Mengke Bateer (88), Shane Heal (88), Andrew Gaze (90), Nicolas Laprovittola (90), Zarko Paspalj (90), Alex Garcia (92)
 
-## 12. Name a player who was a teammate of Scottie Pippen on the Chicago Bulls.
+## 12. Name a player who was a teammate of Moses Malone on the Buffalo Braves.
 
-Type: teammate. Valid answers: 84 (5 stars, 33 known, 46 deep cuts).
+Type: teammate. Valid answers: 18 (2 stars, 3 known, 13 deep cuts).
 
-Examples: star **Michael Jordan** 1 · mid **Jud Buechler** 48 · deep cut **Ricky Blanton** 96
+Examples: star **Bob McAdoo** 10 · mid **George Johnson** 48 · deep cut **Clyde Mayes** 86
 
-Michael Jordan (1), Robert Parish (6), Dennis Rodman (12), Artis Gilmore (15), Toni Kukoc (18), Horace Grant (38), Jamal Crawford (38), Tyson Chandler (39), Ron Harper (40), Bill Cartwright (42), James Edwards (42), Steve Kerr (42), Charles Oakley (43), BJ Armstrong (44), John Salley (45), Will Perdue (45), John Paxson (46), Antonio Davis (47), Cliff Levingston (47), Jalen Rose (47), Scott Williams (47), Jud Buechler (48), Randy Brown (48), Bill Wennington (49), Craig Hodges (49), Donyell Marshall (49), Kendall Gill (49), Luc Longley (49), Rodney McCray (49), Sedale Threatt (49), Darrell Walker (50), Dave Corzine (50), Joe Kleine (50), Kirk Hinrich (50), Rory Sparrow (50), Trent Tucker (50), Stacey King (51), Greg Foster (52), Bob Hansen (68), Corie Blount (71), Jason Caffey (71), Jerome Williams (71), Mike Brown (1963) (71), Bison Dele (72), Sam Vincent (72), Ed Nealy (73), Eddy Curry (73), Elston Turner (73), Roger Mason (73), Scott Burrell (73), Dennis Hopson (74), Dickey Simpkins (74), Jannero Pargo (74), Larry Krystkowiak (75), Brad Sellers (76), Charles Davis (76), David Wood (76), Pete Myers (76), Jack Haley (78), Marcus Fizer (78), Rick Brunson (78), Eddie Robinson (79), Chuck Nevitt (80), Granville Waiters (80), Anthony Jones (83), Linton Johnson (83), Lonny Baxter (83), Ronald Dupree (83), David Vaughn (84), Mark Randall (84), Joe Courtney (85), Rusty Larue (85), Chris Jefferies (86), Dave Johnson (87), Jeff Sanders (87), Jo Jo English (87), Tony White (87), Keith Booth (88), Corey Williams (89), Dominic Pressley (91), Paul Shirley (91), Clifford Lett (92), Matt Steigenga (96), Ricky Blanton (96)
+Bob McAdoo (10), Adrian Dantley (14), Randy Smith (42), George Johnson (48), Jim Price (52), John Gianelli (69), Tom McMillen (69), Ernie DiGregorio (72), Don Adams (73), Fred Foster (73), Zaid Abdul-Aziz (73), John Shumate (77), Gus Gerard (79), Bird Averitt (83), Chuck Williams (83), Johnny Neumann (85), Claude Terry (86), Clyde Mayes (86)
 
-## 13. Name a player who was a teammate of Jerry Lucas on the New York Knicks.
+## 13. Name a player who was a teammate of Kevin Garnett on the Brooklyn Nets.
 
-Type: teammate. Valid answers: 24 (4 stars, 6 known, 14 deep cuts).
+Type: teammate. Valid answers: 28 (2 stars, 10 known, 16 deep cuts).
 
-Examples: star **Willis Reed** 6 · mid **Eddie Miles** 51 · deep cut **Allie McGuire** 96
+Examples: star **Paul Pierce** 6 · mid **Mason Plumlee** 47 · deep cut **Tornike Shengelia** 88
 
-Willis Reed (6), Walt Frazier (8), Dave DeBusschere (11), Earl Monroe (13), Dick Barnett (36), Bill Bradley (39), Phil Jackson (49), Eddie Miles (51), Henry Bibby (51), Mike Riordan (51), John Gianelli (69), Dave Stallworth (70), Dean Meminger (72), Dick Garrett (77), Hathorne Wingo (77), Luther Rackley (81), Mel Davis (82), Charlie Paulk (84), Mike Price (84), Eddie Mast (85), Tom Riker (86), Dennis Bell (87), Greg Fillmore (88), Allie McGuire (96)
+Paul Pierce (6), Joe Johnson (13), Brook Lopez (39), Deron Williams (39), Jason Terry (40), Thaddeus Young (44), Shaun Livingston (46), Mason Plumlee (47), Andrei Kirilenko (48), Bojan Bogdanovic (48), Jarrett Jack (50), Reggie Evans (51), Jason Collins (68), Andray Blatche (72), Marcus Thornton (74), Alan Anderson (77), Mirza Teletovic (78), Earl Clark (80), Darius Morris (84), Markel Brown (84), Marquis Teague (85), Sergey Karasev (85), Brandon Davies (86), Cory Jefferson (87), Jerome Jordan (87), Tyshawn Taylor (87), Jorge Gutierrez (88), Tornike Shengelia (88)
 
-## 14. Name a player who made an All-Rookie team as a member of the Memphis Grizzlies.
+## 14. Name a player who made an All-Rookie team as a member of the New York Knicks.
 
-Type: award-team. Valid answers: 16 (2 stars, 6 known, 8 deep cuts).
+Type: award-team. Valid answers: 22 (3 stars, 13 known, 6 deep cuts).
 
-Examples: star **Pau Gasol** 11 · mid **Shane Battier** 45 · deep cut **Juan Carlos Navarro** 85
+Examples: star **Patrick Ewing** 5 · mid **Tim Hardaway Jr** 46 · deep cut **Art Heyman** 82
 
-Pau Gasol (11), Marc Gasol (17), Ja Morant (42), Jaren Jackson Jr (44), Rudy Gay (44), Shane Battier (45), Desmond Bane (52), Zach Edey (54), Drew Gooden (67), Brandon Clarke (71), OJ Mayo (72), Jaylen Wells (75), GG Jackson (76), Gordan Giricek (76), Cedric Coward (78), Juan Carlos Navarro (85)
+Patrick Ewing (5), Willis Reed (6), Walt Frazier (8), Mark Jackson (40), Bill Cartwright (42), Dick Van Arsdale (42), Cazzie Russell (46), Kristaps Porzingis (46), Rod Strickland (46), Tim Hardaway Jr (46), Channing Frye (48), Phil Jackson (49), Darrell Walker (50), Mitchell Robinson (51), Immanuel Quickley (52), Langston Galloway (52), Howard Komives (68), Willy Hernangomez (70), Iman Shumpert (71), Jim Barnes (75), Landry Fields (79), Art Heyman (82)

@@ -1,0 +1,19 @@
+{
+ "_about": "Prompt keys shown in docs/step1-samples.md; never scheduled.",
+ "keys": [
+  "teams:BOS|Boston Celtics:DAL|Dallas Mavericks",
+  "teams:CLE|Cleveland Cavaliers:PHX|Phoenix Suns",
+  "teams:HOU|Houston Rockets:MIA|Miami Heat",
+  "college:LAC|Los Angeles Clippers:UCLA",
+  "coldec:Duke:2010",
+  "start:PHI|Philadelphia 76ers:2010",
+  "start:MIL|Milwaukee Bucks:1960",
+  "award:rings:GSW|Philadelphia Warriors",
+  "award:allRookie:LAL|Los Angeles Lakers",
+  "bornout:OKC|Oklahoma City Thunder",
+  "bornout:SAS|San Antonio Spurs",
+  "mate:moses-malone:LAC|Buffalo Braves",
+  "mate:kevin-garnett:BKN|Brooklyn Nets",
+  "award:allRookie:NYK|New York Knicks"
+ ]
+}

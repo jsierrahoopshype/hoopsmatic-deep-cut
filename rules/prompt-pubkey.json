@@ -1,0 +1,12 @@
+{
+ "_about": "The Deep Cut server public key (public by design), as served at https://hoopsmatic.com/deep-cut/api/pubkey. Locks are made with it. Committed because Cloudflare can refuse GitHub Actions runners on /deep-cut/api/*; scripts/lib/lock.mjs still compares it with the live key whenever that answers.",
+ "kid": "SKYD2dJX8595MdEx",
+ "jwk": {
+  "kty": "RSA",
+  "n": "sQNBLgFZB5FJWn36GmJFpl_emvT32Nf60tda52D9XhKNwZcN2vInX6yaL89UnY7EC6SmfifEIRGVcUxqzDT2uMfzGC9y1YIux2TOWfvs3ZIRWBI4MaAXMeSMU1LL82cq5fzymrG6ZpF6B5zRtcc2uhNisdTy26jZer-vaa2RtEnYhIPZbgTt8_35gHBch-ROHRIDP0rYhzAihm-2cGEPH0c4cJExZmj64lVn4tPxbxbCloUcwFGF5L-XFk5A-B7LycRy8AmhUWkwrFLmaWgJD_M3YyVREmU4yIhRxyDGTZvUvXSqCcjcmM9gBrONQrs9N2S7vlF2E0tDjM9eHx8OwK8RwYe0OaFrWXFhldzUoplfShLZ4dv4eymxJSc5uY9Psddh_LbdY05mfzObdHdA6VvDrzMOmlBlrrwxSL8uHmenEH6bALbKkIHihVhl2_PiKI5-P-LBw2wUcHFcH65o-uLlJnQK2MuliaAADzfgWUcLbqKKPO6w1oPdW7IBF4Q3",
+  "e": "AQAB",
+  "alg": "RSA-OAEP-256",
+  "use": "enc",
+  "kid": "SKYD2dJX8595MdEx"
+ }
+}
