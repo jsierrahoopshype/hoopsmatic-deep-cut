@@ -1,0 +1,109 @@
+{
+ "_about": "Franchise names by season (Jorge, Nov 10, 2026: name every team as it was in the season(s) the player was there). Seasons are stored by their ending year, as in data/entities.json (1968 = 1967-68). Each era: from/to (inclusive; to null = current), city and nickname. The data keeps every stint under the franchise's current code (Henry Akin's 1967-68 Seattle SuperSonics season is 'OKC'), so clues and the fact checker read the era name from here (scripts/lib/franchise.mjs). Defunct BAA/NBA teams (BAL, WSC, ...) are named by city and nickname like any earlier era ('Indianapolis Olympians'). Label rule: the current era is named by its nickname alone ('Thunder'); every earlier era by city and nickname ('Seattle SuperSonics', 'Charlotte Hornets' for 1988-89 to 2001-02).",
+ "franchises": {
+  "ATL": [
+   { "from": 1950, "to": 1951, "city": "Tri-Cities", "nickname": "Blackhawks" },
+   { "from": 1952, "to": 1955, "city": "Milwaukee", "nickname": "Hawks" },
+   { "from": 1956, "to": 1968, "city": "St. Louis", "nickname": "Hawks" },
+   { "from": 1969, "to": null, "city": "Atlanta", "nickname": "Hawks" }
+  ],
+  "BOS": [{ "from": 1947, "to": null, "city": "Boston", "nickname": "Celtics" }],
+  "BKN": [
+   { "from": 1977, "to": 1977, "city": "New York", "nickname": "Nets" },
+   { "from": 1978, "to": 2012, "city": "New Jersey", "nickname": "Nets" },
+   { "from": 2013, "to": null, "city": "Brooklyn", "nickname": "Nets" }
+  ],
+  "CHA": [
+   { "from": 1989, "to": 2002, "city": "Charlotte", "nickname": "Hornets" },
+   { "from": 2005, "to": 2014, "city": "Charlotte", "nickname": "Bobcats" },
+   { "from": 2015, "to": null, "city": "Charlotte", "nickname": "Hornets" }
+  ],
+  "CHI": [{ "from": 1967, "to": null, "city": "Chicago", "nickname": "Bulls" }],
+  "CLE": [{ "from": 1971, "to": null, "city": "Cleveland", "nickname": "Cavaliers" }],
+  "DAL": [{ "from": 1981, "to": null, "city": "Dallas", "nickname": "Mavericks" }],
+  "DEN": [{ "from": 1977, "to": null, "city": "Denver", "nickname": "Nuggets" }],
+  "DET": [
+   { "from": 1949, "to": 1957, "city": "Fort Wayne", "nickname": "Pistons" },
+   { "from": 1958, "to": null, "city": "Detroit", "nickname": "Pistons" }
+  ],
+  "GSW": [
+   { "from": 1947, "to": 1962, "city": "Philadelphia", "nickname": "Warriors" },
+   { "from": 1963, "to": 1971, "city": "San Francisco", "nickname": "Warriors" },
+   { "from": 1972, "to": null, "city": "Golden State", "nickname": "Warriors" }
+  ],
+  "HOU": [
+   { "from": 1968, "to": 1971, "city": "San Diego", "nickname": "Rockets" },
+   { "from": 1972, "to": null, "city": "Houston", "nickname": "Rockets" }
+  ],
+  "IND": [{ "from": 1977, "to": null, "city": "Indiana", "nickname": "Pacers" }],
+  "LAC": [
+   { "from": 1971, "to": 1978, "city": "Buffalo", "nickname": "Braves" },
+   { "from": 1979, "to": 1984, "city": "San Diego", "nickname": "Clippers" },
+   { "from": 1985, "to": null, "city": "Los Angeles", "nickname": "Clippers" }
+  ],
+  "LAL": [
+   { "from": 1949, "to": 1960, "city": "Minneapolis", "nickname": "Lakers" },
+   { "from": 1961, "to": null, "city": "Los Angeles", "nickname": "Lakers" }
+  ],
+  "MEM": [
+   { "from": 1996, "to": 2001, "city": "Vancouver", "nickname": "Grizzlies" },
+   { "from": 2002, "to": null, "city": "Memphis", "nickname": "Grizzlies" }
+  ],
+  "MIA": [{ "from": 1989, "to": null, "city": "Miami", "nickname": "Heat" }],
+  "MIL": [{ "from": 1969, "to": null, "city": "Milwaukee", "nickname": "Bucks" }],
+  "MIN": [{ "from": 1990, "to": null, "city": "Minnesota", "nickname": "Timberwolves" }],
+  "NOP": [
+   { "from": 2003, "to": 2005, "city": "New Orleans", "nickname": "Hornets" },
+   { "from": 2006, "to": 2007, "city": "New Orleans/Oklahoma City", "nickname": "Hornets" },
+   { "from": 2008, "to": 2013, "city": "New Orleans", "nickname": "Hornets" },
+   { "from": 2014, "to": null, "city": "New Orleans", "nickname": "Pelicans" }
+  ],
+  "NYK": [{ "from": 1947, "to": null, "city": "New York", "nickname": "Knicks" }],
+  "OKC": [
+   { "from": 1968, "to": 2008, "city": "Seattle", "nickname": "SuperSonics" },
+   { "from": 2009, "to": null, "city": "Oklahoma City", "nickname": "Thunder" }
+  ],
+  "ORL": [{ "from": 1990, "to": null, "city": "Orlando", "nickname": "Magic" }],
+  "PHI": [
+   { "from": 1950, "to": 1963, "city": "Syracuse", "nickname": "Nationals" },
+   { "from": 1964, "to": null, "city": "Philadelphia", "nickname": "76ers" }
+  ],
+  "PHX": [{ "from": 1969, "to": null, "city": "Phoenix", "nickname": "Suns" }],
+  "POR": [{ "from": 1971, "to": null, "city": "Portland", "nickname": "Trail Blazers" }],
+  "SAC": [
+   { "from": 1949, "to": 1957, "city": "Rochester", "nickname": "Royals" },
+   { "from": 1958, "to": 1972, "city": "Cincinnati", "nickname": "Royals" },
+   { "from": 1973, "to": 1975, "city": "Kansas City-Omaha", "nickname": "Kings" },
+   { "from": 1976, "to": 1985, "city": "Kansas City", "nickname": "Kings" },
+   { "from": 1986, "to": null, "city": "Sacramento", "nickname": "Kings" }
+  ],
+  "SAS": [{ "from": 1977, "to": null, "city": "San Antonio", "nickname": "Spurs" }],
+  "TOR": [{ "from": 1996, "to": null, "city": "Toronto", "nickname": "Raptors" }],
+  "UTA": [
+   { "from": 1975, "to": 1979, "city": "New Orleans", "nickname": "Jazz" },
+   { "from": 1980, "to": null, "city": "Utah", "nickname": "Jazz" }
+  ],
+  "WAS": [
+   { "from": 1962, "to": 1962, "city": "Chicago", "nickname": "Packers" },
+   { "from": 1963, "to": 1963, "city": "Chicago", "nickname": "Zephyrs" },
+   { "from": 1964, "to": 1973, "city": "Baltimore", "nickname": "Bullets" },
+   { "from": 1974, "to": 1974, "city": "Capital", "nickname": "Bullets" },
+   { "from": 1975, "to": 1997, "city": "Washington", "nickname": "Bullets" },
+   { "from": 1998, "to": null, "city": "Washington", "nickname": "Wizards" }
+  ],
+  "AND": [{ "from": 1950, "to": 1950, "city": "Anderson", "nickname": "Packers", "defunct": true }],
+  "BAL": [{ "from": 1948, "to": 1955, "city": "Baltimore", "nickname": "Bullets", "defunct": true }],
+  "CHS": [{ "from": 1947, "to": 1950, "city": "Chicago", "nickname": "Stags", "defunct": true }],
+  "CLR": [{ "from": 1947, "to": 1947, "city": "Cleveland", "nickname": "Rebels", "defunct": true }],
+  "DNN": [{ "from": 1950, "to": 1950, "city": "Denver", "nickname": "Nuggets", "defunct": true }],
+  "DTF": [{ "from": 1947, "to": 1947, "city": "Detroit", "nickname": "Falcons", "defunct": true }],
+  "INJ": [{ "from": 1949, "to": 1949, "city": "Indianapolis", "nickname": "Jets", "defunct": true }],
+  "INO": [{ "from": 1950, "to": 1953, "city": "Indianapolis", "nickname": "Olympians", "defunct": true }],
+  "PIT": [{ "from": 1947, "to": 1947, "city": "Pittsburgh", "nickname": "Ironmen", "defunct": true }],
+  "PRO": [{ "from": 1947, "to": 1949, "city": "Providence", "nickname": "Steamrollers", "defunct": true }],
+  "SHE": [{ "from": 1950, "to": 1950, "city": "Sheboygan", "nickname": "Red Skins", "defunct": true }],
+  "STB": [{ "from": 1947, "to": 1950, "city": "St. Louis", "nickname": "Bombers", "defunct": true }],
+  "TOH": [{ "from": 1947, "to": 1947, "city": "Toronto", "nickname": "Huskies", "defunct": true }],
+  "WSC": [{ "from": 1947, "to": 1951, "city": "Washington", "nickname": "Capitols", "defunct": true }]
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "_about": "Every data file Deep Cut prompts are built from, pinned by commit and sha256. Same pins as the NBA Crossword (hoopsmatic-crossword data/sources.lock.json) on Nov 11, 2026. node scripts/pull-data.mjs downloads exactly these into .cache/sources/.",
+ "sources": [
+  {
+   "id": "bio",
+   "repo": "jsierrahoopshype/nba-player-data",
+   "path": "bio.json",
+   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
+   "sha256": "5cc5eb187d1bb430c15415066a98e78ac48f1e0ea9f022b319603f6172f4d9ac",
+   "bytes": 690944,
+   "rows": 5158
+  },
+  {
+   "id": "awards",
+   "repo": "jsierrahoopshype/nba-player-data",
+   "path": "awards.json",
+   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
+   "sha256": "6d29babd40a64057964d0055cb7fea0bf701a1ac86baeebeacdc4f3b8519b560",
+   "bytes": 1123862,
+   "rows": 10648
+  },
+  {
+   "id": "rsStats",
+   "repo": "jsierrahoopshype/nba-player-data",
+   "path": "rsStats.json",
+   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
+   "sha256": "b591c919ce43c34a752496ac1ba9081e78af6e965839e0804f6281b9e0154f0b",
+   "bytes": 15554356,
+   "rows": 29195
+  },
+  {
+   "id": "poStats",
+   "repo": "jsierrahoopshype/nba-player-data",
+   "path": "poStats.json",
+   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
+   "sha256": "ee52576154df9136533cb5cd4f02412eddb62819f4b684242383364c11be91bd",
+   "bytes": 6176197,
+   "rows": 11749
+  },
+  {
+   "id": "ssf",
+   "repo": "jsierrahoopshype/salary-season-finder",
+   "path": "data/data.json",
+   "commit": "64d1599d6e28117eea47e126d4ec305ea56ea866",
+   "sha256": "7e861ae909ab7faed6b6b41250367c4191a41570af69e9cc5865a6de34e0235f",
+   "bytes": 10948678,
+   "rows": 18855
+  },
+  {
+   "id": "slugs",
+   "repo": "jsierrahoopshype/salary-season-finder",
+   "path": "data/slugs.json",
+   "commit": "64d1599d6e28117eea47e126d4ec305ea56ea866",
+   "sha256": "b35f528c335da439edbb5cf0ed06d628f991a7e5867ad29c07c4c70e52e302be",
+   "bytes": 131623,
+   "rows": 3407
+  },
+  {
+   "id": "careers",
+   "repo": "jsierrahoopshype/nba-career-map",
+   "path": "data/players/nba_players_careers.json",
+   "commit": "d645f20e63b07d8987abd228ee23d71ac650d339",
+   "sha256": "c4372a0eadd9528427b1c451baa622baa748587d557aeaf5964ad9db853195d6",
+   "bytes": 8652248,
+   "rows": 5196
+  }
+ ]
+}
