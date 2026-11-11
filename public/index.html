@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Cut: name the NBA player nobody else will | HoopsMatic</title>
+<meta name="description" content="One NBA prompt a day at 9 AM ET. Name a player who fits. The deeper the cut, the higher your score.">
+<!-- noindex until Jorge approves the launch (Nov 11, 2026). -->
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://hoopsmatic.com/deep-cut/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Deep Cut: name the NBA player nobody else will | HoopsMatic">
+<meta property="og:description" content="One NBA prompt a day at 9 AM ET. Name a player who fits. The deeper the cut, the higher your score.">
+<meta property="og:url" content="https://hoopsmatic.com/deep-cut/">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="preload" href="/deep-cut/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/deep-cut/style.css">
+</head>
+<body>
+<div class="wrap">
+<h1>Deep Cut</h1>
+<p id="sub" class="sub"></p>
+
+<section id="game" class="panel">
+<p id="prompt" class="prompt" aria-live="polite">Loading today’s prompt…</p>
+<p id="meta" class="muted small"></p>
+<div id="ask" class="hide">
+<label for="q" class="vh">Player name</label>
+<input id="q" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Type a player’s name" enterkeyhint="search">
+<ul id="sugg" class="sugg" role="listbox" aria-label="Players"></ul>
+<div class="tries" aria-label="Tries left"><span id="dots"></span><span id="tries-text" class="muted small"></span></div>
+<ol id="misses" class="misses"></ol>
+<p id="msg" class="msg" aria-live="polite"></p>
+</div>
+</section>
+
+<section id="result" class="panel hide" aria-live="polite">
+<p id="r-pick" class="r-pick"></p>
+<p class="big" id="r-score"></p>
+<p id="r-line" class="muted"></p>
+<p id="r-next" class="small"></p>
+<div class="sharebox">
+<h2>Share</h2>
+<pre id="r-sharetext"></pre>
+<div id="r-shares" class="shares"></div>
+</div>
+</section>
+
+<section id="results" class="panel hide">
+<h2 id="res-title"></h2>
+<p id="res-prompt" class="res-prompt"></p>
+<p id="res-you" class="res-you"></p>
+<p id="res-meta" class="muted small"></p>
+<ol id="res-list" class="res-list"></ol>
+<p class="note">Players link to their HoopsMatic pages where one exists. % = share of the day’s valid picks.</p>
+</section>
+
+<section id="archive" class="panel hide">
+<h2>Past days</h2>
+<p class="muted small">Play any past prompt (unranked) or see its answers.</p>
+<ul id="arc-list" class="arc-list"></ul>
+</section>
+
+<p class="links small"><a id="link-today" href="/deep-cut/">Today</a> · <a id="link-yday" href="#">Yesterday’s answers</a> · <a href="/deep-cut/?view=archive">Past days</a> · <a id="link-how" href="#how">How it works</a></p>
+
+<section id="how" class="how small">
+<h2>How it works</h2>
+<p>Every day at 9:00 AM ET there is one prompt. Name a player who fits it. You get 3 tries: a pick that doesn’t fit uses one, and 3 misses score 0.</p>
+<p>Your instant score (0-100) comes from how obscure your pick is in the data: fame first, then games and minutes. The next morning your final score also counts how few people picked the same player, and the crowd counts for more as more people play.</p>
+<p>Team names are as they were in those seasons: the Seattle SuperSonics are not the Thunder.</p>
+</section>
+
+<div id="games-promo"></div>
+<footer class="app-footer">
+<p>Anything wrong with the game? Email us at <a href="mailto:hoopsmatic@hoopsmatic.com">hoopsmatic@hoopsmatic.com</a></p>
+<p>For any other inquiry, contact us at <a href="mailto:ads@hoopsmatic.com">ads@hoopsmatic.com</a></p>
+</footer>
+</div>
+<script src="/deep-cut/app.js" defer></script>
+<script src="https://hoopsmatic.com/hoopsmatic-games.js" data-hm-game="deepcut" defer></script>
+<script src="https://hoopsmatic.com/hoopsmatic-more.js" data-hm-more="deepcut" defer></script>
+</body>
+</html>

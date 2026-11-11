@@ -1,0 +1,11 @@
+{
+  "name": "hoopsmatic-deep-cut",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "pull": "node scripts/pull-data.mjs",
+    "prompts": "node scripts/generate-prompts.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}

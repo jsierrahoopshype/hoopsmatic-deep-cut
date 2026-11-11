@@ -1,0 +1,2197 @@
+{
+ "_about": "Deep Cut days (scripts/build.mjs). h = sha256(date:prompt key), a = sha256(answer list). The prompts themselves are only in the encrypted public/prompts/<date>.lock files.",
+ "v": 1,
+ "start": "2026-11-11",
+ "days": [
+  {
+   "n": 1,
+   "date": "2026-11-11",
+   "h": "7a73f5852bbfbab5f72916c5b2df71780c68748b65e1a41b115e796ff9d3fe81",
+   "a": "f7b2a2f7ce00d1e76ffc14d28659b9153839087c120f31484788a4086d1c4926"
+  },
+  {
+   "n": 2,
+   "date": "2026-11-12",
+   "h": "5af3d9189d8d93407df0a9d6b5a754a9ebd77937957ce08fe82d312c7700efdd",
+   "a": "081536ab43dd7fd2c07449e460702b36b641a8c7ee018c5bab2fd4801f85e18d"
+  },
+  {
+   "n": 3,
+   "date": "2026-11-13",
+   "h": "a692af20fe132aa52e96ad087234802e14a7512aa6ca653cd8cd292a287942f2",
+   "a": "65a1007fc1c34e650eaf52f610fdfc1f9dcaf1ea3bea64f963fb6eea906d7476"
+  },
+  {
+   "n": 4,
+   "date": "2026-11-14",
+   "h": "d1e699b9a8a370cd55d9ede33132e1e36951cd659fa5f1daeb971cfce28a7026",
+   "a": "2555167291fe06c38c9bf9b5e232fd4707a758bc97be96e2479eb31b2dd9a116"
+  },
+  {
+   "n": 5,
+   "date": "2026-11-15",
+   "h": "7b53bcd51aac6809dc024d68792b4048fe7dff50d5964fb42f0ea5aff5235377",
+   "a": "4f621846cb15b8dd6cd81b060b66ab5311801843b57be75842037f9fe91c66a9"
+  },
+  {
+   "n": 6,
+   "date": "2026-11-16",
+   "h": "1a8cc7648ae9c5e5be9ac2409bd2b8352f90e0e44ce25d0b40f26ebd80912374",
+   "a": "cf86266ca197793ba4f269a10ad2300c84105c12111237555b4c1de20ab5caa4"
+  },
+  {
+   "n": 7,
+   "date": "2026-11-17",
+   "h": "fb19d3d4d2d52adc27d56d66ec296546937ebc93d09719cd94f3923f8ba5f34b",
+   "a": "82490057cd9bee2d74026a20e7d8018edb9a702d4b5ddfc828dab2c42d70ad89"
+  },
+  {
+   "n": 8,
+   "date": "2026-11-18",
+   "h": "e0049384bd88a2a7880379fa16912bc937c7e3da5937c914d379be9d86178524",
+   "a": "0a36edcd6828442b705a4e1675f009584015329e8678ea208ca52e5ce665f009"
+  },
+  {
+   "n": 9,
+   "date": "2026-11-19",
+   "h": "4d5039c3d87628d3381c12fe3023b1515e21a75bbc004dc86d520f89b5551986",
+   "a": "a791f4e926ab4b2d48216961b9ef4f59bc53abb5c329b28030108bcf3c06bbc2"
+  },
+  {
+   "n": 10,
+   "date": "2026-11-20",
+   "h": "d009f542e8f81418c446983ad885b17d0580203b3156033b660dc14d1810a19d",
+   "a": "67a6042fec4eb1a0aff618bcf02d086865dc3479f7f4b8de8dcb601ab01f7fb8"
+  },
+  {
+   "n": 11,
+   "date": "2026-11-21",
+   "h": "27a253582648630f728af0241739be84e8aac390a4026293a84cf359d28aec8f",
+   "a": "6639ba933ca72e17ddcc816c692fd138801c306560ffa5445e5db4c8bd3f6ce2"
+  },
+  {
+   "n": 12,
+   "date": "2026-11-22",
+   "h": "ac719a2b28855dc6d66f0f2487e756d6712a916e0af4372295fb9687f9b053b4",
+   "a": "495b4df4cc0b7b9feb16069f8cc21ccce3045e3af021f44ac0d324116b8d88c2"
+  },
+  {
+   "n": 13,
+   "date": "2026-11-23",
+   "h": "b38fb9c0ab88341b9bccbb195318a9c9a230d90133baabf9fd0d18da0a8f1ca9",
+   "a": "af135d362dbe0fef7d009ba1c435031c755c40fd355c6a222b34dec0aae7ce6b"
+  },
+  {
+   "n": 14,
+   "date": "2026-11-24",
+   "h": "c7381e6ff346fb090cf6bb9f92a8eaebc842239672bbd26164a9f65eee3d63c9",
+   "a": "4638451233d9579aa122844439ff2cc786900577d1e38bece727010a0920dee6"
+  },
+  {
+   "n": 15,
+   "date": "2026-11-25",
+   "h": "6edaf5cdc9e071f08631c6f6583ac98fba8f726e82d075c601ee8b5221f5b67d",
+   "a": "aba1ae9a89dc2b31e1085e6852e284f08100dcf6323d9b03a9d3f4d5d4df1fc2"
+  },
+  {
+   "n": 16,
+   "date": "2026-11-26",
+   "h": "cbb4cf6f5725a6d5e62314cbe97e0b7ac61104cf861ccc6dc48f8f7d0ce187fc",
+   "a": "fd26c96d583a30c06b83f3b3cd6d1fd0120faa3eb08727b5de8aa1b9556ffea4"
+  },
+  {
+   "n": 17,
+   "date": "2026-11-27",
+   "h": "d6db93c4caf6fbcb21e82467605d7de6819700d5b1b09f065fbd2f0bbe3ad4fa",
+   "a": "0fab03b1b7124b3a34d6a5cd4c73dde395ec28eb570198a07d973405e9bf1529"
+  },
+  {
+   "n": 18,
+   "date": "2026-11-28",
+   "h": "dda2919d0a6201a11c1a7b924196a6bf72b75834dabe45f1635f247b4f8837a7",
+   "a": "890bbeb9e65576c0b549617d943cfb4895eb2d207a5197d33b4e9f83e5ae7ec8"
+  },
+  {
+   "n": 19,
+   "date": "2026-11-29",
+   "h": "940c7bbc19e094d2550b05f3df0da1a440c3d3a2ae094b023121ca4d55fbf01f",
+   "a": "6417441365b0cbb3d70a9c419ed26134343f1a2764c428ef9b77b380e9ca7257"
+  },
+  {
+   "n": 20,
+   "date": "2026-11-30",
+   "h": "b606179fc9e8db309c170b0f8e78d71b3766d07be45e5172c26618c22f78d6c2",
+   "a": "da4ceca074584f1740b1b10d0dbe62d85535443ed89bde6da9d53ce31bd2b010"
+  },
+  {
+   "n": 21,
+   "date": "2026-12-01",
+   "h": "776e0801d7da9000e4221b3023be71dd1a6cc397b96b28234a97c55103e49de6",
+   "a": "dcab9ff5e159413a1b119cae1422494070d6eee2edc4eff7394a51f7d45abe55"
+  },
+  {
+   "n": 22,
+   "date": "2026-12-02",
+   "h": "88858f3f29d66eada931d269e80fb0d9f56bcd353f05e45ff5acb7fb51776130",
+   "a": "1559198dc86186dd003af8b9e683ef6db73dcb831d0bf0ec0df4d6c7c751265e"
+  },
+  {
+   "n": 23,
+   "date": "2026-12-03",
+   "h": "f1e2faf9b988229de235fb1e5754ab1d3314f3b32b5eb802e748463ddad9e3a1",
+   "a": "878c82a419b1b7bdd8150c1e74a6e7c4a09dfce8a38b078e41b1c9cfe61a40f0"
+  },
+  {
+   "n": 24,
+   "date": "2026-12-04",
+   "h": "843ca17a0d1f8f92abd124dccee8f8b127fe136c830dd2b455d85cde0329ea44",
+   "a": "d652e017b8f34e7908309cb6ae2500250b663b65467fbc8eb917daf8700c829f"
+  },
+  {
+   "n": 25,
+   "date": "2026-12-05",
+   "h": "51ee50606cbaf51f4e33ab2e5cc54acc7e16cce084f39ab5e038ef8ead2d5e33",
+   "a": "8ca49b61df45103cccefb50ad443ba1b488029ac563141d950591b0c5d096b9e"
+  },
+  {
+   "n": 26,
+   "date": "2026-12-06",
+   "h": "585eee016b16fae286912a9faf3f10e6499820917feef9c12e2b0c0a9fc9c677",
+   "a": "c1c5c1897ac318d9b17a731cd21301ff45f173292f783d15bbcae1bcef2e7d67"
+  },
+  {
+   "n": 27,
+   "date": "2026-12-07",
+   "h": "66fd86824460cf653fd2cd086b3b81d09a25305226c42bdddae1085049660d92",
+   "a": "ec7aa68d7afab5f68b5080ad1ef39fb5c495287ef2070b8df764d38715fc9b35"
+  },
+  {
+   "n": 28,
+   "date": "2026-12-08",
+   "h": "4de7d1870c8253c62ba32f2dfc25dcc81db69cbb02a11653a1e6585ca5e8bcb7",
+   "a": "7bfd9741d0205e627b7b7bc15965a512b9bb9e4464d6aa9f550136b1ad05c04c"
+  },
+  {
+   "n": 29,
+   "date": "2026-12-09",
+   "h": "27ea75433fe77e3257dcb4b28b6d7c95f45f41aa89c7455130e51d3bdac95770",
+   "a": "e1a18f1d59c2867907a11c927977b2f870bbd68c9993188ad37696a784ed1908"
+  },
+  {
+   "n": 30,
+   "date": "2026-12-10",
+   "h": "d9262547512482c03ddd896636216a85a09ef39c9745097bbd4dd095a63b93c6",
+   "a": "80409dc7ae907fe722027b4509b8369fb4447711d0112fcadd2e435d3e08af64"
+  },
+  {
+   "n": 31,
+   "date": "2026-12-11",
+   "h": "1bbf27ad089eecd0fb187ac3a7255cc110d8682586cb3b8d72a038ae1a6d7133",
+   "a": "27b023e3dd888f1cdeeefc276fee4876d28d2eb91f41193879773f73b86f0574"
+  },
+  {
+   "n": 32,
+   "date": "2026-12-12",
+   "h": "1cc793455ffff1b4b9c85c9e49587209fa4a95ef92702e008ddd1cf11fe82271",
+   "a": "039c3f43014fd7df1f4d6e4c856f4c65e18628580ed5cd09a2cdbb9e4e5ca250"
+  },
+  {
+   "n": 33,
+   "date": "2026-12-13",
+   "h": "8f1ec43a0cda3a0a2b755db790eeb72a4279391a7dc6fb2a5c293f309491133e",
+   "a": "fc7492d317594ebeeb5499949e0b6b92a027320e18275de15c4892165b744997"
+  },
+  {
+   "n": 34,
+   "date": "2026-12-14",
+   "h": "475b99f9930295e93584218580ddc4bd9d3e4b2b2560dcfc7b60ee399833e7df",
+   "a": "4939f2cbe1c4ee0a8575093223dcfc14f5e8fc1616934f739780c73f14ab0afd"
+  },
+  {
+   "n": 35,
+   "date": "2026-12-15",
+   "h": "ff6a52d6fa84da8e298af7252f8ecab15ffb01c82000e86e71f9c88239ba5153",
+   "a": "2eed6148d1266663981fe60dd1aa25305a363fd6fcf22c66b115d022fd866fae"
+  },
+  {
+   "n": 36,
+   "date": "2026-12-16",
+   "h": "aa117a6e1da1283e84f6d8d26c849f58d023f1ccc5a839c1950cd49ff827d302",
+   "a": "ffbb499c82977daefb126e2c0af563ad0e978d09405a1300787a384f160beeb7"
+  },
+  {
+   "n": 37,
+   "date": "2026-12-17",
+   "h": "a94c5e5e269e6c94c17fd996e4a8bf075321303a33323b5180a2bf3a22a17e3a",
+   "a": "5d076ca879b33f4d395c1ecfd62098b98e3d5e6501839e0e6f04847e9a2e51c5"
+  },
+  {
+   "n": 38,
+   "date": "2026-12-18",
+   "h": "400ce4c956bd2f1c255d36e8f76646b9ff2d3248eb24270644c661a59200e1d9",
+   "a": "092fdfff28909e355e3ba160d5fecf742bbab2bc925425887686f4de4304a287"
+  },
+  {
+   "n": 39,
+   "date": "2026-12-19",
+   "h": "bb83dbc651e08e04e708e877111ebe00b92c990214fb8f925bdfd972806c0e9a",
+   "a": "1a4ca1f62ad78f1a26e418f4a8f15c4409d8c197e3abce59978d9aaf96c0d082"
+  },
+  {
+   "n": 40,
+   "date": "2026-12-20",
+   "h": "9f57d503ef04ebb955b00847ae43d01cb053341a953da221fbb6ae03513bfdfa",
+   "a": "ae18cc6ec62599ff54bad211395a0be37fb7bc3531d44f4c438193b06d1f63c8"
+  },
+  {
+   "n": 41,
+   "date": "2026-12-21",
+   "h": "a5f65013192252cc0ddffcd90fcadfc32da968c040ccbd93ebe39372ff256fcd",
+   "a": "27d6d453636370ec0439f7720e7bf72b425c38fcde4e80046ede98ca8334b16d"
+  },
+  {
+   "n": 42,
+   "date": "2026-12-22",
+   "h": "3b44393dc469b481bc4c2a5cfa4f69eb7d37afdfd8f6628e6444e167bdfef63b",
+   "a": "cd2b4c0c84c236365c30092a4c71eb1e72186d648ae0125fa7be7a40b88383ec"
+  },
+  {
+   "n": 43,
+   "date": "2026-12-23",
+   "h": "891fb494c1710f2b6e474047c0dc28f8ff0c8187e6ce9fc4c4fe9cee26e61471",
+   "a": "6cee88b41764d228f7d9e67e18e51923cc3e95a0aaf61c413341d0f2660c2fd9"
+  },
+  {
+   "n": 44,
+   "date": "2026-12-24",
+   "h": "926fbe0db2a1e96b52c2e79da673952896a4439fc10933d6195129622579b7b0",
+   "a": "85db29baade0bf17111218c8a04cf1ea39c870343fa2ec06b69e13d309b09fd5"
+  },
+  {
+   "n": 45,
+   "date": "2026-12-25",
+   "h": "5e73fb71d1140297a0af554f2c05d1d285989873780306db45eae63a4184f0aa",
+   "a": "f5bd4574561f39e043f14d27a85d66b1e4bc372ae1b5e9cc73e6925cd937c575"
+  },
+  {
+   "n": 46,
+   "date": "2026-12-26",
+   "h": "2e382913214b6e58615c27eb9f560299d8d0836393439aade86edfa1993519bf",
+   "a": "d9b2b38ca502feac29464d854d891a233b69a106a06db4aafd90fe6224f08ddd"
+  },
+  {
+   "n": 47,
+   "date": "2026-12-27",
+   "h": "b2b19e075e33ab0bfbb55ebb9f27542b98f628946ffda1a45e9f7b4689bf9ff0",
+   "a": "1690134b3442c05306146cc97840dd8f1414db146d2d823b4a64b06e6f3f9500"
+  },
+  {
+   "n": 48,
+   "date": "2026-12-28",
+   "h": "f7e91d68ee9866dc1fef493bbd47c9db381b9c8eac4b30b07053a5d92149fa64",
+   "a": "f798e6457934561da93bd2745f5ebedf4a5d9698361cb1f57563abfe24855ed1"
+  },
+  {
+   "n": 49,
+   "date": "2026-12-29",
+   "h": "dc3cb0e8c316c86e3e4324a7ca6951ee03b9be565a47cfc6c5df84a1390b6099",
+   "a": "22bce4e96c81207c3151cad3aca7779a813774d47a1b7d0194252d529b5ea322"
+  },
+  {
+   "n": 50,
+   "date": "2026-12-30",
+   "h": "1631ab8948f4f427ee0ff24093c56be2d5835f8eb54e6d24a1d50b89b6a10a7d",
+   "a": "b33c9e17d64cf5ae1225300bae5ebcaa82c66695457ca845ad5d021bcfb63f7e"
+  },
+  {
+   "n": 51,
+   "date": "2026-12-31",
+   "h": "4d8c2dc64b2a91e5840261d790fcd18806469b464504c22dc2e39b4d82daee37",
+   "a": "dad45f45fca50979fb210098222f2e559f913768835f0debc64f01d9adb31173"
+  },
+  {
+   "n": 52,
+   "date": "2027-01-01",
+   "h": "dbfcbbc685fe2dbec315b865a77221f24251a48636d3b9ea294145b30755dc71",
+   "a": "944ebffd09e5b04d813fcf3845c8ee1abc20e9959289412cfe9adb340442e79f"
+  },
+  {
+   "n": 53,
+   "date": "2027-01-02",
+   "h": "a08b2a73feef36f2c35f0be24738a618bf62d9ef9eef7187c5ca8e13c9a9c5b1",
+   "a": "e569af487afd55a382e71f87b5602d3345c544728bae9e7af9376b3184feab96"
+  },
+  {
+   "n": 54,
+   "date": "2027-01-03",
+   "h": "dc1c3697645d699f5fcc717adbb042365504778cbd37c86408ea57195cdff209",
+   "a": "3cd94dcfe70b2522b0cd27ffca1689d0503c06a039a88e3bbb86594f513878bb"
+  },
+  {
+   "n": 55,
+   "date": "2027-01-04",
+   "h": "95a520cafb458388ab09429ec57fdb03a5c1ddea934ba20c97db2dbc56e77257",
+   "a": "5ee76eff70ecc32b904b1affd112c83c9efdeac136eefb4b4e671a81c701a829"
+  },
+  {
+   "n": 56,
+   "date": "2027-01-05",
+   "h": "c03d6d4f69e5ceddcad63d1d1775390d4958a92aa80d7cd60c6358a7d14ed83f",
+   "a": "86d3ee3b56b025b1b0b76d278eff3b97897a721754f16f7afa77c92f28cf1325"
+  },
+  {
+   "n": 57,
+   "date": "2027-01-06",
+   "h": "21a64e16f49789c7b38c1629e8fdbcfa91273a50a7d34e642cc80ff50eda1d2d",
+   "a": "bb34388be1c77e04d25492740b1cc1d56e861c5af6344045720ec46d75e42ee0"
+  },
+  {
+   "n": 58,
+   "date": "2027-01-07",
+   "h": "032c25e7752293778db89698e14aa7593ef804e49e32649d7bd2268893b68f3d",
+   "a": "229fae6ed668c4cfe2b04714d589bb9ed1a35a90dcc45d05fea8e5e75291f495"
+  },
+  {
+   "n": 59,
+   "date": "2027-01-08",
+   "h": "54e9249869b36b90d93251ba5961c107e6c0ebcbaa702ea4e9d69aa3d15c8242",
+   "a": "2660bab736305ea0bba9c634210d096b15a6c853e0f3ea5594e6f4ec0cf097de"
+  },
+  {
+   "n": 60,
+   "date": "2027-01-09",
+   "h": "314f9cfc7ec648d4e1285216d2096b050928c794e482438da0ab14203b386a8b",
+   "a": "ef97c0f864f09a283c9d3eedbc5b04b7bbb8744827bc6b15b8f37cbfa184b6d7"
+  },
+  {
+   "n": 61,
+   "date": "2027-01-10",
+   "h": "8febaca2a86547e1e930e37dfe4cfe04a0b69c12b4b52072e7ae4efe9f6f51d6",
+   "a": "81c3f201dad98b581a59e49a5989185ad3a2f08640a5447ab23397d1ec9bf951"
+  },
+  {
+   "n": 62,
+   "date": "2027-01-11",
+   "h": "0c53df9adbf1c1c7b47c0b9ef1ddb9177240e7986d1384a26ccb160f304e976e",
+   "a": "7e573458f76a0c021af172928d72d74e716a061ae6ce65db4a8bda6fb3aa359c"
+  },
+  {
+   "n": 63,
+   "date": "2027-01-12",
+   "h": "f382e3cfcf62c01759467e75cbf5dfaa5eb077ba1afc5e8e551ee2393b4a1ce9",
+   "a": "86c32a6e65ca6c65075920f28c20982586f4e73dc68e9fcb6f899b824529776b"
+  },
+  {
+   "n": 64,
+   "date": "2027-01-13",
+   "h": "0ee6c61c08bc181c7f103cadfe2c29c1d92801b4ba9ac042bf0e496f5f33fdd8",
+   "a": "beaf0493081c1af7ef43917ca9d469d4bb8ee2d726c2ff82f285310ae2e93ed4"
+  },
+  {
+   "n": 65,
+   "date": "2027-01-14",
+   "h": "5a3f5e96679d6ff57afaf06284821ffdc4fb2439b89add13161aea59cc43684c",
+   "a": "116d95e345fa62d0db3f3ed9610dd82409cfdfeb2840805fd6de9e171a0e12e4"
+  },
+  {
+   "n": 66,
+   "date": "2027-01-15",
+   "h": "29c882cf4fcf7d26ca61de39e1f7af97a69d9e7fb1d361977a4382ad70a796a9",
+   "a": "d3a5ab49ad3b4328f15bc7e6f980220fc91ef83dd98e33ff26511180ec91e776"
+  },
+  {
+   "n": 67,
+   "date": "2027-01-16",
+   "h": "344d587e50191c7421c8ea9c358d89a231b057dcf416944f8b5ff224560293b9",
+   "a": "0a59886b240e8ce6f94776197a8e002f03cf7692e7854a5d9e0f6c55a40ce1dd"
+  },
+  {
+   "n": 68,
+   "date": "2027-01-17",
+   "h": "a99658994043e5d7c69a12d4cf13c5bd2823e50d43d508b083c6d71222a33f33",
+   "a": "706e64c3006c9d530a10c16ccddf53b1de3a7f52dd94549c87a0e8ac1ecd2c29"
+  },
+  {
+   "n": 69,
+   "date": "2027-01-18",
+   "h": "0ae166e0fa206b21b4db97aacfdb40fd25fef57e3f347d7a916e44fe6d47f064",
+   "a": "6db7ff6838a9cdf4090533bcf364572caafb612b44219ef5ad3b021644a67a64"
+  },
+  {
+   "n": 70,
+   "date": "2027-01-19",
+   "h": "1e1cebf3eb09bc9412019de92b17bf8ebf0399c9a2cf6dea1a5611e1a7758818",
+   "a": "55f016f5b37398c5d6a48ecf9b0633eaa0f959c030e596234575e537e5a06682"
+  },
+  {
+   "n": 71,
+   "date": "2027-01-20",
+   "h": "7687ce8d85beea1d7b73acc4286388d9ad1375e560ab1b6f2a41c15f6f8b88ee",
+   "a": "15ded53c2caaca721db9051362e6a060cd3cec6fcad7bb974418bce39b8a0b71"
+  },
+  {
+   "n": 72,
+   "date": "2027-01-21",
+   "h": "f37bc7f22ded10d5c2f6d5a5bceda2e28853d20dfe87f1a8a597ca79c724a5c2",
+   "a": "c2f19ec38c4ca61041f8e66a117621d10a9d0cf15412f88671249c23dd6dc00f"
+  },
+  {
+   "n": 73,
+   "date": "2027-01-22",
+   "h": "3b9286192241dfc4a00db581c082bf7acfaa5c21f0c54ddb7c4ae405b6ed3e5a",
+   "a": "76728098d977929bd83062d7e152fc835442496e8e9e1e469fb3b2cd01426d8b"
+  },
+  {
+   "n": 74,
+   "date": "2027-01-23",
+   "h": "c35378779df85f0684ba22399bb63e6a9486708a4132544c8328c1b7936ecf59",
+   "a": "6e8bad44d34c3c784ffd22ae67c89ffb0d4dd38b88363a85b93b133199c9dac8"
+  },
+  {
+   "n": 75,
+   "date": "2027-01-24",
+   "h": "103832e1fe78a39f1a1b5043f8d1bd9bea688236f9387f1a8530ecb6fa3639ba",
+   "a": "fe1506ec11d4904a54988ea188244b037243ca452bed68d7875697f1fc6d0ab6"
+  },
+  {
+   "n": 76,
+   "date": "2027-01-25",
+   "h": "e06015332e2b4e1bd306abf96286b179935cd8ac9d7cf19f1e9a2623784b8b60",
+   "a": "b91c5012a548b8beabf6d1529574083f7a4e38f96af733f7b321e23771e06774"
+  },
+  {
+   "n": 77,
+   "date": "2027-01-26",
+   "h": "af3045099f3f5d294c66018d928c5b54184a757ae0f5462a83025af6e6ae447e",
+   "a": "9c5bdf634a1b0ecd03b7512fa8f3bfc5205b7ab1ca61976577543b6e1ebc2d7b"
+  },
+  {
+   "n": 78,
+   "date": "2027-01-27",
+   "h": "e5e2906d192fedca82f87d4f3c174cf823e01f3e46e0bce8f1c1de38806755cf",
+   "a": "cee2f2a3e5cd57c3d88ee2109d3ca040effdcabfc4d4365cc78bba2221dd457f"
+  },
+  {
+   "n": 79,
+   "date": "2027-01-28",
+   "h": "081e6f7ac2fa4f2361893d5deb930568e38e1e6c64bbbd67a609afb579ba020d",
+   "a": "2e1ce0cb981f96c90ca1a6532b9dbea40a73e820fe4728e1b760215ffd1142c0"
+  },
+  {
+   "n": 80,
+   "date": "2027-01-29",
+   "h": "2d3de12f370e4d386c0de770fc2ccd524c43700a733d94a3cb7154d08f33ec8c",
+   "a": "b44adab728253a6bdfb550ac69a8a0e55775b8aa45a8012e153b535144ce172b"
+  },
+  {
+   "n": 81,
+   "date": "2027-01-30",
+   "h": "4f35ac6a1ed892205df966628d493920b1be50d57000d1ebe1dd1dcb312cf4fd",
+   "a": "86375cf9a986452e56562a74feb1c158e9714fcea2b407fa18c32c94b32d03c5"
+  },
+  {
+   "n": 82,
+   "date": "2027-01-31",
+   "h": "24533ae3208c19d1cf617f64bee1c5ed8791dc8fcd811737397a1e242d14fb6b",
+   "a": "c1332ed1e8494e6a376fed20ab541c13dbdaa35451125e643ea98d0d562adabc"
+  },
+  {
+   "n": 83,
+   "date": "2027-02-01",
+   "h": "697eaf1c79d8d51a987408baf3c2b1310805825b94a82f4f3d67cbaea192e9b8",
+   "a": "b832a19d816d79853b4ddba9f583010fb7359d11b92a8f1bd28e5126e904d0dd"
+  },
+  {
+   "n": 84,
+   "date": "2027-02-02",
+   "h": "54004ddb5ed0830ee4454d4d30abf735ff4717b30eb6257b1f226cd2684473ea",
+   "a": "df053a967a78562d6559e6075fea20eadb37f95a1b7e3b7e771f6643f6a39aa6"
+  },
+  {
+   "n": 85,
+   "date": "2027-02-03",
+   "h": "30a03d89fd9bc1e8a14e504159e08a43343d813b51e01a3f70d20641705e0657",
+   "a": "b1f1408d8ddf671f3831aee834b5b072dc63708771bf6a212793ff4a1d6e67bf"
+  },
+  {
+   "n": 86,
+   "date": "2027-02-04",
+   "h": "0b9070addb5083d3a0b0211212c37448ec696ec9b73c21336efdc32cc9687573",
+   "a": "390db006b96dd17cc8c93dc2caa31338ab987593da67d720847c89b0ca1886c2"
+  },
+  {
+   "n": 87,
+   "date": "2027-02-05",
+   "h": "e847b7025c5a5996d04504b04bdcb9b0766cd5caeae91a191b8fc4a0c9b2edd2",
+   "a": "c13206090bc7d2e9f7002fed3a06aa9c8d29fa6c20112711935f550c4c829438"
+  },
+  {
+   "n": 88,
+   "date": "2027-02-06",
+   "h": "e56dac6e340c8899e74509f67c3c9f0b838a7dd36296b34f1e6e323089215dad",
+   "a": "9eb571a5b72ec4dc235c758e6f5681ca59216eea6f5635780a9c3570320083fe"
+  },
+  {
+   "n": 89,
+   "date": "2027-02-07",
+   "h": "a79af8d6471addb10d0f9fa083eaf7097cffefc75d09f8ad8b4927697fda3027",
+   "a": "8d806824fefbe4bad0a17978ce771a5687f662b6d564d610ef73483430886ad9"
+  },
+  {
+   "n": 90,
+   "date": "2027-02-08",
+   "h": "86aecba9a079fbf631e9ba3b105acc7fc9bb51c8b3f0d133cfc8463b67a0a313",
+   "a": "8cf456d08ec8409ead3de0c20112b52b219ad318cc882d84635d4ea9443fc3da"
+  },
+  {
+   "n": 91,
+   "date": "2027-02-09",
+   "h": "134dadc2ab8beaafd0ebf3f37b398119a48878ecb60d182b457d62203512873b",
+   "a": "4bf30fb6f7afcbb577668aace860cc65c5aaa2bcd5bb5b055e9d36a94835d2cd"
+  },
+  {
+   "n": 92,
+   "date": "2027-02-10",
+   "h": "2d99c426e9bd92bfe38ca7cfe48a090c2cc5d1ea373b4eb7c0ed651651c993be",
+   "a": "b6e6ed57fad767a52b539a796e3c1a17bd1bfc173b0f7062c5af4b422f935ac4"
+  },
+  {
+   "n": 93,
+   "date": "2027-02-11",
+   "h": "10d3acc9833f4e4bbd5e2acf85152b1b025bc800958441af9fc44d1d52dfabaf",
+   "a": "334c5a311f05e893b728761c48bb9db8c7a33bc5dd50e831edb66b6dbb6b5acf"
+  },
+  {
+   "n": 94,
+   "date": "2027-02-12",
+   "h": "74cecfac551f74a55fe69cc7f848a0b0f07f17cc679f25ca8148c577560dd677",
+   "a": "ada41a09c90a4afd0616403b537e10b4080873447cc7f5d3ecb139fa47ff7504"
+  },
+  {
+   "n": 95,
+   "date": "2027-02-13",
+   "h": "0d53974a9c211bfe981e9e1ac2b8b7ef26af620bcb3394ae194da902aa0cd8b7",
+   "a": "e09a67bd2eecfa40743b83656460303158568b2fd713f7248919aabe8273b181"
+  },
+  {
+   "n": 96,
+   "date": "2027-02-14",
+   "h": "160960297db8383d4bf25650bc0efca32f811afea2874b51b48cdd4055b51952",
+   "a": "041f11069cb21c74e6401a764f1946f51399e6f71560e97b6956c729a83068ec"
+  },
+  {
+   "n": 97,
+   "date": "2027-02-15",
+   "h": "5e1239c11cd7e63ff3f6cbcb77fc9c2d4c6edac0d0411328ddf607d1eeff67c0",
+   "a": "819c2ac7f1f51c2299ed3cfde601871f2e4e493d4012f88c72687a7fb0dbfc44"
+  },
+  {
+   "n": 98,
+   "date": "2027-02-16",
+   "h": "bfa13b0cc33dd9bb293cf57ee46723cf2ca16932abb146f15f82b5d40dd3520f",
+   "a": "763114eef72a87e39c1e03e7b4f6c410039cb57a2eaa89233c0f8c68f1808221"
+  },
+  {
+   "n": 99,
+   "date": "2027-02-17",
+   "h": "c1cd5eb9b732f6934a163062ccf95e9805bc003d0cf64aacefe6efb41d812b1b",
+   "a": "d796aa9dac55d14066f74e05eefb86664bae892abf3c4fb130a24ca753be9e82"
+  },
+  {
+   "n": 100,
+   "date": "2027-02-18",
+   "h": "f638e4667d1fe5c829e77309da2dafc62a3a7e85bc6d40898475fb8ec28dfb8e",
+   "a": "00ec877bf3cfa90b8caa2938d34c4c18c5e3475ba2e8f90834e7516bb95ce1c1"
+  },
+  {
+   "n": 101,
+   "date": "2027-02-19",
+   "h": "b2df9905c314b364177abfdd8da69ef6019f1e2c9211b3f4ae1af8015ace10b6",
+   "a": "984daf4f2af85ef160b57b2fdb5111ffd4853a9c193d1860af03d8edc40be521"
+  },
+  {
+   "n": 102,
+   "date": "2027-02-20",
+   "h": "260568fe5a3b89c41369fc0999adb5641c507fc53c82352fd505f13a215c10af",
+   "a": "6aacf425ca89dd1fe73ae18891d94a37a97b0b310cd9db09a8d56591f8e87cdf"
+  },
+  {
+   "n": 103,
+   "date": "2027-02-21",
+   "h": "19bcc855f01b43318f03d5071011e55b9eca43373d19567d59369e333e77bafa",
+   "a": "abf4e87f8b4d7cea90ca743b6e2f9589e448a5853f8267d9fa2add599dba5bcd"
+  },
+  {
+   "n": 104,
+   "date": "2027-02-22",
+   "h": "ca0dabf269ea70238dce3764bb6ce2c0479c9c6ebf590b481ebd59925fef0112",
+   "a": "2c8d7df3e2483fc633d7d2e98d8156b3005425890194661573fb9f1a62fcb127"
+  },
+  {
+   "n": 105,
+   "date": "2027-02-23",
+   "h": "f57fe548a213d8dc84335b496cccffbcd3df2b390ec63401ef152f4bc599dccf",
+   "a": "7e46c9766b00fb8580318ceffa1a8889183353b89e49e63fb2554b7f6bf2bb64"
+  },
+  {
+   "n": 106,
+   "date": "2027-02-24",
+   "h": "e0822711ad4f548b9a0f2063d919faba1c92b86c39df54070b72b18c96658be2",
+   "a": "9a7c3ff9028d3b05e8dc2856a8e6e5341512f6415b25e12407d11b27b7a4b6f9"
+  },
+  {
+   "n": 107,
+   "date": "2027-02-25",
+   "h": "b08cb40e930c943af1057471fd302629fbfb6d5998c5629457ac9e534186978d",
+   "a": "013f4e151bac660c9849b1a90dbf1e66bde5f58f370d19e5d270751422c3cda2"
+  },
+  {
+   "n": 108,
+   "date": "2027-02-26",
+   "h": "329c53f8a55d925835d0ead28ebe354ff6b773478f4f650ff24afad96592ad8e",
+   "a": "f8c148e45f896fe4ec7466650034311da741bdf19ce6cca608dde68c45096d95"
+  },
+  {
+   "n": 109,
+   "date": "2027-02-27",
+   "h": "3b02254071b5c3437ed63f8c0d26c062c1006179a9ac55938d609eb7d764d1a9",
+   "a": "0f9cd96eb26fa3490417981272c6243fa72b4d1863e37e0cfac5727433008bde"
+  },
+  {
+   "n": 110,
+   "date": "2027-02-28",
+   "h": "5fa01e6ff7b53ccdbc8fec235a690bf87349371b9563b688838c9197c6787696",
+   "a": "6d8d7f317fcf2d02707cb941f192e11164ec964ad153c8e948873254dfde44ee"
+  },
+  {
+   "n": 111,
+   "date": "2027-03-01",
+   "h": "cbb9742c1d9f23be664d3c1bb614c9811b301b141d3659bcaf1de096ac2bfb36",
+   "a": "733bbce7945a471225a7390f47f6c5fb1a221f33350667302d9595741386539e"
+  },
+  {
+   "n": 112,
+   "date": "2027-03-02",
+   "h": "34f9b277a3675744303d72a690d83d497eca114b3b04b4b4ea700075f92736bf",
+   "a": "7f5f66b0f50fdf1208ebf282efd537fffb16c3fdd103897cbaef466b67d9574a"
+  },
+  {
+   "n": 113,
+   "date": "2027-03-03",
+   "h": "45739a0d0be9f0932a910464a480ab5fc4e9a3597041714a1e5abcb4994dc868",
+   "a": "1a821eb437551439ecabe11209dc40f5ff0de6606ee4d6b2c101018492df086c"
+  },
+  {
+   "n": 114,
+   "date": "2027-03-04",
+   "h": "978114158578dbce035859d78069386c373ee8349060a5798ff070d6b2857674",
+   "a": "04ba77f38c66bc2ecc1d731023434a1a85c286ced5ba2b799ce46885dab878b3"
+  },
+  {
+   "n": 115,
+   "date": "2027-03-05",
+   "h": "48285571b6ff05b4cc7a3cfa8f4ee3b5e02ef3b1c68f1d2d6c7b2d6c10781db6",
+   "a": "2d9cd1b66ba23b66c12d30a12c3123d1e8ce62a1a1ea110e4ab2d00b0101c53e"
+  },
+  {
+   "n": 116,
+   "date": "2027-03-06",
+   "h": "59c4eec26fc7a8d47984ca15abdf471d085912290ec8ba4350f5dad175597b7b",
+   "a": "0583a5ad23d52d066174f28fe742660d799c02fe62a4496aa7387f4d142588d0"
+  },
+  {
+   "n": 117,
+   "date": "2027-03-07",
+   "h": "63ab9ed0bd4c86db9f0c24360108f2cac643cbdb7bbd6f2a931784f2e32bc9b9",
+   "a": "cdc7cd8fc45e3353904ed34bbb07823e0e0a9ad5b9e12dd5941c1521e610bcdc"
+  },
+  {
+   "n": 118,
+   "date": "2027-03-08",
+   "h": "5a22ac76a6191404a80c05fb8a164c4df168b789a22514f2f89d84ad9775bfe2",
+   "a": "603b32a91e61a63c0d88365358c159ef4f53a37a3cf6469c985d954e2829c006"
+  },
+  {
+   "n": 119,
+   "date": "2027-03-09",
+   "h": "037b8baed5300f1b247f872390d482de2943b03311226169e048887e3d340c7e",
+   "a": "67659cea19737d0f5f43986ed8ede51282fce167eea0de42ac8ce703e6e64e32"
+  },
+  {
+   "n": 120,
+   "date": "2027-03-10",
+   "h": "902139f6d1fe53cb983799e01d830c669a1513a7d8cd29aba1cd7951a85517d3",
+   "a": "f65370d9a956b1ef0d3d602111cfe28ca43d0750059a26fdda787e8c2c1c0f4c"
+  },
+  {
+   "n": 121,
+   "date": "2027-03-11",
+   "h": "e7c37192f943613ecc59818266a080ebd5859c8b669a31a4322b4bfb048fb44b",
+   "a": "7dcf2be5930331875ed444d92a93ab3d168d15f32509a9a77f9ebc44a77fb0d8"
+  },
+  {
+   "n": 122,
+   "date": "2027-03-12",
+   "h": "71631bda37832b6b4911e138e9913ba3128356027aa6e5fd33c494ff8eb5c031",
+   "a": "11f2d543f5859e15154080018a514e64c57d8a86ff107a0fee84579b7e87d73d"
+  },
+  {
+   "n": 123,
+   "date": "2027-03-13",
+   "h": "855b5f1f940abd15b91322f9ffda7c31fbc6783815ca382bf89dbdc45de21c5f",
+   "a": "f845b4491068f265252fd00675b931345d2684d29e179ebd0c5cb23cd9fcb0a4"
+  },
+  {
+   "n": 124,
+   "date": "2027-03-14",
+   "h": "8f1a040a81cfa01efec7efeaacd68acf2b92aa3b4da14e4c4f5559852d022afe",
+   "a": "1e8a2b9f33c3312c7db4af5b57c67a5bc63c2a843636f7fbf8a85620e745c753"
+  },
+  {
+   "n": 125,
+   "date": "2027-03-15",
+   "h": "2ed13874f20144b49c49604d37e8a54b262c5235273ef59b3554b1c9157496e1",
+   "a": "1d0ff698c0308688ee3270148a11d847bbcb67b2cb5f59d912b6b741bf61c862"
+  },
+  {
+   "n": 126,
+   "date": "2027-03-16",
+   "h": "6573707c121f059d008470a479cad903729fa6fe29c0d3c279c399793c934833",
+   "a": "79273c1d6a2eab9ff1dd2a4cfb9c1ecd211d3c5a9353fd645a273251a8ce6f2b"
+  },
+  {
+   "n": 127,
+   "date": "2027-03-17",
+   "h": "0f36bf489873b8913b13a6485b2c207dde11de8892b824ceac428bf119a44ba5",
+   "a": "2c8fa63b60f229136d9914a6a6585f088c0c8bb1e5c42997f7d76b6bd18c6449"
+  },
+  {
+   "n": 128,
+   "date": "2027-03-18",
+   "h": "4c0a0041130b15847690075af011357c11831f82bbeb3d83090bbddc6f25f4f8",
+   "a": "04115d2cb45f06166742f158722fa3c458090c61a68be0ab7397314b8473478d"
+  },
+  {
+   "n": 129,
+   "date": "2027-03-19",
+   "h": "405c974d7e0395a1fe8336ab5333d4aa60d29966fdb0cc7e1f0394c29a2aa560",
+   "a": "3d10ab0b2f757d4b8002e78ec627a0c21a274077fa9024665287478cb93132f0"
+  },
+  {
+   "n": 130,
+   "date": "2027-03-20",
+   "h": "1dcddcd0c69c0f1e5631777368ca0fa1be4e12ce4f6883b94fcd06867d067943",
+   "a": "633307dda93d8557d3c2a219d2b6798a660b53613b75809a20f06396ef59eea2"
+  },
+  {
+   "n": 131,
+   "date": "2027-03-21",
+   "h": "dc8ac54a017a21e7cbe341dc86d6a300bad88c0c309c2f551715baaa477eeea6",
+   "a": "2c1cfc616a6cee7b2b9a85b9e8b5eea9297d704425d3955ec495dede84ad5cfb"
+  },
+  {
+   "n": 132,
+   "date": "2027-03-22",
+   "h": "f427dac2f14fc0fb4c02940308e394616693cdb2e88ed64141cd066ddff01f9d",
+   "a": "0e1271e927df89c061d3d2e7912a23ba882fcada0dc7aa2f77125478219c8300"
+  },
+  {
+   "n": 133,
+   "date": "2027-03-23",
+   "h": "573d786fee7ba5ae88078eee03a631a0a1f606afc6fc914d68c82b55069a7bc8",
+   "a": "5a4abb943fb623cda046a2bd96acd0b124bd1bfcbf916effbddea23c24a1a8ac"
+  },
+  {
+   "n": 134,
+   "date": "2027-03-24",
+   "h": "a969c215565940947afad148a01bcf54d320110a0f2a0f4b50e2198e914c0b25",
+   "a": "f69649c50fcada582ac9fc37d71ad082a00653d61545fa3162451ab438265de3"
+  },
+  {
+   "n": 135,
+   "date": "2027-03-25",
+   "h": "f5f37e1adab69604641323489b3a90fc0262efaf72efa9831454009852333d1f",
+   "a": "37b62e6a79173ef0b0e2c01c592ed5229a39206c5823e46a47b11e3b2f9080bd"
+  },
+  {
+   "n": 136,
+   "date": "2027-03-26",
+   "h": "6e40da2d7919c9377807f846589b13b71423cc1624f7c15b05dc8a831f53d754",
+   "a": "f5a4c2d06c6f614f6cd20a98ab5abd00f7623e12749f6e47d213bc2d858f3f40"
+  },
+  {
+   "n": 137,
+   "date": "2027-03-27",
+   "h": "5f4acdcfdd71f98a3735df4c8a7ecc09d95957a2a58b3cdde2a90191c5b2c69e",
+   "a": "f828d5a31782c96236da4f936f3aeba3d6698a9b965398047aa95545c610b929"
+  },
+  {
+   "n": 138,
+   "date": "2027-03-28",
+   "h": "7c5a4a6c81a6e0d6a987a85ff16b59d12f5bf4d9d9155f0dd824c492c8450c99",
+   "a": "c2657ab35cf996cefa9ecbd3e7d15e3e0b20ac2987e96092c19dd0ea416bedcc"
+  },
+  {
+   "n": 139,
+   "date": "2027-03-29",
+   "h": "7ffcd5f343c3b03c0ad5cee2036cd8b3b652042fed0d1eb64377ed979b14adde",
+   "a": "fddc774e276d9c4aac4df55483d5e7a7d9b5565654d9ba0049c62deec15d5090"
+  },
+  {
+   "n": 140,
+   "date": "2027-03-30",
+   "h": "e9aa97617578a260f3cb4710a1755375cd5c6234d621a5c8f6bb579a7d53f7a3",
+   "a": "28fc4af1fdaf1ef620ca108bac08b543f8ad83f3925d601f56e6d67b43b06647"
+  },
+  {
+   "n": 141,
+   "date": "2027-03-31",
+   "h": "c4a53ce9e64e65f2e5f6fd24273a433b86f96f64926f4c0a8e4a6596f2b03bb8",
+   "a": "198149e4189e99b180a138e6a596216834a25be4b12be47332fac2751af18992"
+  },
+  {
+   "n": 142,
+   "date": "2027-04-01",
+   "h": "c59169e955f6f6ff141be691273f9cd211dd526ffa1ca63242fc02e92e419b2c",
+   "a": "77548e1c5053d61ca889c318752ff661733752fff87dfe92632e24ee2662c6b0"
+  },
+  {
+   "n": 143,
+   "date": "2027-04-02",
+   "h": "e489b5fafd7d356efb4ba7d03c0779f0bec61d9a18ad16ac09b50b23ec0239d5",
+   "a": "fd5c19fd12074e0c36c8290e337a76a05b30137ec8d1296c7b6e36959aeee08d"
+  },
+  {
+   "n": 144,
+   "date": "2027-04-03",
+   "h": "0e0c6480d65e3ad1c540448b4a8cb1f2709f1877c2fb7472dae7b2be8e0928b6",
+   "a": "245fb056d21b4e1f6586ac09a8c31d327a12a61fc3d04b84ed070d0baf418892"
+  },
+  {
+   "n": 145,
+   "date": "2027-04-04",
+   "h": "2375516a32f30cb7ef9151215bba1c38bc883bdc052f3a3ae83d4521b247e634",
+   "a": "1f8870c9754b5ca5fa413ce70858a96bbbbd30b92c62a7d2f835e719b5647c7f"
+  },
+  {
+   "n": 146,
+   "date": "2027-04-05",
+   "h": "d23da1fa4a5ff0f6ae41c5ab2181dcba00961a55ea6c43adcd23e2c1bc2431e4",
+   "a": "88a84bfdedfec395b0f2f4642ddc324a7e04a1e7d5f6e41998e84cbe5b42c802"
+  },
+  {
+   "n": 147,
+   "date": "2027-04-06",
+   "h": "e064d867b536278ff23f16a1c3df7aeef86a32e7070f4427b42e1ba537d6672d",
+   "a": "94cf14cdc10a560e7ef6b2f628297c2bc6236b39ca84b0182791b78d78548730"
+  },
+  {
+   "n": 148,
+   "date": "2027-04-07",
+   "h": "64b0a66b0c5453eb20ea47592960b68aa6c17f488025449b21e60bfbd50a8443",
+   "a": "881bf1c9a1d0a24d0d71ea3bc5f77c8a2d01c3e6a9a2ac41e34cde03e4f3947e"
+  },
+  {
+   "n": 149,
+   "date": "2027-04-08",
+   "h": "c23e9298740e0a4650e6f5a53c6e977b3d52e0ad607126841aae71e8eb1426f8",
+   "a": "2b6184f6101a6378bb9bb30ff097d36b8ea982a8520b52169668660aa04e4017"
+  },
+  {
+   "n": 150,
+   "date": "2027-04-09",
+   "h": "89ef9a13b1969a49e182d6c7c27a4887dc46a4d1d368e0d3a7129e256630acf7",
+   "a": "a36a45d375b5681cc5d580df33dc6e96ff6ce61f225ee29f16b4267626e5577b"
+  },
+  {
+   "n": 151,
+   "date": "2027-04-10",
+   "h": "82e33b475334fbfd48cea587b051760f28eaadcda4b64e858a6e401d4ae76fb1",
+   "a": "956180783c442dbf852942fb2398900eb1710ef493e53d9db1a76101c2e46081"
+  },
+  {
+   "n": 152,
+   "date": "2027-04-11",
+   "h": "7227aca87f092f4491de4e93d8a1c8d2cda8419489cb2ff1113a5eababedbbfc",
+   "a": "28ef4af08d3735d6e2c4fe3ca4ddbf1f636c26b250aaafa77bf4371758724d26"
+  },
+  {
+   "n": 153,
+   "date": "2027-04-12",
+   "h": "f8c10378d1fb4ab77fcf54d6801e95db5e1e8a66ef29044f3ee07faf01651f9e",
+   "a": "66bf6c2bd27d3c42fa1995b91e60cf707e328b62baa3b1db87b11ba058fc68bc"
+  },
+  {
+   "n": 154,
+   "date": "2027-04-13",
+   "h": "5b95440ab162c7245718051d61f2122c1725eeb0e87c4a8e8752c457169d5929",
+   "a": "75d653f3789fe777ecd3f612eea182591d29fb23ce87c4886635aafedf1969d4"
+  },
+  {
+   "n": 155,
+   "date": "2027-04-14",
+   "h": "05d934b704e223a10b951adf4fa615cde3127620a2b518a39be2c65d9899de20",
+   "a": "78152fc78031f53f1916140fb1eb5a01468d042898869c1ddeba1be143c14528"
+  },
+  {
+   "n": 156,
+   "date": "2027-04-15",
+   "h": "341289a55f04582ea75d6d72f7b0b192b379f51f3a3f7e2737f9ff7a6110534e",
+   "a": "da3313b438a4357171a8d623d07357f5c577b902bc727b342a1dff751d940882"
+  },
+  {
+   "n": 157,
+   "date": "2027-04-16",
+   "h": "3f5644519a2a954a358fb2064a5ed5bc16ccee8dea832e34520169c1ab73d228",
+   "a": "22bdc8a89dea9c65a41875d9a0e108b89da76169e076a4b85992e595ad32a947"
+  },
+  {
+   "n": 158,
+   "date": "2027-04-17",
+   "h": "8b56b28ebb95d2bdbc38b4ca9673b9dd6cd5c1da65fb08d526b8686fc79a4851",
+   "a": "84d2df5b985d46a49191bbcd3b13fc6b3fd6d5cd07dd0c38063e66d7d7f6d69f"
+  },
+  {
+   "n": 159,
+   "date": "2027-04-18",
+   "h": "00cfa96448818129a346aebf9b04bb36baed7e358ff3dee70877fcdcce04a563",
+   "a": "99af475555433d5bebe5294c00a8bddf7b6e106228943d44e6a17eb09d6430ab"
+  },
+  {
+   "n": 160,
+   "date": "2027-04-19",
+   "h": "4a7bd20befae484f6abafefc552b1ffebb3125d780fa7bc13d3bad0cbb8c29cb",
+   "a": "3589310687e89b14fa7141bddc3948bae73ebda66f4b61f6fb0b80240ebc3f69"
+  },
+  {
+   "n": 161,
+   "date": "2027-04-20",
+   "h": "f06f4b2a28f3b6a3186b8fd87564f19005a6f109215637c5e37b2d7c09460ba4",
+   "a": "d07d3ba187ab03359c06b4843e0c9b28174c491fb953e45488dad206aeb33609"
+  },
+  {
+   "n": 162,
+   "date": "2027-04-21",
+   "h": "7e58dffd1d15bdd892645feee36d779ea586e2669caee33989df3a7e9be45357",
+   "a": "7aebddb5a748ef8bea2dd559602877abc236fe0e4f1976d1107c9841ec7247e4"
+  },
+  {
+   "n": 163,
+   "date": "2027-04-22",
+   "h": "ef340a771ff136280ad20d416d61cec4050946d72ce51c5ed80edec6e96de2c4",
+   "a": "7c326592946593ca34a596068719f5962df5372812dbb09713cd43ffb802b6d3"
+  },
+  {
+   "n": 164,
+   "date": "2027-04-23",
+   "h": "efaafe36c362db28c3fb951b7192c6c6226188c3e299feac5388a359e88a1da1",
+   "a": "eb45b3aafbf0e9367b31abf4a49157fdcd910c9c78bd32969540af1f5ba3d76c"
+  },
+  {
+   "n": 165,
+   "date": "2027-04-24",
+   "h": "802e26976a4505820077a4780e1aef3904fde3b031e15cd3031228ed1cf50582",
+   "a": "f73f348b83b92d8ba05c1d066ae46b286c031ab20fe74d1981be257c066da8dc"
+  },
+  {
+   "n": 166,
+   "date": "2027-04-25",
+   "h": "8fceaaea2c621d52f5a0d629fe8e9f6d453b1f860eb0d7a8dff32dcf8d02d486",
+   "a": "da0e0e6cca5f68d68bec3a77a347ee2c7f7abf29f3c172af9dc8e4bc28bbda79"
+  },
+  {
+   "n": 167,
+   "date": "2027-04-26",
+   "h": "850b978dde96583f685aef5050cf646a206d2dfdf22fd55c22a1f4a1de8131af",
+   "a": "d63500cfcf718b47cb22e31522ab1b71b9ea02a6381b7d7655c8b38b75434d3e"
+  },
+  {
+   "n": 168,
+   "date": "2027-04-27",
+   "h": "7b905674cdfccd13c3ed4ae1305cc38aa66a1177fcb55d7b633faa510f4ec5a6",
+   "a": "4cf7ecbe6fb8138a4e4e3b18e31eeffc8fa53aadd1ea17d311c8dfc8ce182528"
+  },
+  {
+   "n": 169,
+   "date": "2027-04-28",
+   "h": "bc707813cf2f3fc521038427dfd19b4d0950b316c43322341be34e797616a689",
+   "a": "026e3cd1fea0cf4497dcfcdeb1d4b89d460a501187d8eaddd1b24df093589086"
+  },
+  {
+   "n": 170,
+   "date": "2027-04-29",
+   "h": "657536bb7a180d39262ba84763abc34ca792910482e2e6612c6228c99f661ab2",
+   "a": "e63b97bbde9d82f53b74b4e09359cfead49f1dce3e33cac51b31f4109e9e10d8"
+  },
+  {
+   "n": 171,
+   "date": "2027-04-30",
+   "h": "f80a5b532ec0caef3d12eb66c8dae61856dd6d759603fa00c5e36eb37b92fcb5",
+   "a": "1f096a03420f16efa3ff03dee31088596dfa3bf10ddf7c7073510a623e96feed"
+  },
+  {
+   "n": 172,
+   "date": "2027-05-01",
+   "h": "f2f442e017691f01798b3183a058b68a408268ca81446d9ae6213c125068a491",
+   "a": "d98b124729a2ca2927a821ad62bcc8bbfd8d8dad736f4e30ae49180de0cc18bd"
+  },
+  {
+   "n": 173,
+   "date": "2027-05-02",
+   "h": "d7522e97d608d639c1c2e6920fde9d868d9e83c91a20a7a775772079dd91a451",
+   "a": "ea4da3f40a80c849dc3f5568b79624a34dc378a0bcf7a29ed6a225a9315db725"
+  },
+  {
+   "n": 174,
+   "date": "2027-05-03",
+   "h": "c06d4e83c29716b3699599aa36252e0ccd2d895fc7191dfaae09c91051ac2ca2",
+   "a": "5f8bb8e4250aea00765a35ba88b55a31ffe870d372d569eabbb74051a37e7326"
+  },
+  {
+   "n": 175,
+   "date": "2027-05-04",
+   "h": "1d0f914ec70814c87c12c5445185dab45c5fb455502ca78aa129df3153af106c",
+   "a": "67f2111c4ee0e03953b43978666ea29a76245a2638a8c9a0f33d83ef685af788"
+  },
+  {
+   "n": 176,
+   "date": "2027-05-05",
+   "h": "270b0a0b4e91f086510259c801e6b1b969e7ce0b00193cbadf79e41d461b11f0",
+   "a": "a05501a5a2842e207edefe0f55cb8933c0b48edfde641ef159e1cf858a0064f4"
+  },
+  {
+   "n": 177,
+   "date": "2027-05-06",
+   "h": "a3549ce3f85853f890ba96001c4c31769b7313f93c350360aad2e8361162616c",
+   "a": "25b6cac2b1ef8f764843e11e635955a95da3560e9faf978ba729eac6f2290aae"
+  },
+  {
+   "n": 178,
+   "date": "2027-05-07",
+   "h": "b3def3d38655aada6c393e4a3700f0e32c36d1fae4716939d9366ea57216eb7e",
+   "a": "41de497b3f4b4e1a6b7071f36a288c52cae8f8ede49fef38aece974485bbacf4"
+  },
+  {
+   "n": 179,
+   "date": "2027-05-08",
+   "h": "6f8b6ed0da720efbcecb4ff749eabc9bbcee8d53b10728b91cb2ed9af6eee997",
+   "a": "2ea9241eb1018a5031434c70d8db82abb5c3d4ae12cba0820763bc6af7f53ada"
+  },
+  {
+   "n": 180,
+   "date": "2027-05-09",
+   "h": "da5b488c047ea3a27a49d41492e360cd05c23d9870076a14f91c4642b072eb92",
+   "a": "1583d6194df152f2a71f37189ddbc69fc3ccfe643fec26717039304582c4d16f"
+  },
+  {
+   "n": 181,
+   "date": "2027-05-10",
+   "h": "570f1834a177df8dc2017dcd703ce5ce0e624e2fe9f063558b97f32178969b44",
+   "a": "5aaa054b932f2c909f836f230a5a9e089441633bd8ef835183749ae77e39a7eb"
+  },
+  {
+   "n": 182,
+   "date": "2027-05-11",
+   "h": "9464ca6420fe68708e785c114fb373a87ba4ad0232e90feaa76cd99411c21b94",
+   "a": "49248cc20db6a37952e2d1f6b81a89229487ee32ddbd4c31ba964a94457b8407"
+  },
+  {
+   "n": 183,
+   "date": "2027-05-12",
+   "h": "61ce90fd4b0bf5717ed42c3823306d4848b5a40ad81cf0eb3c1d0e9260e38a79",
+   "a": "9c783dcac3c199fa7f45317543f51836409fe94705339bc9117c7973a7aecd33"
+  },
+  {
+   "n": 184,
+   "date": "2027-05-13",
+   "h": "f90da44a14436b74fa2ef168cdfcdc96ef1d3edcc5c2e1d1b930bb650e043f60",
+   "a": "e7361018adaf07ada569d6a2ec80a6fe69417d329a00345762bf0c70d4840082"
+  },
+  {
+   "n": 185,
+   "date": "2027-05-14",
+   "h": "a82ded87a1e4b6add524d4025619d5119343a3ab1515b23534e4ca00b8ecc4b3",
+   "a": "236975fe9def22e1e284a4a09bde4c20cd97ab9ca841f4ec61a31c72e3e32e5c"
+  },
+  {
+   "n": 186,
+   "date": "2027-05-15",
+   "h": "a51bf9aaaf43bcc4ecf8e393dbb38da5a202d6dcd6f36a73ec07bf12bebf05dd",
+   "a": "ea212be5ebe135c3eb06a99e09d9c65e04e6df98b289343e95922159d102aad4"
+  },
+  {
+   "n": 187,
+   "date": "2027-05-16",
+   "h": "9ad9bf4c1fab348811780f32eb624c40bc3eab8fdecb5787ff8e849997b5c7ca",
+   "a": "0e4499d0b10cd9a2809e142671903e4e26d8baad3777308ca31e20b1299e6239"
+  },
+  {
+   "n": 188,
+   "date": "2027-05-17",
+   "h": "c8f0a0dce9ad73047f965a52ad6fd99bf4039b87730b53c475d8a8338e9d9842",
+   "a": "f5a24921ae4a5d0d4df960dd117323c8b758e0aff02dc01cd608dd260f201a15"
+  },
+  {
+   "n": 189,
+   "date": "2027-05-18",
+   "h": "a8e4a3f570d5b2aefcb66565ed840a61b3684df652956a366aa4ed84569977c5",
+   "a": "f406ac3bb6976693d7071e252609082cdfb6b35173bf0d977d19e8f25ad98fec"
+  },
+  {
+   "n": 190,
+   "date": "2027-05-19",
+   "h": "86c1d1630d302184756967d19842fc3c5825ef1d3d3398cf16f1fa6dce3feee3",
+   "a": "8d35604c9340bcddd24e38fc69f26e9fa1e2a7229c6c5897c1a4c510568488e0"
+  },
+  {
+   "n": 191,
+   "date": "2027-05-20",
+   "h": "0c8cfa15fe83dee66240cc404d8ddef8380403fa55a72ed3c2bb5c499dabd4d6",
+   "a": "902a75fcb0891ec2b1a9a48ed3a726d4f54d51f08bcb35f92330ce1eae111bad"
+  },
+  {
+   "n": 192,
+   "date": "2027-05-21",
+   "h": "1aaca39e13122f6acb089b62183a18b33b56df9c2928bdf08ba7e4ee95e80799",
+   "a": "78ee45eb57381f65ae8cbdb07435684f79f0391a314bc720bf7e71ed7cf9f023"
+  },
+  {
+   "n": 193,
+   "date": "2027-05-22",
+   "h": "f47d761cf4c4dbc766f26b24643ce12b4d445e895b86c299e989773dc61351cb",
+   "a": "bfb10a9914ada064a1d7ab5908ec73e022ca48455e03f451c3f7a05b1ddc1539"
+  },
+  {
+   "n": 194,
+   "date": "2027-05-23",
+   "h": "22600630dfc6c1e52f03395aea85708a7dafa030149f68dae148724a67991ee3",
+   "a": "717de9e693b537a3f045a4e2a4c5070c879a55cea17d886c479bfc3c2df04348"
+  },
+  {
+   "n": 195,
+   "date": "2027-05-24",
+   "h": "badbfbd1b9d2c7b31877b895eed3fad684a6e72e8c5f80a0373da4a2f9de29c8",
+   "a": "69a7f3162ebdb729d96fa476879d02abc19db06aec901ea4d74b2446f880082d"
+  },
+  {
+   "n": 196,
+   "date": "2027-05-25",
+   "h": "a9935763bc90c515d7e4df0ba1f204b833a1ca4e774fcb1674d6ea48e26b3a04",
+   "a": "658abdbda03f15e655d109cdeac4c422b4b039e8f4a95cbce39c223bc9f3bf1a"
+  },
+  {
+   "n": 197,
+   "date": "2027-05-26",
+   "h": "676d8e92865cf988fd8a227893d30c1228461d81e6eb4a6b9cf7a9664e1d15db",
+   "a": "4103a5cd55b52c4d001a02edb91c8e369f33527ed7aad6fcf132035890f82de2"
+  },
+  {
+   "n": 198,
+   "date": "2027-05-27",
+   "h": "0525ab8d65a2823368076e23496cb5db6afa7249f9c423c53831111a8ca24ac3",
+   "a": "5c3713229a89db0d58233de46cc481c4b3a700dd0608433c4df9cf5f86666766"
+  },
+  {
+   "n": 199,
+   "date": "2027-05-28",
+   "h": "3026de4648fabc78389618e405fea7e99f5a825bf9611ac14fcbb09cda6f21f0",
+   "a": "d806a194c0bf0620555ec1f6e27dda777a5b2167755322a8548f8c3ed5fb81f1"
+  },
+  {
+   "n": 200,
+   "date": "2027-05-29",
+   "h": "46a4a4b685dcac9c0fed060a258a3697ccaebd8a70fe1461cf97fd089c51a3dd",
+   "a": "bdc218d459e6d5d72e369bd3e38d2cf2729558447ec41e31cb642e9043330530"
+  },
+  {
+   "n": 201,
+   "date": "2027-05-30",
+   "h": "e9b3cc0b9d43a8ce5ff5acb4b5580b310405e6e92ce87846cd2ba2d3da36cc49",
+   "a": "fdc5ef34bb12ea126505e52205d2c515ef02e8734d1cedf35c090dcb69949c99"
+  },
+  {
+   "n": 202,
+   "date": "2027-05-31",
+   "h": "8aaf023d7d6a2fca4a79027edb787dc6fceeb3168e0f7f75584f845ca5b9f331",
+   "a": "5640c915fccffbf30c75c91973e6d0b75bf5c7e79358d7daea683d99380b5b12"
+  },
+  {
+   "n": 203,
+   "date": "2027-06-01",
+   "h": "0d408bfc4177c3352316168585699fd3e0739fd6350f5bcccb158df20d1c66bd",
+   "a": "b1067c9d74b4facf655dbe8bce4673a240e851fdaa36c91efb3a359a0d8e3d33"
+  },
+  {
+   "n": 204,
+   "date": "2027-06-02",
+   "h": "8025b22128040115477d400854ef6a600c91877a59f4109fe4f3509faa1e0e37",
+   "a": "3f8fc2c4a91f9b9d52aa3dcedbc15d4d16f82536922a250b3b7deaedaf2b9e96"
+  },
+  {
+   "n": 205,
+   "date": "2027-06-03",
+   "h": "a36bb381f7539b7e9722fc931aeade7b9e1d018b94ee044885b837b1660ff94f",
+   "a": "fc462fe764cf0bdfa41fd48737f0c9343eb859ad34c6a53d66e30a1eee4e3838"
+  },
+  {
+   "n": 206,
+   "date": "2027-06-04",
+   "h": "574d983c5a4e8554242d22971f5b34c4cf6740a5a113d876312574b5e3a160b3",
+   "a": "c2880aecae5e186065372cc86f68d10bbf2b6def9af46bcb3eead2b31b04e769"
+  },
+  {
+   "n": 207,
+   "date": "2027-06-05",
+   "h": "dd752762615dfecead6d13df0f495b011840660f0b4a24e8b7e7a662f418acd6",
+   "a": "7616a62e0ffeba2abedd1761f41187ace6cbcf471c6151be109119f408faa413"
+  },
+  {
+   "n": 208,
+   "date": "2027-06-06",
+   "h": "0583e9b10096adeb970683291e1e4d265c33b42b40a435a45544e288b3046567",
+   "a": "a28e69e7c9e6f23d382b1108e34dc72f7a1987718b91913bad48677b0f3bc02f"
+  },
+  {
+   "n": 209,
+   "date": "2027-06-07",
+   "h": "cfe8d7369cec4926ee2cb4a734d49eb3517b85958a6b2eda0149415759303164",
+   "a": "7cb35aa30f6ecb6de388f2f8ff9f676cd3b73b7421ea917bdc0270eda3e886ae"
+  },
+  {
+   "n": 210,
+   "date": "2027-06-08",
+   "h": "dde2cad92d4946719d9bbb993c9cd14eb8e1c937e342a3f6c5a65577dbcfabf2",
+   "a": "7f8009b7ab08f02c477310542602a8a57de51b7ae60379d895b21d8128b8dfea"
+  },
+  {
+   "n": 211,
+   "date": "2027-06-09",
+   "h": "f75698ac797aafd37ec8500d5e63d57a4d2a91955839dee4369e108dc847f2f3",
+   "a": "5ce5939d1d8b27afe729d69b258b405f2b74ea3ee682b89107bee86acd63619a"
+  },
+  {
+   "n": 212,
+   "date": "2027-06-10",
+   "h": "45d087be68beefac0f9af38ceae3cf80815d7f3cac6d0a8c28f60195afabe805",
+   "a": "90fa8b5daf9907d7a0c6f479c14f2838e8b5d20c73dd73719a201b7412773679"
+  },
+  {
+   "n": 213,
+   "date": "2027-06-11",
+   "h": "89dd26209b3e8e5014c846fbb00af0bc29a2f741958b2c7d4d8c93d5164a674b",
+   "a": "4a4ac17d0397bcac62818d577ed71dfd7127dc4b74c4f88284f3f480f7e92a9b"
+  },
+  {
+   "n": 214,
+   "date": "2027-06-12",
+   "h": "860ae733cce797319f1a37795cfee3fb6e5bf3482bcc0177344981145629600b",
+   "a": "7d2d81c1a8354313c4bb63170a4c7b4180fd24301fc517b121903dbc71c0b7ba"
+  },
+  {
+   "n": 215,
+   "date": "2027-06-13",
+   "h": "d2b55f52efbeec5a1a37a4ab12a3d1e8c6ecbed072ce39fef15828a40486a92d",
+   "a": "3c3dc6065c789774fcfbde79e726b588aeec39e2c7d413d796c1c7246b809ea6"
+  },
+  {
+   "n": 216,
+   "date": "2027-06-14",
+   "h": "4747a997b7a8eba4ecb470d5644bce6092e0e4b63748931001fab6ff93186876",
+   "a": "99ee2a8aa4430342acac3701ff2258a1fb3d5e3a82595a4177db02c2170a63d3"
+  },
+  {
+   "n": 217,
+   "date": "2027-06-15",
+   "h": "c43ab376da1d9df17f3d557b033202c869ae23046cc8f5b8f6404d453c78f70b",
+   "a": "2a6f46a9022964f4371db3b294801d88ead8b84d665b033d4b9f61e0c60868ba"
+  },
+  {
+   "n": 218,
+   "date": "2027-06-16",
+   "h": "fe6cc8547864f03235a01d80351fdb31aac67987834bcc690d067dcc6d4369a4",
+   "a": "697f732fedfb972f1de142f5c8d8e3dfc4e460e47010d341ac645c14dee39205"
+  },
+  {
+   "n": 219,
+   "date": "2027-06-17",
+   "h": "6f678567c692603451bb2d4b7d2d2167b9bac548cb3eeb9334d9c7872d1819a3",
+   "a": "bad92d35a8121f415ea7a8ac02262a33a836e2a09edd7a696d20489a64e6aa97"
+  },
+  {
+   "n": 220,
+   "date": "2027-06-18",
+   "h": "e3ac7cafe0423729411548bcd4e4e52e0805d38ff78c46108e4fa84ac20910f5",
+   "a": "e9606e1b600cf7637b39a6abdf0df7446ab3a8d7affe02f37a6d444946e87980"
+  },
+  {
+   "n": 221,
+   "date": "2027-06-19",
+   "h": "fde583b1a11b5a147a851418fa7e0d17e4b035d3f8ba2d12804dcd588ef9e64c",
+   "a": "c1d55b664980cf415fead1e84b197221d971c79f94fc8d97cb19dc0055d2f7cd"
+  },
+  {
+   "n": 222,
+   "date": "2027-06-20",
+   "h": "f22ca8c3b27d17eebde599fe97f6897a47a2fbcd1fdff02e2e95db1d0e8f303e",
+   "a": "86daa68a388b7708b3f031924ad9b0315cf0b9141b31f4e8fc2d76be85ceb69b"
+  },
+  {
+   "n": 223,
+   "date": "2027-06-21",
+   "h": "ffb1c43fceec7d92d04cf018e2f736e2355dccce4f9616e3628b9238d7582b31",
+   "a": "db57f77cef49b40ebe16b32314a78f12a34ff7aeaa5bed189f3ea727e9fdd846"
+  },
+  {
+   "n": 224,
+   "date": "2027-06-22",
+   "h": "54bcd35dfe8b49390df991925fe48475d25d22a92f68e9d2f065294db60ae4f4",
+   "a": "02e4b192b37583f4cb65828f3df4c45ba8e7629040a2872909c4590f45eca607"
+  },
+  {
+   "n": 225,
+   "date": "2027-06-23",
+   "h": "8f330978024570335584a2fc800fc489eece9c19d0b7e132c11686160fc9f88b",
+   "a": "4341548c9431057c7ec670a9808101b4c043cd138b1dca921b28b9a746612ff7"
+  },
+  {
+   "n": 226,
+   "date": "2027-06-24",
+   "h": "4f75d224e46b4495d1a13e71565b926180044b206a67a918771440c162c25178",
+   "a": "f0e8127602787b1aa2e841d11595036e68f24f1ab859501b03b5d27ad4f88b71"
+  },
+  {
+   "n": 227,
+   "date": "2027-06-25",
+   "h": "6cf32b77e3e5cecae65861df976cbd3b39a467b4837f277165a19504402bdae9",
+   "a": "55850defc42aef621b4187e419e89450397c3a8bef676daa3d81f37ad0b4dbdd"
+  },
+  {
+   "n": 228,
+   "date": "2027-06-26",
+   "h": "8dd0f9f6f9d2395a6e9284f5922ddfeafa54856f8e1d786015d13b3b5fc13b42",
+   "a": "20cf9e84341b66aadd38effb4e78f7e98c48a7a5e3168327c3e6f0a8ffd39b7f"
+  },
+  {
+   "n": 229,
+   "date": "2027-06-27",
+   "h": "81233ba81b52dc21bfc213524bf03cadd4b0b36ace97396d026918bf54782cd0",
+   "a": "41fb6af93d72ebef9cd77ab58dea1a82f7d99eb07ffb05441c1a40625ce443f2"
+  },
+  {
+   "n": 230,
+   "date": "2027-06-28",
+   "h": "c6a4830d409cb47766db2bce3cac1cb9f08b7d04c3a2f6d25edb84aae670b688",
+   "a": "7511677ea2b92b392b95c821dbc6921cc598cb3beeebc8ddf9fac4233267217c"
+  },
+  {
+   "n": 231,
+   "date": "2027-06-29",
+   "h": "cc1bfc0d458d53a20393233836e3ada8e063a76c0ff0b7e815d85e0934cbe71e",
+   "a": "f85c7e3f27bf2ecac0fc56259ba8c0acf920e5e5e3e5f1a68784ce3b29f8d8d6"
+  },
+  {
+   "n": 232,
+   "date": "2027-06-30",
+   "h": "ac5b22f324ce1176d4bc1b2bdd7b42ca05279399a27283215c0512190bc3acc5",
+   "a": "c9ce1b4329787ab72e901e0a3f23cc043d8b8f298b6c837a61ec274966cff5de"
+  },
+  {
+   "n": 233,
+   "date": "2027-07-01",
+   "h": "8bb681f2baa25bf8d944d8b484e29bae3e92297a4a03a72fdd5f578bcd7675e6",
+   "a": "adff7b134a0aa7916a816f1f0412f5bc1d6acb83bc126f927f7959348b456b0e"
+  },
+  {
+   "n": 234,
+   "date": "2027-07-02",
+   "h": "913cfeab45983f8cf2f2f04891102695726d98ae0717cb12a2cfb14d82503337",
+   "a": "b7463f910ff95511f20c9bb584bddeee139cf2a41b1aa04fee4e1b508cb260b0"
+  },
+  {
+   "n": 235,
+   "date": "2027-07-03",
+   "h": "1bbcf9ab0aafb1cc33e4f0b5631cf9ca908c6b76866f98d96f6e133b0f3513b1",
+   "a": "080ea20bf141d8735df3911812e1ec005525b69678c6fb8c8fddde4bfeaebd1b"
+  },
+  {
+   "n": 236,
+   "date": "2027-07-04",
+   "h": "ba3965fb43b60b82e4e36d9a6d90da00813b4ebdfb170802b36ca3fba2395d2e",
+   "a": "ebade7c92fb4ee3f83cddcadb272a6f1f215b5821bc565c0abddd4623dab4cbe"
+  },
+  {
+   "n": 237,
+   "date": "2027-07-05",
+   "h": "3e65e58a549c6246abcb834359a9e0d153ebb6380f0f7d2759e4c70db0e5e48a",
+   "a": "b59efd6ad612d758a577ba80a9609814a6fa840687db296260787fd88aeb8152"
+  },
+  {
+   "n": 238,
+   "date": "2027-07-06",
+   "h": "73246d5aacecbb50bd34c7c0c2bb3212b32b69e13c54dcc698f9721ef3218ee1",
+   "a": "d0d608cc321be6ecc8aa4ce0a1bd969a37df24df86a8ebcc5ce6aa8fac3fb504"
+  },
+  {
+   "n": 239,
+   "date": "2027-07-07",
+   "h": "e86c16162341695f36d5af9383b609942b919259b506dceb5930a08a483bc68c",
+   "a": "09c1c9e5a28d8b1ffa5b77a28eae9f39bfe807f09a7ede5a847c1b6d116d97ba"
+  },
+  {
+   "n": 240,
+   "date": "2027-07-08",
+   "h": "c238269a9e0c492caa6eb8a7e73a71a78abf4a438a27e084f7c6069a12d143fb",
+   "a": "2ceb766dabe1fafa4b77e948e4e88e0ff436a548310705f0a05cf3020e1867d4"
+  },
+  {
+   "n": 241,
+   "date": "2027-07-09",
+   "h": "a0c46ff09e776ada0e34aa4202c6d6a4ff1b0c0ba8ded4df86d4e9feb324e2b8",
+   "a": "b12aee531211db5a46861d1c81b304f9ac017d05ce1b59b4ca209c1bc266f852"
+  },
+  {
+   "n": 242,
+   "date": "2027-07-10",
+   "h": "3914a0d4167cc2e578dbc6bd9f7805751c9a47027ab1485bcb3bac16bf5492ea",
+   "a": "d6bfd3ee608d6bffdc24a75c908180c04b050e474eb5ffe05ceff5ff63dbf615"
+  },
+  {
+   "n": 243,
+   "date": "2027-07-11",
+   "h": "01e3f74d1c90db8976c50c772edad314589755e2bbfbd9e0cfc3d1129c0d0f6e",
+   "a": "d68dbf46ae6212118da43feb8c71e16413e94255f81d09184601fa491cacaf92"
+  },
+  {
+   "n": 244,
+   "date": "2027-07-12",
+   "h": "d04c3d61df8c6db724f8fba4e0d315191ecd24116476aec5c858f666859186ab",
+   "a": "fd9bcff31b8e67596d7f5d22f0a5ed52043c3ffea3c55b9d4ff1b9362c3437cd"
+  },
+  {
+   "n": 245,
+   "date": "2027-07-13",
+   "h": "5f45f89bd063a3e8cac243bd9f4667dc73e02b124e5d417521ba194211edb87f",
+   "a": "5e50a19ea38f4f803edde9b7765176bbab8416873b9c7e94b3bdc6431abbebd6"
+  },
+  {
+   "n": 246,
+   "date": "2027-07-14",
+   "h": "443114b262503396622a189c81fcd83e9bf22b80b8f1ac82077c2dbbbfa2ee33",
+   "a": "160ceb75b877e6c20442ed7e0e1dce171efe7a9e345beac94cfc9099a7938f30"
+  },
+  {
+   "n": 247,
+   "date": "2027-07-15",
+   "h": "6ae59ccea46aa3dce2fe220c2736ce88e0085f1c003b418629cd40a54daa54fe",
+   "a": "89a72a5dec3abfae15339f84a56ad1ee9f8b03238c9e0ff498c14a4708f2bd34"
+  },
+  {
+   "n": 248,
+   "date": "2027-07-16",
+   "h": "9889b788bda5d63857b42f19adef977e916fe1002d1c85b19413d07c70605a5b",
+   "a": "a0c8f6d64742e2ead2f2703132da282888efb1e2f6c8c6447a9babc02e11c34a"
+  },
+  {
+   "n": 249,
+   "date": "2027-07-17",
+   "h": "af970d8ba66932584d9d8e9a3769c119316c67046d1620b944dffa6876054c2a",
+   "a": "90c28bbe26936b858b5138d5d8c4a14b1b80a96b7c46759ab81e7c93d0816f1f"
+  },
+  {
+   "n": 250,
+   "date": "2027-07-18",
+   "h": "18791afa9eee1f76562a3873b070fb5c67b6b65efae6f1be92495ad565a9a8f7",
+   "a": "8c6f963115f605feb89c3992f0f32c39a81ce3f754d239ffcd40c6034d88dde2"
+  },
+  {
+   "n": 251,
+   "date": "2027-07-19",
+   "h": "d10ce9eb86aea4cbf033a7afa8b10efbf8dd48296ded8bf9e67227ef86fba6f5",
+   "a": "055c0921bb454fd5d9cb64dc2cb0908e41459a91ef3cf52ed16cb4f8cdbb203e"
+  },
+  {
+   "n": 252,
+   "date": "2027-07-20",
+   "h": "1f8dfa78c7fc386db05f4aed48d1ed5775964500870ae3bef9be6aa50911c998",
+   "a": "a46586cc5e7718f34923c861bda88d27118d9a70bf4a48959afa56e5c77a0acb"
+  },
+  {
+   "n": 253,
+   "date": "2027-07-21",
+   "h": "0ea0e0cfa1d28c5835f1cb844131aa3d850f0fd93295d5291baeaa9bbbde67eb",
+   "a": "65cb5d8e80d64b91616a427333082ab5387db99ed56943351639ce304a0aa78d"
+  },
+  {
+   "n": 254,
+   "date": "2027-07-22",
+   "h": "6b3493571c92be972dbf0df835f16c0a926b4594b0f345ffd4a5688f13dbff19",
+   "a": "0230570383a7214dcce712b9d9ea25cca39a241b161d4518b0dc8004a404062a"
+  },
+  {
+   "n": 255,
+   "date": "2027-07-23",
+   "h": "c7a3076170f7af65c25d0f56ab3e13f5ca8b9b38462eacce3c6f11e2831fabe4",
+   "a": "7075010b31c5e453cdfb27957d6abd6cffa39e5e09d2219fa8e34ccab54ce229"
+  },
+  {
+   "n": 256,
+   "date": "2027-07-24",
+   "h": "25388faa48425eacd28e97e45b7168c9fd297d91ca74ff6786ad9a520c51b4b4",
+   "a": "80d835fa3fbf1d0b2e9787e580dadcf2c3e44b7914f315626380fb56fcaa66b8"
+  },
+  {
+   "n": 257,
+   "date": "2027-07-25",
+   "h": "d435bcf4722c4a6faa5d0497b7580b380e4a9dabd7623fffe439b877ecefc334",
+   "a": "613b14b443242b162381d02e5435ead8d2238f129d9143e0e53c160bd6a293eb"
+  },
+  {
+   "n": 258,
+   "date": "2027-07-26",
+   "h": "2076e653515c44e99c24846107c9ecde76214f408b9d688026d7ee89efc8fc0a",
+   "a": "ac1532b8e0b27170fd9c86aada1bcb98e956b395e0407a3d92bc91d2544a8b60"
+  },
+  {
+   "n": 259,
+   "date": "2027-07-27",
+   "h": "39b3c98004fcda8b07060ead908636169f4a0a48aee5e1d12e2596ee1e028feb",
+   "a": "712977f983a91d30cb8a9ae43886aa9d2e8bdbee5eba896bf315605b76977af0"
+  },
+  {
+   "n": 260,
+   "date": "2027-07-28",
+   "h": "84d4b82a35cedc2a697284e585cb66dc175175485ba3430dd8b9508720710df1",
+   "a": "13b2bd90a0c2a3c1ac070987d6ff2d72a10eee61f883ed5b59ac5ecf063e77fc"
+  },
+  {
+   "n": 261,
+   "date": "2027-07-29",
+   "h": "38ed5fa1c89d55eb6298d440442b4036674eed082ce109f9c17aab43ec4b61e4",
+   "a": "257d4cc2577501d432678712f8c1031ffdf3ff7060e0554ca830fc6514dcd120"
+  },
+  {
+   "n": 262,
+   "date": "2027-07-30",
+   "h": "04d3ea78b80154b53d7e5c64b099117880fd7d24b787d7cbf5f5a649f97600db",
+   "a": "c1db5d15056448e2eae39da437c398538a3ef5910585f21161107b3c5c00a337"
+  },
+  {
+   "n": 263,
+   "date": "2027-07-31",
+   "h": "ccde0d5bbdcec96532af69220fe6ecde4135664fd4d6f2a183c9cd3987ffea2e",
+   "a": "f4ce6218e8ad8cf0493fda4cd5f9dfa7167480f5e6e4185e001c5615109faad6"
+  },
+  {
+   "n": 264,
+   "date": "2027-08-01",
+   "h": "213e92b3330052079ba64a89e01b6741ae6901aadc488e11ac189509b5b66f6d",
+   "a": "b2125baab8b55c71710282494350dbd95b89812b63762310876c0aba85632326"
+  },
+  {
+   "n": 265,
+   "date": "2027-08-02",
+   "h": "856e3bd25cdc2a90687563503ed8f3570dd04917e74ee2f49120ed43f9883a86",
+   "a": "b81364d38846965257ef908cb66fadef88af32d0e83d01ceedd64b3ea9cc2e77"
+  },
+  {
+   "n": 266,
+   "date": "2027-08-03",
+   "h": "a3fed6bb863138e1c1e9c2d676b4361f6bd8ad4bcc4a84459425bfbdac320abc",
+   "a": "bfa8b9640382f8a9be09938d6aa9696643e24f071950b156fb55102f7468b7cb"
+  },
+  {
+   "n": 267,
+   "date": "2027-08-04",
+   "h": "596a72c2e4b3555a3e61c06466fbc11fa282ef693494f91b285f5e30f2fc75db",
+   "a": "bdbfd0d1ccc6a0de898179dc6c7fb8fca5c1d08b298240d4cb1da4f97dcb9bbb"
+  },
+  {
+   "n": 268,
+   "date": "2027-08-05",
+   "h": "db4f58349975fa045c9a35d5440afa894cb4fc4c8b9eb0ac6c27341bbc835e5c",
+   "a": "df0b5c942e09904e7714e511ae49aa240a72a2075ec9d86e8e0504b254d03281"
+  },
+  {
+   "n": 269,
+   "date": "2027-08-06",
+   "h": "c3f3ac352e50cf5a12219bf0d4c3c19820772b51326999713c749dfa3984d483",
+   "a": "fa879df0e711d2aa0b75c03e4fcbb1382871aeae1fdda2aac673df0b14fcd231"
+  },
+  {
+   "n": 270,
+   "date": "2027-08-07",
+   "h": "2680a346a1084cea6b183f76633d2f6e9a664b61bbcca4deb44f98debe780152",
+   "a": "ab5174e48f2fa7e54b33423a9a0185983368446ad891f67232ecb204b7caeb0f"
+  },
+  {
+   "n": 271,
+   "date": "2027-08-08",
+   "h": "796b33d552517efbec7fe523d6a0187664c43bee0380bfe0e29bf7d06d4dba99",
+   "a": "049cd4584b6bb9cc4a3cbd7a3b66c5d0d87ec941dcbb1aded30ef5408cbff8f9"
+  },
+  {
+   "n": 272,
+   "date": "2027-08-09",
+   "h": "e99cceba65357b31f6430b36fc4dec95962fc506fcb2eb124603b0fc4ba2e17c",
+   "a": "c2ef4f3c0d2ce50a695a92cc102eb491c5ea1f8988a595e23d5589f292d96160"
+  },
+  {
+   "n": 273,
+   "date": "2027-08-10",
+   "h": "85d6d37f17f8b6ddaa03a2d04e3898cb4c636b16b790af596605a168ff5a3c6a",
+   "a": "769c76dc79c05eb1f1031434b039a26f6d2a25b6e0e37ced7a0a365402dff6ed"
+  },
+  {
+   "n": 274,
+   "date": "2027-08-11",
+   "h": "05f4ffe135297616c5a4f232c047d2087e4104bd58256834a01c551f93f0c6f3",
+   "a": "58b8273f94016a8895b89e4339e8a6c56aa0c0c5c41e56eb09b375da30e94a29"
+  },
+  {
+   "n": 275,
+   "date": "2027-08-12",
+   "h": "257f24ecbb886dbc26a7356a890540ce5f683339a3abfaab29a1d82f48bd183f",
+   "a": "cd58e070685b5e70094e390268924ed1fd5807ce82876f78d5d2a1f75a053e37"
+  },
+  {
+   "n": 276,
+   "date": "2027-08-13",
+   "h": "03043363a6507cf39124fe18f14186d95019d3faf9cb90bf7bd3941cd8fe8c16",
+   "a": "e5a18601fc97c64bcf2ecdbfefe36befc8758c21e971312bf668a00128c731f0"
+  },
+  {
+   "n": 277,
+   "date": "2027-08-14",
+   "h": "f0fab2dbf8819be47757b0795167759c41127ef89552a2a4a9ba682806a01c3f",
+   "a": "d708243263295fe22c3dfa6288880a0a45b608c1ec6dff62ba9441a4c37ccc02"
+  },
+  {
+   "n": 278,
+   "date": "2027-08-15",
+   "h": "d96f84fdaee0a423c9177b9754604d51987535db65dafda309fee47c995fc244",
+   "a": "cd0e5457d0e628e218245e1f524132e531e982b42ff4366c6d30cb1c266062e8"
+  },
+  {
+   "n": 279,
+   "date": "2027-08-16",
+   "h": "92cd854d7f1ed30d0b7ec93e86cb075f99915d175bf8da31b48aa4b70c1639da",
+   "a": "e42e8e1630b7e21916308001bce1682da357a3b972a593053793198df877dfee"
+  },
+  {
+   "n": 280,
+   "date": "2027-08-17",
+   "h": "90cafa26e22eb70b2d7b4ae60444df43fe27304ec5d2e34a56ecdd259e1f74ff",
+   "a": "4a469a2ab748846a33e62773148375b3847cc1b79ac0ef1730c64a111f0a3cdb"
+  },
+  {
+   "n": 281,
+   "date": "2027-08-18",
+   "h": "9b3dc30b8a5b19f1352baaa70a6de6d04ce745f11846c6dbb77b7e970b030d3c",
+   "a": "c29fc13442f2b7d72a62ed254f58b7a36bf93c57ccaa595e40ed55b32b82a4d4"
+  },
+  {
+   "n": 282,
+   "date": "2027-08-19",
+   "h": "5f195240f04b65ecb38d4260f7e7575aeec36fa6f31b693e6f07d7641674f68d",
+   "a": "ea28fcca3d6857fd0dcca7cfca198c51ba69866eca7975b40f4da343fb89c6f1"
+  },
+  {
+   "n": 283,
+   "date": "2027-08-20",
+   "h": "acad110992656c06925f0cedac4a701e78175d118fd519d2b8537c5f3d600fa9",
+   "a": "09dda70a032296a51312c2fcb6f9554f809a01f29bad3c0010a69bc3f207a095"
+  },
+  {
+   "n": 284,
+   "date": "2027-08-21",
+   "h": "a2ff9184c8aea424dc2e1281f728ea3121649025b733a011ca30e14222021b62",
+   "a": "1342b9f1e40b828ebc978bb5d175bc599c4ba047c01904b85ea06d67a5a67440"
+  },
+  {
+   "n": 285,
+   "date": "2027-08-22",
+   "h": "13da97810ee8abfaae2ce34891eac5cb0538a18ab2a141ce01be52bc655f0c34",
+   "a": "6be76363ac8419a7776f3cd4a9430619daeea46b15309027d172fcc4aa683c26"
+  },
+  {
+   "n": 286,
+   "date": "2027-08-23",
+   "h": "7b1b2af6db48c2836a58f8cd61f2b8943d04cfd919420d165737b85a055b27e7",
+   "a": "a8336f3cabbe8b5346f652613a21da257e53b63fc675f61c81390ea866f1706e"
+  },
+  {
+   "n": 287,
+   "date": "2027-08-24",
+   "h": "7a515ca442d184b7b749bc7981082d9118687a3b7016f3bc9f8065cc8677ef02",
+   "a": "648902658cc78c759309f678cc4ca40e0eacaad3a0eca906fbc7c281a98c89a1"
+  },
+  {
+   "n": 288,
+   "date": "2027-08-25",
+   "h": "7de841d93e7b6da2ae9c9a2f80301666e925f1e7b62a94bd29ee6383f02a9139",
+   "a": "0355401bfccd30c93ee17aab14ccb7f1230daa8ab2eaa10a2e5f217c4c356d4b"
+  },
+  {
+   "n": 289,
+   "date": "2027-08-26",
+   "h": "a35074c35d2be9b53a5b3e396034a6ed1ac22c63668782f63f6a17f4d57ef7b6",
+   "a": "84c2d03db3e116c91918e824855c1d2f54d3cd9e7d0812c2b3e6220df3b55cc1"
+  },
+  {
+   "n": 290,
+   "date": "2027-08-27",
+   "h": "f86fcbb74dd1dbda10dbad3d3084b2bbac6530f882325f2f2bf2fb6c870188e0",
+   "a": "bddad57968f55f40d2dd9ae77a3ccc7267b4449c145e2639b96a70cb3befcacb"
+  },
+  {
+   "n": 291,
+   "date": "2027-08-28",
+   "h": "f9bc6ea05e9a654319729eae243a8ffebc02252c5b460526fa2a9dfd1a39d920",
+   "a": "7530163129641d4c155aa0bcf2340dcfd30a3daa9c62f297e99aba63b358a424"
+  },
+  {
+   "n": 292,
+   "date": "2027-08-29",
+   "h": "5ddace79b8dd7ffd5a180db71bca5471cebba293dcce84fb37eb6df24e880e0e",
+   "a": "dd61d1f9a1ff7898c1ba6c5d83eaa45b58a7a01912451a416ca86a88df95f7be"
+  },
+  {
+   "n": 293,
+   "date": "2027-08-30",
+   "h": "b46570becbdeb60856e4448d04a9ba4ccfd908b8c7a677e47040717130319553",
+   "a": "001054bbfbddd6a2f6249778a973e426b8da5018893f47020ee1eaff17c52aca"
+  },
+  {
+   "n": 294,
+   "date": "2027-08-31",
+   "h": "ceac4288afc1b52bc2f0b65958d304e89fb93f942bcbbe1f4d0aab46a82de0d3",
+   "a": "1f0b8d161350082c03692dcb99f101e741e8fe5700d7f4b9f7a34c708dd369e3"
+  },
+  {
+   "n": 295,
+   "date": "2027-09-01",
+   "h": "7f1aab4f8c094fb802c8aaffd9374fe5e212472e0821a0703c5eff4c2dbad65e",
+   "a": "bf9eb3909f1beeb160c41e7ac17c3e0fa42dad0ca272986addff1fe612874aea"
+  },
+  {
+   "n": 296,
+   "date": "2027-09-02",
+   "h": "9fa403d48dc122e058bcbfd7678e20fd0e1c676259f4a4c9e11657427913d0d5",
+   "a": "9d6794c82053869c34712e1f4d319ba83a19ae29878260fd619c7d0ae8161a6e"
+  },
+  {
+   "n": 297,
+   "date": "2027-09-03",
+   "h": "afd71d2bca95c95079b46d0e3c4c8ccae0dbb9302ed73b728af7723385925c31",
+   "a": "6a8c64743120d5df26452ff4b4c075be4d09642fcb1971e5c55e73e27f5ed8b7"
+  },
+  {
+   "n": 298,
+   "date": "2027-09-04",
+   "h": "97feedc50fa69ff7efbaa441ccbb2c98e926805891b266fafbfcae30e7768aae",
+   "a": "8089be659a7c6e6b298def28575383760c9aa73414a272063ebd8cff51b2ee59"
+  },
+  {
+   "n": 299,
+   "date": "2027-09-05",
+   "h": "21b0d76aaaa7d77350a1fdb65ec74fb81e302fb37022cf6ce3016a503d80a36c",
+   "a": "b18bc4736c153d0042c681357a1e555d3b7596de9cf7fed39bd6c8b442e6b627"
+  },
+  {
+   "n": 300,
+   "date": "2027-09-06",
+   "h": "0eb38e866a96ad33d61ba37b61aab2ea4a8049811453cc6468107babc5c503a6",
+   "a": "75f09fba64217d04e73001eb1d0c668d9096c54c23f9c33e0dabb4f5491cd6f1"
+  },
+  {
+   "n": 301,
+   "date": "2027-09-07",
+   "h": "873f06b7ac5ade74b3fa20e9324ea77cb09ec30c236f81d340f1092b6d2db18c",
+   "a": "bf85da1598b8101ebbfe72a60351a641c7941bbc01642b59d2120da03eeccdba"
+  },
+  {
+   "n": 302,
+   "date": "2027-09-08",
+   "h": "1f0be93746427b38f506e995b48ef9aa1c825f68e774a6f5ca72b73a6f332d49",
+   "a": "281d0c7158d26eda9e5a597020079aafcfbc6b620698053a1832e42ba32f160c"
+  },
+  {
+   "n": 303,
+   "date": "2027-09-09",
+   "h": "00e586736554f2c90613d5a5f0d1c6d358e450dac29777011764139565c9b316",
+   "a": "d0f390164d29c9d93dfc95f105776cc6c42ff86ca814bed6faf41150a503c8e3"
+  },
+  {
+   "n": 304,
+   "date": "2027-09-10",
+   "h": "70640e4bc74fa9de3fab15dcb861495038d3d1f58e64baf57d9face80f727dd4",
+   "a": "51808895ec11cdfc4949b627fe36039d388d35a4dc4cab1be69d96df59bc0a75"
+  },
+  {
+   "n": 305,
+   "date": "2027-09-11",
+   "h": "c20bebc667c517d1395a4abadbd2adf0fa407f5f83d65603a4d25298a42be4bd",
+   "a": "513fbf30f65b2899fb5205238a96c944fde7fb50817fb8f79f76495efc0f124e"
+  },
+  {
+   "n": 306,
+   "date": "2027-09-12",
+   "h": "0e3ecfa300880112f5697fe787a3a9e84e5fc0e6049a082ed23217c7f0273f55",
+   "a": "116528b49a589df8b785c3213e44c2fc784433ebfe79aa2086939726b688236a"
+  },
+  {
+   "n": 307,
+   "date": "2027-09-13",
+   "h": "1e8af7897263376d1a61992ee992dcf46b0aaeaf29cf912c01b988e7e68d376a",
+   "a": "f3e6cc5e3f2133d28dbcc3987c71b77069c4f8706a447edb25090854ffc55ab6"
+  },
+  {
+   "n": 308,
+   "date": "2027-09-14",
+   "h": "1fec27db3bbea73349baa5650791b2324911a11117d03f7f106649f2c6709f15",
+   "a": "6e42750dd3386925d0c0a0e88d95a508ac1f9ceb7ab84e6cba4127fec005dd89"
+  },
+  {
+   "n": 309,
+   "date": "2027-09-15",
+   "h": "ceb649419ae8b63f3a5de4a97ad97c3934b29cde4e4d7eea6e119de86fa7f53e",
+   "a": "01c8fa999425afd1c3ac1500a31297bfd6a2293587d343b1af2aa51a249af1a9"
+  },
+  {
+   "n": 310,
+   "date": "2027-09-16",
+   "h": "2c1644ad94c7f9facec431f9f89dc0db5023df48a3fee02ed1885567a31eeba0",
+   "a": "bde98e0435cdce20db1505b826529ee0b491b397a40b4c888d30155b4631eb2d"
+  },
+  {
+   "n": 311,
+   "date": "2027-09-17",
+   "h": "e879e3fe396d9d32eafcf15c9122fd4355e6b0a77df6b1cb51325ebe061b1328",
+   "a": "17f24443d557d3e75dfd8cbbc1af46eb76e6f0eae670df4ccc3e8417ac097c83"
+  },
+  {
+   "n": 312,
+   "date": "2027-09-18",
+   "h": "c5707a59ba03c731ff0159fd6d3a147238f870e34c1ff95908b70263802073f8",
+   "a": "7230692e512a659df00bdd648928480fdcc03a948fd7410d1d142b3c9cfbe630"
+  },
+  {
+   "n": 313,
+   "date": "2027-09-19",
+   "h": "efb5bdef258b0bc955daedb572a76fd53dfa72862826948a229479b809f2586a",
+   "a": "0a7a231ffe32d5b0233ef7ffe9d7c4daa3599320f1e76671f6c0412ef5ad508b"
+  },
+  {
+   "n": 314,
+   "date": "2027-09-20",
+   "h": "7ac9c6df3926e12f2b37063c7e16a8662abc47167c622e332abecafe2f7dc44e",
+   "a": "e49ae04af1e9fb462f37e3f074f4d9eadbd8f99c8aa11a87d4920fd6fce49543"
+  },
+  {
+   "n": 315,
+   "date": "2027-09-21",
+   "h": "b0b63a3146ea302dad3739f3f4c18ca3b782d081f4adb5d1aacf600d2993cc51",
+   "a": "346f9ec4c28386d4c86f0e859f2238968c9a4445a84aa0c85c11f0a2527d7528"
+  },
+  {
+   "n": 316,
+   "date": "2027-09-22",
+   "h": "374245f20e574ab57d6e8d1b017069cbf0b6bcc64006994573f20d8dca963c00",
+   "a": "0fed0037c6bf47111d2921876f1abca6f490cb06b1aeb3b44b3c32b100aeb574"
+  },
+  {
+   "n": 317,
+   "date": "2027-09-23",
+   "h": "1386a99c974f1e7f58af1ab52bb7181ac9d40b40aa9628c44fbaf905f038148d",
+   "a": "b0d7df2c590fa9b567f7aad1145f5b8c27374d7200a77c2063501231774fccd9"
+  },
+  {
+   "n": 318,
+   "date": "2027-09-24",
+   "h": "f5d1e584936700e9d4f1dafad9d6be53716b8f462e3b11d068c9384532b8f7f7",
+   "a": "cdba38a0e53e21aa98fe6315f2fa1b21f8c6aa18c256a5baa03ee6aefa0ac04c"
+  },
+  {
+   "n": 319,
+   "date": "2027-09-25",
+   "h": "21c1fe1e39cf020899539eddec3bf09ffe0373d57c4ebb2a5aa7d859207dbc70",
+   "a": "5cb393fc3b68fe48ffedc4ad4b1d181b35467769150a2f22d65599dff0dc08c8"
+  },
+  {
+   "n": 320,
+   "date": "2027-09-26",
+   "h": "97630de99cca9b3032d787502d474645b4c6651864c3894cbab9cad482fc46f5",
+   "a": "1dc9c334cca698d988911ca02dd0d9917b338d8923060b8408261ca089388320"
+  },
+  {
+   "n": 321,
+   "date": "2027-09-27",
+   "h": "4de2a29c89a3810f6cd1006d7637743475e458d88c4ad7fdab65b6738f3afb7d",
+   "a": "e6bc095bc030b766794b556f185202036da465b5a74b6f560ee480658438c4e3"
+  },
+  {
+   "n": 322,
+   "date": "2027-09-28",
+   "h": "0495493f942be62fd7b0535703b40d971ff47b18471be5386d2a1f32a65109eb",
+   "a": "883efdf79d89064a38ae2d5e4c6c43aca447f9a297f67bd9dcb6f53792409987"
+  },
+  {
+   "n": 323,
+   "date": "2027-09-29",
+   "h": "093db4a7b2f51d2f3d884cc8f5b98620183c4b73a31c5e86a3ebe0e0bec15b81",
+   "a": "ae38abb9a92264a6c08f925d3dbbe999685b9737be3a82729e8ce63b0eb95c64"
+  },
+  {
+   "n": 324,
+   "date": "2027-09-30",
+   "h": "03487c46ef24fea3bf3ebad9d76ff4f75001605cca9a34756ae05da7aae3e91c",
+   "a": "c5a2451a19771a22284a85602045ee2e51cc367964f3e2f5be920a61cbc88682"
+  },
+  {
+   "n": 325,
+   "date": "2027-10-01",
+   "h": "12c07a5fa77601190ede041f3d2a42ba54c420e7868e24e03f5b7e9423b12734",
+   "a": "036450d73cf28c92bb02e98636b13e74b45e9aee779523ef1a1c51ec94d981cf"
+  },
+  {
+   "n": 326,
+   "date": "2027-10-02",
+   "h": "3d72eac3e815f7f1676ec7b2b3c22f393e636a2936f75ff5eb13fc64e1e5c75a",
+   "a": "1f719b0910e6056733aeaa1834e1dd50cdf22b97631e07462b89a8035f6862f0"
+  },
+  {
+   "n": 327,
+   "date": "2027-10-03",
+   "h": "1d32655aa03dbc1c9f02c1369cb5d28300af29308d88fa6435186b5eda8046fe",
+   "a": "88a4cb17f04cd58776671d6fdedcf22639e833a3e7fb0d82cd03f44e9d86ce79"
+  },
+  {
+   "n": 328,
+   "date": "2027-10-04",
+   "h": "19546501d6ac223fd3dfefcff106bcc621b451efc00ad96b9411355b71effbe7",
+   "a": "2b0e85ed0e3f786ce2ba886cd49d70f70b580d69063675fdef29228d147b8fe1"
+  },
+  {
+   "n": 329,
+   "date": "2027-10-05",
+   "h": "2db22871c373bfaf24b338480628ff84d36ef6d19f2631ca0c1fa0631b838067",
+   "a": "f8161db19f5e065e1d55c469350a6bd5458b6071c91db874d8d2e18f79ef5fa4"
+  },
+  {
+   "n": 330,
+   "date": "2027-10-06",
+   "h": "fe0451700b1b05228c0175e0d4e136b2de758865b47b4a34bfe4b749cb86eab1",
+   "a": "768737b14b96526a785b55e640574f47b86f714bf0c66be58409f1d5c354fa67"
+  },
+  {
+   "n": 331,
+   "date": "2027-10-07",
+   "h": "6ee763e4c49d156fb0b77c2faff2c5b3b23cec7488fc9d4bce5cc74de629f8e5",
+   "a": "56b1227bf6d38362b4c042d282cf80fa2c323eef3428f0fb9f31997719464ebb"
+  },
+  {
+   "n": 332,
+   "date": "2027-10-08",
+   "h": "f62bf130c7babd814ae0ea9dea95166b8f526c992b8e9604ed62937ca4627d9a",
+   "a": "73bca55d1593460e58d233a60b6d167669696d1c378b890c4415c12cd5397b24"
+  },
+  {
+   "n": 333,
+   "date": "2027-10-09",
+   "h": "2b8ae34cec333e13ec768d1ec2ce7ac87cd711b721e775c71875ef55628fa651",
+   "a": "40eeb2c9fdc7529d690ee6237661b5de199a539939c98a14605838d267a9dfd4"
+  },
+  {
+   "n": 334,
+   "date": "2027-10-10",
+   "h": "7e48ddf13adf0c6cfd2df9075e57869dcd364e5de7943f9bc4ba512df0904757",
+   "a": "ede7998b3fa9ad50683011fb68a692b46f837bf7de74fce6007f7cbf4961c641"
+  },
+  {
+   "n": 335,
+   "date": "2027-10-11",
+   "h": "06b6052875eff1243776709e086b2818455f8edeaa5c7944a3686d2265b64b2a",
+   "a": "d6d2e0d5f4f9ce9e42862d0f60ce8ee332bd97d187a85fb63a65e16a361a9f1f"
+  },
+  {
+   "n": 336,
+   "date": "2027-10-12",
+   "h": "01fc46d8d829076fd407b671a95b2382496aac3d7b2c269a4ba798c1ef08f33d",
+   "a": "20cc2dbd9f1120b1f20dd222416b9046c203f0bf05d32aecffcd105a346d94e0"
+  },
+  {
+   "n": 337,
+   "date": "2027-10-13",
+   "h": "c4edc1e5b6b4b6f3c7ceab9662a7839a6733cdb8dbc2ee8b88a8247abc8012ad",
+   "a": "c999875c364292322c46a0ef050d66f49dbeed986e137a42bfb8215200bc64e8"
+  },
+  {
+   "n": 338,
+   "date": "2027-10-14",
+   "h": "7257a2fcc45ea40763668d547402b44a5056a04cb7e34ee9e8094b874d140349",
+   "a": "9d93a946c4b055ba6f27a12b6175a795aae7d0911e4586262efdfba1973f0655"
+  },
+  {
+   "n": 339,
+   "date": "2027-10-15",
+   "h": "a933f7c1f7c856307835d50b3429a9f08f43c8f22ff1bf63e9c496e84cb12c7f",
+   "a": "6ea0633a63e3929faa9bf4a7da778c6adbb7583cda6bbc200d529e3ac4194581"
+  },
+  {
+   "n": 340,
+   "date": "2027-10-16",
+   "h": "9f9d210633924f744fe3d0da9fd33d883aa79ccfd8bfeda8314e3f7043571ddd",
+   "a": "24afe66c1d24bca750e200aaf82c58f19730d4a47cb83bdde2e1750fa87657a5"
+  },
+  {
+   "n": 341,
+   "date": "2027-10-17",
+   "h": "8dbb1c0da1a0ae34760643932b90fa6e744d62866b617a726beab42fe431f3f2",
+   "a": "ac971893b9ba731d74933db278438e4ceaed1a74b49854d6feedfa77a93028e0"
+  },
+  {
+   "n": 342,
+   "date": "2027-10-18",
+   "h": "51cdc292c1fbcfdc3fc69949b150cb0e4a3f2468aa697072cd379c1548490c2a",
+   "a": "385fda54ee7fde6de7d375dc52376333877944ee450e4ac41fc148131aed4d8c"
+  },
+  {
+   "n": 343,
+   "date": "2027-10-19",
+   "h": "130a60837ca1b16877e8199401eea5e11102fed1dacf19c5360c0633c7228af2",
+   "a": "2751309bbb82dbc76413c9a27898d9bdc43a08cda322bbc03a62107835c8c850"
+  },
+  {
+   "n": 344,
+   "date": "2027-10-20",
+   "h": "b788a52acaf11f066eb90f7b3380cd21fc6a8152a2f1f4234984f2ccb7bd841d",
+   "a": "c2a6d6385eac0d876d22814e8e1079a12ffeac3599d27c53b20b0d7ccef1f651"
+  },
+  {
+   "n": 345,
+   "date": "2027-10-21",
+   "h": "666ff4f65e30cdd524db383df72bac374ef16dfe356fd03dd03121725eefceb7",
+   "a": "43a32808961e91e0a2fba7805b5496bc3e509d3f987b7005ec4b74787ee8c109"
+  },
+  {
+   "n": 346,
+   "date": "2027-10-22",
+   "h": "7848bf6ad52d76e51f9dcd97eda5570b10f58e77494c5aadc15c26a368df99d9",
+   "a": "874ff9e8e315653a91ef4ee8afc60fb90f6f608ad01a27f63ddfa0fc50889038"
+  },
+  {
+   "n": 347,
+   "date": "2027-10-23",
+   "h": "39251d810b9e6ba43df619ac6854fbf4d335d7b765da98c92fea71f954ebf6b4",
+   "a": "9c0792f471d6d591897cd1aea19c615785b3c45000dc45e1f3bb9dffc09ad139"
+  },
+  {
+   "n": 348,
+   "date": "2027-10-24",
+   "h": "3260609790aa68344fd04621dcc4c5f9cb7d7cd6d3b6405ee9ac7cc94dc1d5ff",
+   "a": "a9c2eb0f7e3ebd313357dd2375b96e0ffb0e0a79ec7de062c922aa7429a729cb"
+  },
+  {
+   "n": 349,
+   "date": "2027-10-25",
+   "h": "2c8b4604c2df075df9668a1c1917520e99b4507ed74d2fe47fcf87eca395fe1f",
+   "a": "36781800bef31b2af53ebafdf871abae7b73f64e0f294679be95660b33aba506"
+  },
+  {
+   "n": 350,
+   "date": "2027-10-26",
+   "h": "4c30bdc46f7e039e63a35da9da377f71c213f59dcc8efa3a90823460218ba300",
+   "a": "5083273acf9f00f63a50da37f84db559fe37c150da7e0bd0bcfd3cfb2b239a28"
+  },
+  {
+   "n": 351,
+   "date": "2027-10-27",
+   "h": "9299b473ebe53ae3b6fdd92df64ca22d71754124cf9bed2a8b507a2bbb3219e3",
+   "a": "de5bafaff21fd30dce3f95c57e382e84d5ea60c1d364daa3daf5bed64bf658f7"
+  },
+  {
+   "n": 352,
+   "date": "2027-10-28",
+   "h": "b532e53261cbbd4328df32bcd2221f8cbca551fd1ff864f7b911ac67b4873874",
+   "a": "816524b9c9d5c5695902bae7d42e5b8692300f51c38e2e6e0f517a2a5cd777b6"
+  },
+  {
+   "n": 353,
+   "date": "2027-10-29",
+   "h": "63ca54bc080831ae93ceb8033f955933b8fa7a8c7bb03b41523e95df6e298c4d",
+   "a": "7333e359d0ff0122c2514e63afb969cbe323cb91b282c31c81b8ae147c0b98e3"
+  },
+  {
+   "n": 354,
+   "date": "2027-10-30",
+   "h": "b6e697ba2836bfb48d30a78e5e9373967af465b0cfa3200431019c510eb6c5ef",
+   "a": "1ed7bc9462db3618d10a7b2648aaf668b0ea84e4bf1ffed3f78aa5ae1eeb6b42"
+  },
+  {
+   "n": 355,
+   "date": "2027-10-31",
+   "h": "03e5dbd648c1d4f3a2d1d040b8654065d3b7dac6c57505840418c9fbfe4ae836",
+   "a": "79787fe78fed76bc42786ff9397b8d547fe6d83e362060db6adde0d65b0533ab"
+  },
+  {
+   "n": 356,
+   "date": "2027-11-01",
+   "h": "d6cbb75a424b6e08054c9a4e9bbeb17ca13c6f0e56f71af6dfcd83047c9f2bfe",
+   "a": "8988922967d93b601553c032e41b5f91566a7cc3049e8e4073cf37363047f397"
+  },
+  {
+   "n": 357,
+   "date": "2027-11-02",
+   "h": "a314a5b5d132e075da785f1afb64b9856177014d05ac25ae4352d0430f0885e2",
+   "a": "b2aa635aa2522d6b132a7caf78329f86753eeb773841500257c1e22f22517c6d"
+  },
+  {
+   "n": 358,
+   "date": "2027-11-03",
+   "h": "a678c61df7525161570b5d9b633a56a1d871053bc48842cf7f5651a9af39de91",
+   "a": "f95fc268d629bb1c6534cc668de4bf2ec1f284285635e6a190ac23613f072ec6"
+  },
+  {
+   "n": 359,
+   "date": "2027-11-04",
+   "h": "f2b7a3210bb2a2563651dd0ee1313b28d0a16e876345992ef38e77216bcddb25",
+   "a": "07994a16f3d8e10035f36d2b644c89f8b86a9a888206615fb5168050b1f33db1"
+  },
+  {
+   "n": 360,
+   "date": "2027-11-05",
+   "h": "0ef08d72ddfb143f2c4fc190ca8bd00328cb37188aa4e29b4fbb8b80fe95fde4",
+   "a": "b56119de3a4cf1c0af42496fd502a8b28a664d5347e1520f4be15ff15fbd64f9"
+  },
+  {
+   "n": 361,
+   "date": "2027-11-06",
+   "h": "b6baffeaa511c0473f9fc5cc63002b4ba0eef24d6a2b78f25c9b55ce07f3d3d3",
+   "a": "e5f136424a767b998cb9156eddee2162b9a736e8a993b92c0646be973936c2cd"
+  },
+  {
+   "n": 362,
+   "date": "2027-11-07",
+   "h": "5d3330494d1d27822895ea0e3fd2a158ff3c2c98cf26408f7814fa1e18045c9f",
+   "a": "f104c3655acb983a59f643b122ac5de8aef4ece1f8498ec9f267200ce48f6037"
+  },
+  {
+   "n": 363,
+   "date": "2027-11-08",
+   "h": "ad9866f62451ed98abb9927742643a38946041d44debf882d40b7e5314e0ad1b",
+   "a": "6e482efd96e7e5d4647b115af23563b9e9c0d29c8abddd852e7a900c960514df"
+  },
+  {
+   "n": 364,
+   "date": "2027-11-09",
+   "h": "7f5d474d37e730cac8bf87b80d5147266c88e33e1e211ec8ed17b6f3cf111625",
+   "a": "1ae738ebb3d5b9df6949fb9e2feba0802c57937e7609c231358ea5302a914492"
+  },
+  {
+   "n": 365,
+   "date": "2027-11-10",
+   "h": "edef71fd4e12240fc6d964b53c54c42ebb01345b0f364714972586b208e03ce5",
+   "a": "bd0886cbcb70732c7940d692edd76177e7d8a19c3c3a2ffa35f8fd3af9ed4ceb"
+  }
+ ]
+}
