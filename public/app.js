@@ -92,11 +92,11 @@
     : validDate(params.get('d')) && params.get('d') < today ? 'past' : 'today';
   const S = { date: view === 'past' ? params.get('d') : today, day: null, play: null, busy: false, sel: -1, list: [] };
 
-  if (yday >= START) $('link-yday').href = '/deep-cut/?r=' + yday; else $('link-yday').classList.add('hide');
+  if (yday >= START) $('link-yday').href = '/deep-cut/?r=' + yday; else $('yday-wrap').classList.add('hide');
 
   // ---------- today / past ----------
   async function startGame() {
-    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + 'Deep Cut #' + dayNumber(S.date) + ' · ' + longDate(S.date);
+    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + '#' + dayNumber(S.date) + ' · ' + longDate(S.date);
     try {
       S.day = await api((view === 'past' ? 'day/' + S.date : 'today') + '?device=' + encodeURIComponent(device()));
     } catch (e) {
@@ -104,7 +104,7 @@
       return;
     }
     if (view === 'today') S.date = S.day.date;
-    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + 'Deep Cut #' + S.day.n + ' · ' + longDate(S.date);
+    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + '#' + S.day.n + ' · ' + longDate(S.date);
     $('prompt').textContent = S.day.text;
     $('meta').textContent = S.day.count + ' players fit. You get ' + TRIES + ' tries.';
     S.play = view === 'past' ? (store.get('dc-past-' + S.date) || { picks: [], triesLeft: TRIES, done: false }) : (S.day.play || { picks: [], triesLeft: TRIES, done: false });
@@ -229,7 +229,7 @@
   async function showResults(date) {
     $('game').classList.add('hide');
     $('results').classList.remove('hide');
-    $('sub').textContent = 'Deep Cut #' + dayNumber(date) + ' · ' + longDate(date);
+    $('sub').textContent = '#' + dayNumber(date) + ' · ' + longDate(date);
     $('res-title').textContent = 'Answers';
     let r;
     try { r = await api('results/' + date + '?device=' + encodeURIComponent(device())); }
