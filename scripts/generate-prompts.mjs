@@ -17,8 +17,9 @@
 // beats an obvious one. Scores: score2.mjs (fixed, 1-100, ties equal).
 // Team names are as they were in those seasons (players.mjs units).
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { buildPlayers, unitName, collegeName, allUnits } from './lib/players.mjs';
-import { evaluate, index, ruleText } from './lib/cond.mjs';
+import { evaluate, index, ruleText, seasonLabel } from './lib/cond.mjs';
 import { rawScore, normalize, VERSION } from './lib/score2.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
@@ -74,7 +75,9 @@ const fameOf = new Map(players.map((p) => [p.id, p.fame]));
 
 // ---------- candidates ----------
 // group: A two teams, B teammate, C title/award, D team plus another fact
-// (birthplace, college, career start, draft), E stat season.
+// (birthplace, college, career start, draft), E stat season, F one team's
+// roster in one season (Jorge, Nov 12: "Played for the 1995-96 Seattle
+// SuperSonics").
 const cands = [];
 const the = (u) => 'the ' + factsUnits[u].name;
 const add = (key, group, type, cond, text, extra = {}) => cands.push({ key, group, type, cond, text, ...extra });
@@ -87,9 +90,18 @@ for (let i = 0; i < U.length; i++) for (let j = i + 1; j < U.length; j++) {
   if (factsUnits[a].code === factsUnits[b].code) continue;
   add(`teams:${factsUnits[a].id}:${factsUnits[b].id}`, 'A', 'two-teams', { t: 'teams', u: [a, b] }, `Name a player who played for ${the(a)} and ${the(b)}.`);
 }
-const stars = facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 60);
+// Teammate prompts: stars of fame 45+ (60+ before Nov 12; more were needed).
+const stars = facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 45);
 for (const st of stars) for (const u of new Set(st.s.map((s) => s[1]))) {
   add(`mate:${st.i}:${factsUnits[u].id}`, 'B', 'teammate', { t: 'mate', p: st.i, u }, `Name a player who was a teammate of ${st.n} on ${the(u)}.`, { star: st.i });
+}
+// Team-season rosters, every era name and season in the data.
+const seasonsOf = new Map();
+for (const p of facts.players) for (const s of p.s) { const k = s[1] + '|' + s[0]; seasonsOf.set(k, (seasonsOf.get(k) || 0) + 1); }
+for (const [k, n] of seasonsOf) {
+  if (n < 15) continue;
+  const [u, y] = k.split('|').map(Number);
+  add(`roster:${factsUnits[u].id}:${y}`, 'F', 'roster', { t: 'roster', u, y }, `Name a player who played for the ${seasonLabel(y)} ${factsUnits[u].name.replace(/ \(\d{4}-(\d{4}|present)\)$/, '')}.`);
 }
 for (const u of U) {
   add(`award:rings:${factsUnits[u].id}`, 'C', 'title', { t: 'ring', u }, `Name a player who won an NBA title with ${the(u)}.`);
@@ -154,6 +166,19 @@ const plist = players.map((p) => {
 }).sort((a, b) => a[1].localeCompare(b[1]));
 mkdirSync(ROOT + 'public', { recursive: true });
 writeFileSync(ROOT + 'public/players.json', JSON.stringify({ v: 2, players: plist }));
+
+// The start screen's and preview cards' headshot mosaic (Jorge, Nov 12):
+// players with a real photo from Jorge's face-fill set only (light-grey
+// circles), a mix of stars and deep cuts: 6 of fame 60+, 6 of 8-25, 6 under 8,
+// in a stable shuffled order. [id, name, face-fill file].
+{
+  const h = (x) => createHash('sha256').update('mosaic:' + x).digest('hex');
+  const pickTier = (lo, hi) => players.filter((p) => p.head && p.fame >= lo && p.fame < hi).sort((a, b) => h(a.id).localeCompare(h(b.id))).slice(0, 6);
+  const tiers = [pickTier(60, 1e9), pickTier(8, 25), pickTier(0, 8)];
+  const mosaic = [];
+  for (let k = 0; k < 6; k++) for (const t of tiers) if (t[k]) mosaic.push([t[k].id, t[k].name.replace(/ \(\d{4}\)$/, ''), t[k].head]);
+  writeFileSync(ROOT + 'public/mosaic.json', JSON.stringify({ v: 1, players: mosaic }));
+}
 
 // Wikipedia names players its own way ("Earvin Johnson" is the data's Magic
 // Johnson). Each Wikipedia player is matched once, to:
