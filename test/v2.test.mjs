@@ -84,3 +84,11 @@ test('day pages: own canonical and card, nothing of the puzzle in them', () => {
     assert.ok(existsSync(new URL(`../public/og/${d.date}.jpg`, import.meta.url)), 'card ' + d.date);
   }
 });
+
+test('headshots are tagged in the suggestion list (scripts/headshots.mjs ran last)', () => {
+  const rows = rd('public/players.json').players;
+  const tagged = rows.filter((r) => typeof r[6] === 'string' && /^(f|n):/.test(r[6]));
+  const untagged = rows.filter((r) => r[6] && !/^(f|n):/.test(String(r[6])));
+  assert.equal(untagged.length, 0, 'every headshot carries its source tag');
+  assert.ok(tagged.filter((r) => r[6].startsWith('n:')).length >= 1000, 'NBA.com headshots present');
+});
