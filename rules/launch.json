@@ -1,0 +1,4 @@
+{
+ "_about": "Deep Cut's public launch day (Jorge, Nov 12, 2026: game numbers count from it; #1 is the first public day, earlier days are previews). Placeholder until Jorge sets the date. scripts/build.mjs copies it to public/config.json, which the page reads. The day locks keep their own n (days since data/schedule.json start); the page does not show it.",
+ "launch": "2026-12-01"
+}

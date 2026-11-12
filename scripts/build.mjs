@@ -3,8 +3,9 @@
 //   node scripts/pull-data.mjs && node scripts/generate-prompts.mjs && node scripts/build.mjs [--start YYYY-MM-DD]
 //
 // Reads .cache/candidates.json (generate-prompts.mjs), data/excluded.json and
-// data/schedule.json (if any). Writes data/schedule.json and
-// public/prompts/YYYY-MM-DD.lock, one per day for DAYS days from the start.
+// data/schedule.json (if any). Writes data/schedule.json,
+// public/prompts/YYYY-MM-DD.lock (one per day for DAYS days from the start)
+// and public/config.json (the launch day, from rules/launch.json).
 //
 // FROZEN DAYS (Jorge, Nov 11, 2026: the weekly refresh "never changes a past
 // or current day"): every day up to tomorrow (by the 9:00 AM ET day) that is
@@ -64,6 +65,12 @@ function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; l
 const rand = rng(20261112);
 for (const t in byType) for (let i = byType[t].length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [byType[t][i], byType[t][j]] = [byType[t][j], byType[t][i]]; }
 const ROTATION = ['two-teams', 'award-team', 'team-college', 'teammate', 'country-team', 'two-teams', 'team-draft'];
+
+// The launch day for the page's game numbers (rules/launch.json).
+const LAUNCH = rd('rules/launch.json').launch;
+if (!/^\d{4}-\d{2}-\d{2}$/.test(LAUNCH)) throw new Error('rules/launch.json: launch must be YYYY-MM-DD');
+mkdirSync(ROOT + 'public', { recursive: true });
+writeFileSync(ROOT + 'public/config.json', JSON.stringify({ launch: LAUNCH }) + '\n');
 
 const pub = await fetchPubkey();
 mkdirSync(ROOT + 'public/prompts', { recursive: true });

@@ -10,7 +10,12 @@
   'use strict';
   const API = '/deep-cut/api/';
   const SITE = 'https://hoopsmatic.com/deep-cut/';
-  const START = '2026-11-11';     // Deep Cut #1 (data/schedule.json start)
+  const START = '2026-11-11';     // first scheduled day (data/schedule.json start)
+  // Game numbers count from the public launch day (Jorge, Nov 12): #1 is the
+  // first public day; days before it are previews with no number. The date
+  // comes from /deep-cut/config.json (rules/launch.json, written by
+  // scripts/build.mjs); this is only the fallback.
+  let LAUNCH = '2026-12-01';
   const TRIES = 3;
   const DAY_MS = 86400000;
   const $ = (id) => document.getElementById(id);
@@ -41,7 +46,10 @@
     return new Date(d).toISOString().slice(0, 10);
   }
   const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * DAY_MS).toISOString().slice(0, 10);
-  const dayNumber = (d) => Math.round((Date.parse(d) - Date.parse(START)) / DAY_MS) + 1;
+  const dayNumber = (d) => Math.round((Date.parse(d) - Date.parse(LAUNCH)) / DAY_MS) + 1;
+  // "#12", or "Preview" before launch.
+  const dayLabel = (d) => (d >= LAUNCH ? '#' + dayNumber(d) : 'Preview');
+  const shareName = (d) => (d >= LAUNCH ? 'Deep Cut #' + dayNumber(d) : 'Deep Cut preview');
   const longDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
   const validDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '') && s >= START;
 
@@ -55,21 +63,57 @@
   }
 
   // ---------- players (the suggestion list) ----------
-  // public/players.json: [id, name, career years, birth year or 0]. The birth
-  // year shows only here, to tell two players of the same name apart.
+  // public/players.json: [id, name, career years, birth year or 0, nicknames?].
+  // The birth year shows only here, to tell two players of the same name
+  // apart. The box also matches nicknames (Penny, The Answer, Earvin Johnson)
+  // and first-name short forms (Mo Williams for Maurice Williams); the list
+  // and the game always show the real name.
   let PLAYERS = null, BY_ID = new Map();
   const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
   async function loadPlayers() {
     if (PLAYERS) return PLAYERS;
     const r = await fetch('/deep-cut/players.json');
     const j = await r.json();
-    PLAYERS = j.players.map((p) => ({ id: p[0], name: p[1], years: p[2], born: p[3], key: norm(p[1]), words: norm(p[1]).split(' ') }));
+    PLAYERS = j.players.map((p) => {
+      const keys = [p[1], ...(p[4] || []), ...shortForms(p[1])].map(norm).filter((k, i, a) => k && a.indexOf(k) === i);
+      return { id: p[0], name: p[1], years: p[2], born: p[3], nicks: p[4] || [], keys: keys.map((k) => ({ k, words: k.split(' ') })) };
+    });
     for (const p of PLAYERS) BY_ID.set(p.id, p);
     return PLAYERS;
   }
+  let configLoaded = null;
+  function loadConfig() {
+    return configLoaded || (configLoaded = fetch('/deep-cut/config.json').then((r) => r.json())
+      .then((c) => { if (/^\d{4}-\d{2}-\d{2}$/.test(c.launch || '')) LAUNCH = c.launch; }).catch(() => {}));
+  }
   const nameOf = (id) => (BY_ID.get(id) || {}).name || id;
-  // Every typed word must start a word of the name ("lebron", "le ja",
-  // "james leb"). Full-name prefix matches first, then alphabetical.
+  // Common short forms of first names, both ways (Maurice <-> Mo).
+  const SHORT = {
+    maurice: ['mo'], mohamed: ['mo'], mohammed: ['mo'], morris: ['mo'],
+    robert: ['bob', 'bobby', 'rob'], william: ['bill', 'billy', 'will'], michael: ['mike'], christopher: ['chris'],
+    anthony: ['tony'], joseph: ['joe', 'joey'], james: ['jim', 'jimmy'], charles: ['charlie', 'chuck'],
+    richard: ['rich', 'rick', 'dick'], thomas: ['tom', 'tommy'], edward: ['ed', 'eddie'], daniel: ['dan', 'danny'],
+    matthew: ['matt'], nicholas: ['nick'], alexander: ['alex'], benjamin: ['ben'], jonathan: ['jon'],
+    kenneth: ['ken', 'kenny'], ronald: ['ron'], donald: ['don'], gerald: ['jerry'], lawrence: ['larry'],
+    frederick: ['fred'], patrick: ['pat'], samuel: ['sam'], stephen: ['steph', 'steve'], steven: ['steve'],
+    timothy: ['tim'], zachary: ['zach'], andrew: ['andy', 'drew'], david: ['dave'], douglas: ['doug'],
+    gregory: ['greg'], jeffrey: ['jeff'], joshua: ['josh'], theodore: ['ted', 'teddy'], vincent: ['vince'],
+    walter: ['walt'], clifford: ['cliff'], raymond: ['ray'], leonard: ['lenny'], nathaniel: ['nate'],
+    nathan: ['nate'], eugene: ['gene'], henry: ['hank'], cornelius: ['corey'], dwayne: ['dewayne'],
+  };
+  const LONG = {};
+  for (const [full, shorts] of Object.entries(SHORT)) for (const sh of shorts) (LONG[sh] = LONG[sh] || []).push(full);
+  function shortForms(name) {
+    const w = norm(name).split(' ');
+    if (w.length < 2) return [];
+    const rest = w.slice(1).join(' ');
+    return [...(SHORT[w[0]] || []), ...(LONG[w[0]] || [])].map((f) => f + ' ' + rest);
+  }
+  // Every typed word must start a word of the name or of one of its keys
+  // ("lebron", "le ja", "mo will", "penny", "the answer"). Ranked: a key equal
+  // to what was typed, then the real name starting with it, then any key
+  // starting with it, then alphabetical. Each suggestion says which nickname
+  // matched when it was not the name.
   function search(q, skip) {
     const qs = norm(q);
     if (qs.length < 2 || !PLAYERS) return [];
@@ -77,10 +121,14 @@
     const out = [];
     for (const p of PLAYERS) {
       if (skip.has(p.id)) continue;
-      if (parts.every((w) => p.words.some((x) => x.startsWith(w)))) out.push(p);
+      const hit = p.keys.find((k) => parts.every((w) => k.words.some((x) => x.startsWith(w))));
+      if (!hit) continue;
+      const rank = p.keys.some((k) => k.k === qs) ? 0 : p.keys[0].k.startsWith(qs) ? 1 : p.keys.some((k) => k.k.startsWith(qs)) ? 2 : 3;
+      const nick = hit === p.keys[0] ? null : p.nicks.find((n) => norm(n) === hit.k) || null;
+      out.push({ p, rank, nick });
     }
-    out.sort((a, b) => (b.key.startsWith(qs) - a.key.startsWith(qs)) || a.name.localeCompare(b.name));
-    return out.slice(0, 6);
+    out.sort((a, b) => a.rank - b.rank || a.p.name.localeCompare(b.p.name));
+    return out.slice(0, 6).map((x) => ({ ...x.p, matched: x.nick }));
   }
 
   // ---------- state ----------
@@ -96,7 +144,8 @@
 
   // ---------- today / past ----------
   async function startGame() {
-    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + '#' + dayNumber(S.date) + ' · ' + longDate(S.date);
+    await loadConfig();
+    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + dayLabel(S.date) + ' · ' + longDate(S.date);
     try {
       S.day = await api((view === 'past' ? 'day/' + S.date : 'today') + '?device=' + encodeURIComponent(device()));
     } catch (e) {
@@ -104,7 +153,7 @@
       return;
     }
     if (view === 'today') S.date = S.day.date;
-    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + '#' + S.day.n + ' · ' + longDate(S.date);
+    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + dayLabel(S.date) + ' · ' + longDate(S.date);
     $('prompt').textContent = S.day.text;
     $('meta').textContent = S.day.count + ' players fit. You get ' + TRIES + ' tries.';
     S.play = view === 'past' ? (store.get('dc-past-' + S.date) || { picks: [], triesLeft: TRIES, done: false }) : (S.day.play || { picks: [], triesLeft: TRIES, done: false });
@@ -163,7 +212,9 @@
       const li = el('li');
       const b = el('button');
       b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(i === S.sel));
-      b.appendChild(el('span', 'nm', p.name + (p.born ? ' (b. ' + p.born + ')' : '')));
+      const nm = el('span', 'nm', p.name + (p.born ? ' (b. ' + p.born + ')' : ''));
+      if (p.matched) nm.appendChild(el('span', 'aka', ' “' + p.matched + '”'));
+      b.appendChild(nm);
       b.appendChild(el('span', 'yr', p.years));
       b.addEventListener('click', () => pick(p));
       li.appendChild(b); ul.appendChild(li);
@@ -199,7 +250,7 @@
     drawShare();
   }
   function shareUrl(channel) { return SITE + (channel ? '?ref=share-deepcut-' + channel : ''); }
-  function shareText(channel) { return 'Deep Cut #' + S.day.n + ' · ' + (S.play.score || 0) + '\n' + shareUrl(channel); }
+  function shareText(channel) { return shareName(S.date) + ' · ' + (S.play.score || 0) + '\n' + shareUrl(channel); }
   function drawShare() {
     $('r-sharetext').textContent = shareText('');
     const box = $('r-shares');
@@ -229,7 +280,8 @@
   async function showResults(date) {
     $('game').classList.add('hide');
     $('results').classList.remove('hide');
-    $('sub').textContent = '#' + dayNumber(date) + ' · ' + longDate(date);
+    await loadConfig();
+    $('sub').textContent = dayLabel(date) + ' · ' + longDate(date);
     $('res-title').textContent = 'Answers';
     let r;
     try { r = await api('results/' + date + '?device=' + encodeURIComponent(device())); }
@@ -256,14 +308,15 @@
   }
 
   // ---------- archive ----------
-  function showArchive() {
+  async function showArchive() {
+    await loadConfig();
     $('game').classList.add('hide');
     $('archive').classList.remove('hide');
     $('sub').textContent = 'Every past Deep Cut';
     const ul = $('arc-list');
     for (let d = yday; d >= START; d = addDays(d, -1)) {
       const li = el('li');
-      li.appendChild(el('span', null, '#' + dayNumber(d) + ' · ' + longDate(d)));
+      li.appendChild(el('span', null, dayLabel(d) + ' · ' + longDate(d)));
       const links = el('span');
       const play = el('a', null, 'Play'); play.href = '/deep-cut/?d=' + d;
       const ans = el('a', null, 'Answers'); ans.href = '/deep-cut/?r=' + d;
@@ -271,7 +324,7 @@
       li.appendChild(links);
       ul.appendChild(li);
     }
-    if (!ul.children.length) ul.appendChild(el('li', 'muted', 'Deep Cut #1 is today’s. Past days show up here from tomorrow.'));
+    if (!ul.children.length) ul.appendChild(el('li', 'muted', 'Past days show up here from tomorrow.'));
   }
 
   if (view === 'results') showResults(params.get('r'));

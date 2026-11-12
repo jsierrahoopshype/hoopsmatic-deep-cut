@@ -17,7 +17,7 @@
 // Plus our own: at most 150 answers (a prompt anyone can answer with a
 // random name is no game), at least 2 stars and 3 deep cuts, stars at most
 // half the list, and the two parts of a prompt must each narrow it.
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { buildPlayers, unitName, unitInfo, collegeName, seasonLabel } from './lib/players.mjs';
 import { instantScore, tierOf } from './lib/score.mjs';
 
@@ -198,9 +198,58 @@ mkdirSync(ROOT + '.cache', { recursive: true });
 const KEEP = process.argv.includes('--keep-samples');
 if (!KEEP) writeFileSync(ROOT + 'data/excluded.json', JSON.stringify({ _about: 'Prompt keys shown in docs/step1-samples.md; never scheduled.', keys: samples.map((c) => c.key) }, null, 1) + '\n');
 // The suggestion list (public): every player, id, name without the data's
-// birth-year tag, that tag as "b" (shown only in the list), and career years.
-const plist = players.map((p) => { const m = p.name.match(/^(.*) \((\d{4})\)$/); return [p.id, m ? m[1] : p.name, `${p.firstYear - 1}-${String(p.lastYear).slice(2)}`, m ? +m[2] : 0]; })
-  .sort((a, b) => a[1].localeCompare(b[1]));
+// birth-year tag, career years, that tag (shown only in the list, 0 if none)
+// and the nicknames the box also matches (data/nicknames.json, Jorge, Nov 12).
+// First-name short forms (Mo for Maurice) are added in the page (app.js).
+const nickOf = nicknamesByPlayer(players);
+const plist = players.map((p) => {
+  const m = p.name.match(/^(.*) \((\d{4})\)$/);
+  const row = [p.id, m ? m[1] : p.name, `${p.firstYear - 1}-${String(p.lastYear).slice(2)}`, m ? +m[2] : 0];
+  if (nickOf.has(p.id)) row.push(nickOf.get(p.id));
+  return row;
+}).sort((a, b) => a[1].localeCompare(b[1]));
+console.log('nicknames matched to players:', [...nickOf.values()].reduce((s, x) => s + x.length, 0), 'on', nickOf.size, 'players');
+
+// Wikipedia names players its own way ("Earvin Johnson" is the data's Magic
+// Johnson). Each Wikipedia player is matched once, to:
+//   1. a data player stored under one of his nicknames plus his last name
+//      ("Hot Rod Williams", "Magic Johnson"), the most famous if several
+//      (Magic's "Buck" also spells Buck Johnson, a different player); else
+//   2. the one data player with exactly his Wikipedia name; else nobody.
+// Rule 1 comes first because an exact name can be someone else (Wikipedia's
+// John Williams is Hot Rod Williams, not the data's other John Williams).
+// Lowercase fragments ("pretty") are skipped, and so is a nickname that is
+// the data name or its first word. Wikipedia's spelling of the name becomes
+// a key too when it differs (Earvin Johnson).
+function nicknamesByPlayer(list) {
+  const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const clean = (n) => norm(n.replace(/ \(\d{4}\)$/, ''));
+  const byName = new Map();
+  for (const p of list) { const k = clean(p.name); if (!byName.has(k)) byName.set(k, []); byName.get(k).push(p); }
+  const people = new Map();   // Wikipedia name -> its nicknames
+  for (const { player, nickname } of JSON.parse(readFileSync(ROOT + 'data/nicknames.json', 'utf8')).nicknames) {
+    if (!/^[A-Z0-9"']/.test(nickname)) continue;
+    if (!people.has(player)) people.set(player, []);
+    people.get(player).push(nickname);
+  }
+  const out = new Map();
+  for (const [player, nicks] of people) {
+    const w = norm(player), last = w.split(' ').pop();
+    const stored = [...new Set(nicks.flatMap((n) => byName.get(norm(n) + ' ' + last) || []))].sort((a, b) => b.fame - a.fame);
+    const exact = byName.get(w) || [];
+    const p = stored[0] || (exact.length === 1 ? exact[0] : null);
+    if (!p) continue;
+    const name = clean(p.name), first = name.split(' ')[0];
+    const keys = [];
+    for (const k of [...nicks, player]) {
+      const nk = norm(k);
+      if (!nk || nk === name || nk === first || keys.some((x) => norm(x) === nk)) continue;
+      keys.push(k);
+    }
+    if (keys.length) out.set(p.id, keys);
+  }
+  return out;
+}
 mkdirSync(ROOT + 'public', { recursive: true });
 writeFileSync(ROOT + 'public/players.json', JSON.stringify({ v: 1, players: plist }));
 writeFileSync(ROOT + '.cache/candidates.json', JSON.stringify(Object.fromEntries(Object.entries(byType).map(([t, l]) => [t, l.map(strip)]))) + '\n');
