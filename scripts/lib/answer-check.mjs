@@ -4,7 +4,7 @@
 //
 //   1. The 3 best-known valid answers (the lowest scores: the most obvious
 //      players) are accepted by the evaluator the server uses.
-//   2. For questions about teams, a roster or a teammate, the full answer
+//   2. For questions about teams, a roster or a teammate (any team too), the full answer
 //      list is worked out a second time, independently and plainly, from the
 //      season rows alone (played 1+ regular-season game for that era's team,
 //      any season), and must match exactly. This is what caught Amir Johnson
@@ -18,6 +18,11 @@ function plainSet(cond, facts) {
     const on = (u) => p.s.some((s) => s[1] === u);
     if (cond.t === 'teams' && on(cond.u[0]) && on(cond.u[1])) out.add(p.i);
     if (cond.t === 'roster' && p.s.some((s) => s[1] === cond.u && s[0] === cond.y)) out.add(p.i);
+    if (cond.t === 'mateany' && p.i !== cond.p) {
+      const star = facts.players.find((x) => x.i === cond.p);
+      const ys = new Set(star.s.map((s) => s[0] + '|' + s[1]));
+      if (p.s.some((s) => ys.has(s[0] + '|' + s[1]))) out.add(p.i);
+    }
     if (cond.t === 'mate' && p.i !== cond.p) {
       const star = facts.players.find((x) => x.i === cond.p);
       const ys = new Set(star.s.filter((s) => s[1] === cond.u).map((s) => s[0]));
@@ -40,7 +45,7 @@ export function checkQuestion(q, facts, F) {
     const r = p ? evaluate(q.cond, p, F) : { ok: false, fail: 'not in facts' };
     if (!r.ok) errs.push(`${q.key}: well-known answer ${p ? p.n : a.i} refused: ${r.fail}`);
   }
-  if (['teams', 'roster', 'mate'].includes(q.cond.t)) {
+  if (['teams', 'roster', 'mate', 'mateany'].includes(q.cond.t)) {
     const want = plainSet(q.cond, facts), got = new Set(ans.map((a) => a.i));
     const missing = [...want].filter((i) => !got.has(i)), extra = [...got].filter((i) => !want.has(i));
     if (missing.length) errs.push(`${q.key}: refuses players who fit the plain wording: ${missing.slice(0, 5).map((i) => F.byId.get(i).n).join(', ')}`);

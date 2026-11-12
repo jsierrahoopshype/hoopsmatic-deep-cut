@@ -175,7 +175,7 @@ export function buildPlayers() {
       pick: s?.draft_pick || null, college,
       seasons: [], units: new Set(), gp: 0, min: 0,
       allStar: [], allRookie: [], allDefense: [], allNba: [], rings: [], aw: {},
-      salary: {}, solo: {}, potw: [], clubs: [], payTop: [], earnings: 0, votes: [], medals: 0, combine: null, highs: [],
+      salary: {}, solo: {}, potw: [], clubs: [], payTop: [], earnings: 0, votes: [], medals: [], combine: null, highs: [],
       ht: inches(b.HEIGHT), wt: +b.WEIGHT || null,
       firstYear: null, lastYear: null,
     };
@@ -292,14 +292,15 @@ export function buildPlayers() {
     if (['MVP', 'DPOY', 'MIP', 'Sixth Man', 'ROY'].includes(award)) p.votes.push({ y, award, rank: +v.RNK || null, unit: unitsIn(p, y)[0] || null });
   }
   // Olympic and World Cup medals.
-  for (const a of awards) if (/^(Olympic|World Cup) (Gold|Silver|Bronze)$/.test(a.AWARD)) { const p = byName.get(a['PLAYER / COACH']); if (p) p.medals++; }
+  for (const a of awards) if (/^(Olympic|World Cup) (Gold|Silver|Bronze)$/.test(a.AWARD)) { const p = byName.get(a['PLAYER / COACH']); if (p) p.medals.push(a.AWARD); }
   // Draft combine (nba-player-data combine-v3.json): wingspan, max vertical,
-  // height without shoes (inches), combine year.
+  // height without shoes (inches), combine year, standing reach.
   for (const c of src('combine')) {
     const p = byName.get(c.PLAYER);
     if (!p) continue;
     const ws = inches(c.WINGSPAN), hn = inches(c['HEIGHT W/O SHOES'] || c['HEIGHT\u00a0W/O\u00a0SHOES']), mv = +c['MAX VERT'] || null;
-    if (ws || mv || hn) p.combine = [ws, mv, hn, +c.YEAR || null];
+    const reach = inches(c['STANDING REACH'] || c['STANDING\u00a0REACH']);
+    if (ws || mv || hn || reach) p.combine = [ws, mv, hn, +c.YEAR || null, reach];
   }
   // Single-game highs (data/game-highs.json from aderoa/nba-boxscores). The
   // archive's team codes are the season's own (PHW); each is matched to the

@@ -199,3 +199,7 @@ button { font: inherit; color: inherit; }
 #next.auto.paused::after { animation-play-state: paused; }
 @keyframes dc-auto { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @media (prefers-reduced-motion: reduce) { #next.auto::after { display: none; } }
+
+/* The fixed start of every question (Jorge, Nov 14): "Name a player who…" */
+.lead { margin: 6px 0 2px; font-family: var(--oswald); font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); }
+.lead.small { font-size: 12px; margin: 0 0 6px; }
