@@ -11,10 +11,10 @@
 //   public/practice/<n>.lock      one practice round each, and index.json
 //   public/config.json            the launch day (rules/launch.json)
 //
-// DAILY (Jorge, Nov 12, 2026): 5 rounds, every prompt used at most once in a
-// year, no team twice in a day, at most 2 rounds from one group (A two
-// teams, B teammate, C title/award, D team plus another fact, E stat
-// season). The schedule covers as many days (up to 365) as the pool allows;
+// DAILY (Jorge, Nov 12, 2026): 10 questions, every prompt used at most once
+// in a year, no team twice in a day, a capped number of rounds per group (A
+// two teams, B teammate, C title/award, D team plus another fact, E stat
+// season; see fillDay), groups taking turns through the day. The schedule covers as many days (up to 365) as the pool allows;
 // the weekly refresh extends it.
 //
 // PRACTICE (Jorge, Nov 12): Unlimited practice only ever uses past Dailies
@@ -30,12 +30,12 @@
 // data/schedule.json is public, so it holds only hashes: h = sha256(date +
 // ':' + key) per round, a = sha256 of the day's rounds.
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, rmSync } from 'node:fs';
 import { lock, fetchPubkey } from './lib/lock.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const MAX_DAYS = 365;
-const ROUNDS = 5;
+const ROUNDS = 10;
 const PRACTICE_EVERY = 10;
 const DAY_MS = 86400000;
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
@@ -52,7 +52,9 @@ export function dailyDate(ms) {
 }
 
 const today = dailyDate(Date.now());
-const frozenThrough = addDays(today, 1);
+// Normally tomorrow is frozen too. --freeze-through-today (Jorge, Nov 12,
+// 2026: the first 10-question Daily is the next unplayed day) frees it once.
+const frozenThrough = process.argv.includes('--freeze-through-today') ? today : addDays(today, 1);
 const cand = rd('.cache/candidates.json');
 const excluded = new Set(rd('data/excluded.json').keys);
 const old = existsSync(ROOT + 'data/schedule.json') ? rd('data/schedule.json') : null;
@@ -66,7 +68,9 @@ const LAUNCH = rd('rules/launch.json').launch;
 if (!/^\d{4}-\d{2}-\d{2}$/.test(LAUNCH)) throw new Error('rules/launch.json: launch must be YYYY-MM-DD');
 mkdirSync(ROOT + 'public/prompts', { recursive: true });
 mkdirSync(ROOT + 'public/practice', { recursive: true });
-writeFileSync(ROOT + 'public/config.json', JSON.stringify({ launch: LAUNCH }) + '\n');
+const SECONDS = rd('rules/launch.json').seconds;
+if (!Number.isInteger(SECONDS) || SECONDS < 5 || SECONDS > 120) throw new Error('rules/launch.json: seconds must be a whole number, 5 to 120');
+writeFileSync(ROOT + 'public/config.json', JSON.stringify({ launch: LAUNCH, seconds: SECONDS }) + '\n');
 
 // Seeded order (same data, same schedule).
 function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -109,7 +113,10 @@ for (let i = 0; i < MAX_DAYS; i++) {
   }
   picks = fillDay(picks, recent.slice(-2).flat());
   if (picks.length < ROUNDS) break;   // the pool is used up: the schedule ends here
-  picks.sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group]);
+  // Groups take turns: A D E B C A D E B C ...
+  const nth = {};
+  const keyed = picks.map((c) => { nth[c.group] = (nth[c.group] || 0) + 1; return [nth[c.group], GROUP_ORDER[c.group], c]; });
+  picks = keyed.sort((x, y) => x[0] - y[0] || x[1] - y[1]).map((x) => x[2]);
   for (const c of picks) used.add(c.key);
   recent.push(picks.flatMap((c) => c.units));
   const rounds = picks.map(roundOf);
@@ -134,18 +141,23 @@ function fillDay(picks, recentUnits) {
   const per = {}, perType = {};
   const dayUnits = new Set();
   for (const c of picks) { per[c.group] = (per[c.group] || 0) + 1; perType[c.type] = (perType[c.type] || 0) + 1; c.units.forEach((u) => dayUnits.add(u)); }
-  const cap = (pass, g) => (pass === 0 ? 1 : pass === 1 ? 2 : g === 'D' ? 3 : 2);
+  // 10 rounds: A two teams (one type) up to 3, then 4; others 2, then 3.
+  // The last pass only matters once the scarce groups run out (the tail of
+  // the schedule): up to 5 two-team and 5 group-D rounds, 3 of one D type.
+  const CAPS = { A: [3, 4, 4, 5], B: [2, 2, 3, 3], C: [1, 2, 2, 2], D: [2, 3, 4, 5], E: [2, 2, 3, 3] };
+  const cap = (pass, g) => CAPS[g][pass];
+  const typeCap = (pass, c) => (c.group === 'A' ? CAPS.A[pass] : [2, 2, 3, 3][pass]);
   const free = (c) => !used.has(c.key) && !picks.includes(c);
   const remaining = {};
   for (const c of order) if (free(c)) remaining[c.group] = (remaining[c.group] || 0) + 1;
-  for (const pass of [0, 1, 2]) {
+  for (const pass of [0, 1, 2, 3]) {
     const strict = pass === 0;
     while (picks.length < ROUNDS) {
       const groups = Object.keys(remaining).filter((g) => remaining[g] > 0 && (per[g] || 0) < cap(pass, g))
         .sort((a, b) => (per[a] || 0) - (per[b] || 0) || remaining[b] - remaining[a]);
       let got = null;
       for (const g of groups) {
-        got = order.find((c) => c.group === g && free(c) && (perType[c.type] || 0) < 2 && !c.units.some((u) => dayUnits.has(u)) && (!strict || !c.units.some((u) => recentUnits.includes(u))));
+        got = order.find((c) => c.group === g && free(c) && (perType[c.type] || 0) < typeCap(pass, c) && !c.units.some((u) => dayUnits.has(u)) && (!strict || !c.units.some((u) => recentUnits.includes(u))));
         if (got) break;
       }
       if (!got) break;
@@ -176,17 +188,16 @@ writeFileSync(ROOT + 'data/practice.json', JSON.stringify({ _about: 'Practice-on
 // noindex stays on (Jorge, Nov 12): the template's robots meta is kept.
 const TEMPLATE = readFileSync(ROOT + 'public/index.html', 'utf8');
 const DAY_MS_ = 86400000;
-const pad3 = (n) => String(n).padStart(3, '0');
 const longDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 export function dayIdentity(date) {
   const n = Math.round((Date.parse(date) - Date.parse(LAUNCH)) / DAY_MS_) + 1;
-  return date >= LAUNCH ? { label: `Deep Cut #${pad3(n)}`, n } : { label: 'Deep Cut preview', n: null };
+  return date >= LAUNCH ? { label: `Deep Cut #${n}`, n } : { label: 'Deep Cut preview', n: null };
 }
 function dayPage(date) {
   const { label } = dayIdentity(date);
   const url = `https://hoopsmatic.com/deep-cut/${date}/`;
   const title = `${label}: NBA trivia for ${longDate(date)} | HoopsMatic`;
-  const desc = `${label}, ${longDate(date)}: five NBA prompts. Name the least obvious player who fits each one, up to 500 points. No spoilers on this page.`;
+  const desc = `${label}, ${longDate(date)}: ten NBA questions. Name the least obvious player who fits each one; your score is out of 100. No spoilers on this page.`;
   const card = `https://hoopsmatic.com/deep-cut/og-card/${date}`;
   const esc = (x) => x.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   let h = TEMPLATE
@@ -194,7 +205,7 @@ function dayPage(date) {
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${esc(desc)}">`)
     .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${url}">`)
     .replace(/<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${esc(label + ' · ' + longDate(date))}">`)
-    .replace(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="Five NBA prompts. Name the least obvious player who fits. Play this puzzle: no spoilers here.">`)
+    .replace(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="Ten NBA questions. Name the least obvious player who fits. Play this puzzle: no spoilers here.">`)
     .replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${url}">`)
     .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${card}$2`)
     .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${card}$2`)
@@ -205,7 +216,7 @@ function dayPage(date) {
   writeFileSync(`${ROOT}public/${date}/index.html`, h);
 }
 for (const d of days) dayPage(d.date);
-for (const f of readdirSync(ROOT + 'public')) if (/^\d{4}-\d{2}-\d{2}$/.test(f) && !scheduled.has(f) && f > frozenThrough) { unlinkSync(`${ROOT}public/${f}/index.html`); }
+for (const f of readdirSync(ROOT + 'public')) if (/^\d{4}-\d{2}-\d{2}$/.test(f) && !scheduled.has(f) && f > frozenThrough) rmSync(`${ROOT}public/${f}`, { recursive: true, force: true });
 
 writeFileSync(ROOT + 'data/schedule.json', JSON.stringify({
   _about: 'Deep Cut days (scripts/build.mjs). v2 days: h = sha256(date:key) per round, a = sha256(rounds). v1 days (before five rounds): one h. The prompts are only in the encrypted public/prompts/<date>.lock files.',
