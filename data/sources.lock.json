@@ -63,6 +63,24 @@
    "sha256": "c4372a0eadd9528427b1c451baa622baa748587d557aeaf5964ad9db853195d6",
    "bytes": 8652248,
    "rows": 5196
+  },
+  {
+   "id": "hsPlayers",
+   "repo": "jsierrahoopshype/nba-headshots",
+   "path": "players/metadata/players.json",
+   "commit": "ce95ee4d1a3d28e0f386133e18e0f00cf06bf7b5",
+   "sha256": "c2d2ec30377332e93f6c91e1716bc77492e77e61f6d0c80272e1f53f928b84c6",
+   "bytes": 314504,
+   "rows": 692
+  },
+  {
+   "id": "teams",
+   "repo": "jsierrahoopshype/nba-headshots",
+   "path": "teams/metadata/teams.json",
+   "commit": "ce95ee4d1a3d28e0f386133e18e0f00cf06bf7b5",
+   "sha256": "e2c8444c31c18bd4e277aa9aa942cf6dab2afc7e96b17186d0408958839867cb",
+   "bytes": 9375,
+   "rows": 30
   }
  ],
  "births": {

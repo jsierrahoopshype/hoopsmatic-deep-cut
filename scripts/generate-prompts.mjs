@@ -1,214 +1,145 @@
-// Deep Cut prompt generator. Run once; the schedule is committed and no daily
-// job runs.
+// Deep Cut prompt generator (scoring v2, Jorge, Nov 12, 2026).
 //
-//   node scripts/pull-data.mjs          (pinned source files -> .cache/sources/)
-//   node scripts/generate-prompts.mjs   [--samples 14]
-//   node scripts/build.mjs              (the schedule and the day locks)
+//   node scripts/pull-data.mjs          pinned source files -> .cache/sources/
+//   node scripts/generate-prompts.mjs   every prompt that passes the rules
+//   node scripts/build.mjs              the schedule, day locks, practice pool
 //
 // Writes
-//   .cache/candidates.json       every prompt that passed the rules, by type
-//   docs/step1-samples.md        the sample prompts with full answer lists
-//   data/excluded.json           their keys, never scheduled
-//   public/players.json          the suggestion list
+//   data/facts.json          the player facts the Deep Cut server checks picks
+//                            against (scripts/lib/cond.mjs). Public data only.
+//   .cache/candidates.json   every prompt that passed, with its scored answers
+//   public/players.json      the suggestion list (every player, never which
+//                            ones qualify)
 //
-// Rules for a prompt (Jorge, Nov 11, 2026):
-//   - built only from Jorge's data; team names as they were in those seasons
-//   - at least 15 valid answers, a mix of stars and deep cuts
-// Plus our own: at most 150 answers (a prompt anyone can answer with a
-// random name is no game), at least 2 stars and 3 deep cuts, stars at most
-// half the list, and the two parts of a prompt must each narrow it.
-import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
-import { buildPlayers, unitName, unitInfo, collegeName, seasonLabel } from './lib/players.mjs';
-import { instantScore, tierOf } from './lib/score.mjs';
+// A prompt is a condition (scripts/lib/cond.mjs). It passes when it has 15
+// to 150 valid answers and a useful spread of scores: the raw obscurity of
+// its answers (score2.mjs) spans at least MIN_SPREAD, so a deep pick really
+// beats an obvious one. Scores: score2.mjs (fixed, 10-100, ties equal).
+// Team names are as they were in those seasons (players.mjs units).
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
+import { buildPlayers, unitName, collegeName, allUnits } from './lib/players.mjs';
+import { evaluate, index, ruleText } from './lib/cond.mjs';
+import { rawScore, normalize, VERSION } from './lib/score2.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
-const SAMPLES = +arg('samples', 14);
-const MIN_ANSWERS = 15, MAX_ANSWERS = 150, MIN_STARS = 2, MIN_DEEP = 3;
+const src = (id) => JSON.parse(readFileSync(`${ROOT}.cache/sources/${id}.json`, 'utf8'));
+const MIN_ANSWERS = 15, MAX_ANSWERS = 150, MIN_SPREAD = 0.3;
 
 const { players } = buildPlayers();
-const the = (u) => 'the ' + unitName(u);
-// Decade of the first NBA season, by its starting year (1979-80 -> 1970).
-const startDecade = (p) => Math.floor((p.firstYear - 1) / 10) * 10;
 
-// ---------- candidate prompts ----------
-// Each: { key, type, text, units:[...], test(p) -> bool }
+// ---------- facts ----------
+const units = allUnits();
+const uIndex = new Map(units.map((u, i) => [u.id, i]));
+const factsUnits = units.map((u) => {
+  const name = unitName(u.id);
+  const nick = u.name.split(' ').pop() === 'Blazers' ? 'Trail Blazers' : u.name.split(' ').slice(-1)[0];
+  // Short name for badges and evidence: the nickname ("SuperSonics"); the
+  // full name with years only where two eras share the full name (the
+  // Charlotte Hornets). The rule beside the prompt names the exact era.
+  return { id: u.id, name, short: name !== u.name ? name : (u.name.endsWith('Trail Blazers') ? 'Trail Blazers' : nick),
+    code: u.code, from: u.from, to: u.to };
+});
+const teamSlug = new Map(src('teams').map((t) => [t.abbrev, t.slug]));
+const asOf = new Date().toISOString().slice(0, 10);
+const facts = {
+  _about: 'Deep Cut player facts (scripts/generate-prompts.mjs), from the pinned sources in data/sources.lock.json. The Deep Cut server checks picks against these with scripts/lib/cond.mjs.',
+  v: 1, asOf, units: factsUnits,
+  players: players.map((p) => {
+    const u = (id) => uIndex.get(id);
+    const a = {};
+    for (const k of ['allStar', 'allRookie', 'allDefense', 'allNba']) if (p[k].length) a[k] = p[k].filter((x) => x.units[0]).map((x) => [x.y, u(x.units[0])]);
+    return { i: p.id, n: p.name.replace(/ \(\d{4}\)$/, ''), c: p.college || null, cn: p.college ? collegeName(p.college) : null,
+      b: p.bornIn || null, bp: p.birthplace || null, f: p.firstYear, l: p.lastYear, d: p.draftYear || null, k: p.pick || null, g: p.gp,
+      s: p.seasons.map((s) => [s.y, u(s.unit), s.gp, s.pts, s.reb, s.ast, s.stl, s.blk, s.tpm]), r: p.rings.map((r) => [r.y, u(r.unit)]), a };
+  }),
+};
+mkdirSync(ROOT + 'data', { recursive: true });
+writeFileSync(ROOT + 'data/facts.json', JSON.stringify(facts));
+const F = index(facts);
+const fameOf = new Map(players.map((p) => [p.id, p.fame]));
+
+// ---------- candidates ----------
+// group: A two teams, B teammate, C title/award, D team plus another fact
+// (birthplace, college, career start, draft), E stat season.
 const cands = [];
-const add = (c) => cands.push(c);
-
+const the = (u) => 'the ' + factsUnits[u].name;
+const add = (key, group, type, cond, text, extra = {}) => cands.push({ key, group, type, cond, text, ...extra });
 const unitCount = new Map();
-for (const p of players) for (const u of p.units) unitCount.set(u, (unitCount.get(u) || 0) + 1);
-const UNITS = [...unitCount.keys()].filter((u) => unitCount.get(u) >= 40);
-const sameFranchise = (a, b) => unitInfo(a).code === unitInfo(b).code;
+for (const p of facts.players) for (const u of new Set(p.s.map((s) => s[1]))) unitCount.set(u, (unitCount.get(u) || 0) + 1);
+const U = [...unitCount.keys()].filter((u) => unitCount.get(u) >= 40);
 
-// 1. Two teams
-for (let i = 0; i < UNITS.length; i++) for (let j = i + 1; j < UNITS.length; j++) {
-  const [a, b] = [UNITS[i], UNITS[j]].sort((x, y) => unitName(x).localeCompare(unitName(y)));
-  if (sameFranchise(a, b)) continue;
-  add({ key: `teams:${a}:${b}`, type: 'two-teams', units: [a, b],
-    text: `Name a player who played for ${the(a)} and ${the(b)}.`,
-    test: (p) => p.units.has(a) && p.units.has(b) });
+for (let i = 0; i < U.length; i++) for (let j = i + 1; j < U.length; j++) {
+  const [a, b] = [U[i], U[j]].sort((x, y) => factsUnits[x].name.localeCompare(factsUnits[y].name));
+  if (factsUnits[a].code === factsUnits[b].code) continue;
+  add(`teams:${factsUnits[a].id}:${factsUnits[b].id}`, 'A', 'two-teams', { t: 'teams', u: [a, b] }, `Name a player who played for ${the(a)} and ${the(b)}.`);
+}
+const stars = facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 60);
+for (const st of stars) for (const u of new Set(st.s.map((s) => s[1]))) {
+  add(`mate:${st.i}:${factsUnits[u].id}`, 'B', 'teammate', { t: 'mate', p: st.i, u }, `Name a player who was a teammate of ${st.n} on ${the(u)}.`, { star: st.i });
+}
+for (const u of U) {
+  add(`award:rings:${factsUnits[u].id}`, 'C', 'title', { t: 'ring', u }, `Name a player who won an NBA title with ${the(u)}.`);
+  for (const [k, w] of [['allStar', 'an All-Star team'], ['allRookie', 'an All-Rookie team'], ['allDefense', 'an All-Defensive team'], ['allNba', 'an All-NBA team']])
+    add(`award:${k}:${factsUnits[u].id}`, 'C', 'award', { t: 'award', a: k, u }, `Name a player who made ${w} as a member of ${the(u)}.`);
+}
+const count = (f) => { const m = new Map(); for (const p of facts.players) { const k = f(p); if (k) m.set(k, (m.get(k) || 0) + 1); } return m; };
+const born = count((p) => (p.b && p.b !== 'United States' ? p.b : null));
+const colleges = count((p) => p.c);
+const COLS = [...colleges.keys()].filter((c) => colleges.get(c) >= 15);
+for (const u of U) {
+  add(`bornout:${factsUnits[u].id}`, 'D', 'birthplace', { t: 'bornout', u }, `Name a player born outside the United States who played for ${the(u)}.`);
+  for (const [c, n] of born) if (n >= 15) add(`born:${factsUnits[u].id}:${c}`, 'D', 'birthplace', { t: 'born', c, u }, `Name a player born in ${c} who played for ${the(u)}.`);
+  for (let d = 1940; d <= 2020; d += 10) add(`start:${factsUnits[u].id}:${d}`, 'D', 'career-start', { t: 'start', d, u }, `Name a player who started his NBA career in the ${d}s and played for ${the(u)}.`);
+  add(`top10:${factsUnits[u].id}`, 'D', 'draft', { t: 'top10', u }, `Name a player who was a top-10 draft pick (1990 to 2025 drafts) and played for ${the(u)}.`);
+  for (const c of COLS) add(`college:${factsUnits[u].id}:${c}`, 'D', 'college', { t: 'college', c, cn: collegeName(c), u }, `Name a player who played for ${the(u)} and went to college at ${collegeName(c)}.`);
+  for (const [k, v, w] of [['ppg', 25, 'points'], ['ppg', 20, 'points'], ['ppg', 15, 'points'], ['rpg', 12, 'rebounds'], ['rpg', 10, 'rebounds'], ['rpg', 8, 'rebounds'],
+    ['apg', 9, 'assists'], ['apg', 7, 'assists'], ['apg', 5, 'assists'], ['spg', 1.5, 'steals'], ['spg', 2, 'steals'], ['bpg', 1.5, 'blocks'], ['bpg', 2, 'blocks'], ['tpg', 2, 'three-pointers'], ['tpg', 3, 'three-pointers']])
+    add(`stat:${k}${v}:${factsUnits[u].id}`, 'E', 'stat', { t: 'stat', k, v, u }, `Name a player who averaged ${v}+ ${w} a game in a season for ${the(u)}.`);
+}
+for (const c of COLS) {
+  for (let d = 1950; d <= 2020; d += 10) add(`colstart:${c}:${d}`, 'D', 'college', { t: 'colstart', c, cn: collegeName(c), d }, `Name a player who went to college at ${collegeName(c)} and started his NBA career in the ${d}s.`);
+  add(`colstar:${c}`, 'D', 'college', { t: 'colstar', c, cn: collegeName(c) }, `Name a player who went to college at ${collegeName(c)} and made at least one All-Star team.`);
 }
 
-// 2. Team + college
-const collegeCount = new Map();
-for (const p of players) if (p.college) collegeCount.set(p.college, (collegeCount.get(p.college) || 0) + 1);
-const COLLEGES = [...collegeCount.keys()].filter((c) => collegeCount.get(c) >= 15);
-for (const u of UNITS) for (const c of COLLEGES) add({ key: `college:${u}:${c}`, type: 'team-college', units: [u],
-  text: `Name a player who played for ${the(u)} and went to college at ${collegeName(c)}.`,
-  test: (p) => p.units.has(u) && p.college === c });
-
-// College + draft decade and college + All-Star: a single team + college
-// rarely reaches 15 answers, so these carry the college days.
-for (const c of COLLEGES) {
-  for (let d = 1950; d <= 2020; d += 10) add({ key: `coldec:${c}:${d}`, type: 'team-college', units: [],
-    text: `Name a player who went to college at ${collegeName(c)} and started his NBA career in the ${d}s.`,
-    test: (p) => p.college === c && startDecade(p) === d });
-  add({ key: `colstar:${c}`, type: 'team-college', units: [],
-    text: `Name a player who went to college at ${collegeName(c)} and made at least one All-Star team.`,
-    test: (p) => p.college === c && p.allStar.length > 0 });
-}
-
-// 3. Team + decade the player's NBA career started (first NBA season, by the
-// year it began: 1979-80 is the 1970s). Replaces draft class (Jorge, Nov 11).
-for (const u of UNITS) for (let d = 1940; d <= 2020; d += 10) {
-  add({ key: `start:${u}:${d}`, type: 'team-draft', units: [u],
-    text: `Name a player who started his NBA career in the ${d}s and played for ${the(u)}.`,
-    test: (p) => startDecade(p) === d && p.units.has(u) });
-}
-// Lottery-era top-10 picks with a team
-for (const u of UNITS) add({ key: `top10:${u}`, type: 'team-draft', units: [u],
-  text: `Name a player who was a top-10 draft pick (1990 draft or later) and played for ${the(u)}.`,
-  test: (p) => p.draftYear >= 1990 && p.pick && p.pick <= 10 && p.units.has(u) });
-
-// 4. Award + team
-const AWARDS = [
-  ['allStar', (u) => `Name a player who made an All-Star team as a member of ${the(u)}.`],
-  ['allRookie', (u) => `Name a player who made an All-Rookie team as a member of ${the(u)}.`],
-  ['allDefense', (u) => `Name a player who made an All-Defensive team as a member of ${the(u)}.`],
-  ['allNba', (u) => `Name a player who made an All-NBA team as a member of ${the(u)}.`],
-  ['rings', (u) => `Name a player who won an NBA title with ${the(u)}.`],
-];
-for (const u of UNITS) for (const [k, t] of AWARDS) add({ key: `award:${k}:${u}`, type: 'award-team', award: k, units: [u],
-  text: t(u),
-  test: (p) => p[k].some((a) => (a.units ? a.units.includes(u) : a.unit === u)) });
-
-// 5. Birth country + team: born in one country, or born outside the United
-// States. Birthplace only (Born & Died), never nationality or national team.
-const countryCount = new Map();
-for (const p of players) if (p.bornIn && p.bornIn !== 'United States') countryCount.set(p.bornIn, (countryCount.get(p.bornIn) || 0) + 1);
-const COUNTRIES = [...countryCount.keys()].filter((c) => countryCount.get(c) >= 15);
-for (const u of UNITS) {
-  for (const c of COUNTRIES) add({ key: `born:${u}:${c}`, type: 'country-team', units: [u],
-    text: `Name a player born in ${c} who played for ${the(u)}.`,
-    test: (p) => p.bornIn === c && p.units.has(u) });
-  add({ key: `bornout:${u}`, type: 'country-team', units: [u],
-    text: `Name a player born outside the United States who played for ${the(u)}.`,
-    test: (p) => p.bornIn && p.bornIn !== 'United States' && p.units.has(u) });
-}
-
-// 6. Teammate of a star (same team, same season)
-const stars = players.filter((p) => p.fame >= 60);
-const teamSeasons = new Map();   // "unit|year" -> Set(player)
-for (const p of players) for (const s of p.seasons) {
-  const k = s.unit + '|' + s.y;
-  if (!teamSeasons.has(k)) teamSeasons.set(k, new Set());
-  teamSeasons.get(k).add(p);
-}
-for (const st of stars) for (const u of new Set(st.seasons.map((s) => s.unit))) {
-  const yrs = st.seasons.filter((s) => s.unit === u).map((s) => s.y);
-  const mates = new Set();
-  for (const y of yrs) for (const q of teamSeasons.get(u + '|' + y)) if (q !== st) mates.add(q);
-  add({ key: `mate:${st.id}:${u}`, type: 'teammate', units: [u], star: st.id,
-    text: `Name a player who was a teammate of ${st.name} on ${the(u)}.`,
-    test: (p) => mates.has(p) });
-}
-
-// ---------- check every candidate ----------
+// ---------- check and score every candidate ----------
 const passed = [];
-const reasons = {};
+const why = {};
 for (const c of cands) {
-  const ans = players.filter(c.test);
-  const n = ans.length;
-  const tiers = { star: 0, known: 0, deep: 0 };
-  for (const p of ans) tiers[tierOf(p.fame)]++;
-  let why = null;
-  if (n < MIN_ANSWERS) why = 'under 15';
-  else if (n > MAX_ANSWERS) why = 'over 150';
-  else if (tiers.star < MIN_STARS) why = 'too few stars';
-  else if (tiers.deep < MIN_DEEP) why = 'too few deep cuts';
-  else if (tiers.star > n / 2) why = 'too many stars';
-  reasons[c.type] ??= {}; reasons[c.type][why || 'ok'] = (reasons[c.type][why || 'ok'] || 0) + 1;
-  if (why) continue;
-  passed.push({ ...c, n, tiers, answers: ans.map(answerOf).sort((a, b) => a.score - b.score || a.name.localeCompare(b.name)) });
-}
-
-function answerOf(p) {
-  return { id: p.id, name: p.name.replace(/ \(\d{4}\)$/, ''), score: instantScore(p), tier: tierOf(p.fame), fame: p.fame, gp: p.gp, min: Math.round(p.min),
-    years: `${seasonLabel(p.firstYear)} to ${seasonLabel(p.lastYear)}`, link: p.link };
-}
-
-// ---------- seeded schedule ----------
-// Mulberry32 with a fixed seed: the same data gives the same schedule.
-function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-const rand = rng(20261111);
-const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-
-const byType = {};
-for (const c of passed) (byType[c.type] ??= []).push(c);
-for (const t in byType) shuffle(byType[t]);
-// A week's rotation; teammate and two-teams days are the most fun, so twice.
-const ROTATION = ['two-teams', 'award-team', 'team-college', 'teammate', 'country-team', 'two-teams', 'team-draft'];
-
-function pick(type, recentUnits, usedKeys, recentStars) {
-  const list = byType[type] || [];
-  // Prefer prompts that reuse no team from the last 6 days; fall back to any.
-  for (const strict of [true, false]) for (const c of list) {
-    if (usedKeys.has(c.key)) continue;
-    if (strict && c.units.some((u) => recentUnits.has(u))) continue;
-    if (c.star && recentStars.has(c.star)) continue;
-    // keep the award days varied
-    return c;
+  const ans = [];
+  for (const p of facts.players) {
+    const r = evaluate(c.cond, p, F);
+    if (r.ok) ans.push({ i: p.i, raw: rawScore({ fame: fameOf.get(p.i) || 0, careerGames: p.g, connGames: r.link }) });
   }
-  return null;
+  const raws = ans.map((a) => a.raw);
+  const spread = raws.length ? Math.max(...raws) - Math.min(...raws) : 0;
+  const bad = ans.length < MIN_ANSWERS ? 'under 15' : ans.length > MAX_ANSWERS ? 'over 150' : spread < MIN_SPREAD ? 'low spread' : null;
+  (why[c.type] ??= {})[bad || 'ok'] = (why[c.type][bad || 'ok'] || 0) + 1;
+  if (bad) continue;
+  const sc = normalize(raws);
+  ans.forEach((a, k) => { a.s = sc[k]; });
+  ans.sort((x, y) => y.s - x.s || x.i.localeCompare(y.i));
+  const us = c.cond.u === undefined ? [] : Array.isArray(c.cond.u) ? c.cond.u : [c.cond.u];
+  passed.push({ ...c, units: us.map((u) => factsUnits[u].id), rule: ruleText(c.cond, F), scoring: VERSION,
+    teams: us.map((u) => ({ name: factsUnits[u].name, short: factsUnits[u].short, logo: factsUnits[u].to === null ? teamSlug.get(factsUnits[u].code) || null : null })),
+    answers: ans.map((a) => ({ i: a.i, s: a.s })) });
 }
-
-// Samples first, taken out of the schedule so the report spoils no real day.
-const usedKeys = new Set();
-const samples = [];
-{
-  const want = ['two-teams', 'two-teams', 'two-teams', 'team-college', 'team-college', 'team-draft', 'team-draft',
-    'award-team', 'award-team', 'country-team', 'country-team', 'teammate', 'teammate', 'award-team'].slice(0, SAMPLES);
-  const recent = new Set(), rs = new Set();
-  for (const t of want) {
-    const c = pick(t, recent, usedKeys, rs) || pick(t, new Set(), usedKeys, new Set());
-    if (!c) continue;
-    usedKeys.add(c.key); c.units.forEach((u) => recent.add(u)); if (c.star) rs.add(c.star);
-    samples.push(c);
-  }
-}
-
-function strip(c) { return { key: c.key, type: c.type, text: c.text, units: c.units, star: c.star || null, count: c.n, tiers: c.tiers, answers: c.answers }; }
-
 mkdirSync(ROOT + '.cache', { recursive: true });
-// The sample prompts are public (docs/step1-samples.md), so the schedule
-// never uses them (scripts/build.mjs reads this).
-// --keep-samples (the weekly refresh): the published samples and their
-// excluded keys stay as they are.
-const KEEP = process.argv.includes('--keep-samples');
-if (!KEEP) writeFileSync(ROOT + 'data/excluded.json', JSON.stringify({ _about: 'Prompt keys shown in docs/step1-samples.md; never scheduled.', keys: samples.map((c) => c.key) }, null, 1) + '\n');
-// The suggestion list (public): every player, id, name without the data's
-// birth-year tag, career years, that tag (shown only in the list, 0 if none)
-// and the nicknames the box also matches (data/nicknames.json, Jorge, Nov 12).
-// First-name short forms (Mo for Maurice) are added in the page (app.js).
+writeFileSync(ROOT + '.cache/candidates.json', JSON.stringify({ v: 2, asOf, prompts: passed }));
+console.log('players', facts.players.length, 'candidates', cands.length, 'passed', passed.length);
+console.log(JSON.stringify(why));
+const byG = {}; for (const c of passed) byG[c.group] = (byG[c.group] || 0) + 1; console.log('passed by group', byG);
+
+// ---------- the suggestion list ----------
+// [id, name (no birth-year tag), career years, birth-year tag or 0,
+//  nicknames or 0, page ("s:<slug>" Salary Season Finder, "c:<slug>" Career Map) or 0, headshot file or 0]
 const nickOf = nicknamesByPlayer(players);
 const plist = players.map((p) => {
   const m = p.name.match(/^(.*) \((\d{4})\)$/);
-  const row = [p.id, m ? m[1] : p.name, `${p.firstYear - 1}-${String(p.lastYear).slice(2)}`, m ? +m[2] : 0];
-  if (nickOf.has(p.id)) row.push(nickOf.get(p.id));
-  return row;
+  const link = !p.link ? 0 : p.link.includes('/salary-season-finder/') ? 's:' + p.link.split('/player/')[1].replace(/\/$/, '') : 'c:' + p.link.split('/player/')[1].replace(/\.html$/, '');
+  return [p.id, m ? m[1] : p.name, `${p.firstYear - 1}-${String(p.lastYear).slice(2)}`, m ? +m[2] : 0, nickOf.get(p.id) || 0, link, p.head || 0];
 }).sort((a, b) => a[1].localeCompare(b[1]));
-console.log('nicknames matched to players:', [...nickOf.values()].reduce((s, x) => s + x.length, 0), 'on', nickOf.size, 'players');
+mkdirSync(ROOT + 'public', { recursive: true });
+writeFileSync(ROOT + 'public/players.json', JSON.stringify({ v: 2, players: plist }));
 
 // Wikipedia names players its own way ("Earvin Johnson" is the data's Magic
 // Johnson). Each Wikipedia player is matched once, to:
@@ -249,34 +180,4 @@ function nicknamesByPlayer(list) {
     if (keys.length) out.set(p.id, keys);
   }
   return out;
-}
-mkdirSync(ROOT + 'public', { recursive: true });
-writeFileSync(ROOT + 'public/players.json', JSON.stringify({ v: 1, players: plist }));
-writeFileSync(ROOT + '.cache/candidates.json', JSON.stringify(Object.fromEntries(Object.entries(byType).map(([t, l]) => [t, l.map(strip)]))) + '\n');
-
-// ---------- report ----------
-console.log('players', players.length, 'candidates', cands.length, 'passed', passed.length);
-console.log('by type (checked):', JSON.stringify(reasons, null, 1));
-
-const md = [];
-md.push('# Deep Cut, step 1: sample prompts', '');
-md.push(`Built by \`node scripts/generate-prompts.mjs\` from the files pinned in \`data/sources.lock.json\`. These ${samples.length} prompts are never scheduled (data/excluded.json), so this page spoils no real day.`, '');
-md.push('Score = instant score (0-100, obscurity in the data; formula in `scripts/lib/score.mjs`). Tier: star = fame 25+, known = 8 to 25, deep = under 8 (the NBA Crossword\'s fame formula). Each list is sorted from most to least famous.', '');
-samples.forEach((c, i) => {
-  const ex = examples(c.answers);
-  md.push(`## ${i + 1}. ${c.text}`, '');
-  md.push(`Type: ${c.type}. Valid answers: ${c.n} (${c.tiers.star} stars, ${c.tiers.known} known, ${c.tiers.deep} deep cuts).`, '');
-  md.push(`Examples: star **${ex.star.name}** ${ex.star.score} · mid **${ex.mid.name}** ${ex.mid.score} · deep cut **${ex.deep.name}** ${ex.deep.score}`, '');
-  md.push(c.answers.map((a) => `${a.name} (${a.score})`).join(', '), '');
-});
-if (!KEEP) writeFileSync(ROOT + 'docs/step1-samples.md', md.join('\n'));
-
-// Star: the lowest-scoring (most famous) answer. Mid: the known-tier answer
-// in the middle (else the median). Deep cut: the highest-scoring answer.
-function examples(ans) {
-  const star = ans[0];
-  const known = ans.filter((a) => a.tier === 'known');
-  const mid = known.length ? known[known.length >> 1] : ans[ans.length >> 1];
-  const deep = ans[ans.length - 1];
-  return { star, mid, deep };
 }

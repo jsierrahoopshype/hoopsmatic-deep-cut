@@ -1,39 +1,48 @@
-// The schedule and one encrypted lock per day.
+// The Daily schedule, one encrypted lock per day, and the practice pool.
 //
 //   node scripts/pull-data.mjs && node scripts/generate-prompts.mjs && node scripts/build.mjs [--start YYYY-MM-DD]
 //
-// Reads .cache/candidates.json (generate-prompts.mjs), data/excluded.json and
-// data/schedule.json (if any). Writes data/schedule.json,
-// public/prompts/YYYY-MM-DD.lock (one per day for DAYS days from the start)
-// and public/config.json (the launch day, from rules/launch.json).
+// Reads .cache/candidates.json (generate-prompts.mjs), data/excluded.json,
+// data/schedule.json and data/practice.json (if any). Writes
+//   data/schedule.json            one entry per Daily (hashes only)
+//   public/prompts/<date>.lock    the Daily: 5 rounds (v2); days made before
+//                                 the five-round format keep their v1 lock
+//   data/practice.json            the practice-only prompt keys
+//   public/practice/<n>.lock      one practice round each, and index.json
+//   public/config.json            the launch day (rules/launch.json)
 //
-// FROZEN DAYS (Jorge, Nov 11, 2026: the weekly refresh "never changes a past
-// or current day"): every day up to tomorrow (by the 9:00 AM ET day) that is
-// already in data/schedule.json keeps its lock byte for byte. Tomorrow is
-// frozen too, so a refresh that finishes after 9:00 AM ET cannot touch the
-// day that just started.
+// DAILY (Jorge, Nov 12, 2026): 5 rounds, every prompt used at most once in a
+// year, no team twice in a day, at most 2 rounds from one group (A two
+// teams, B teammate, C title/award, D team plus another fact, E stat
+// season). The schedule covers as many days (up to 365) as the pool allows;
+// the weekly refresh extends it.
 //
-// LATER DAYS: the same prompt as before if it still passes the rules, with
-// its answer list rebuilt from the new data; only a changed answer list gets
-// a new lock. A prompt that no longer passes is replaced by a new one.
+// PRACTICE (Jorge, Nov 12): Unlimited practice only ever uses past Dailies
+// and a practice-only pool that is never scheduled: every 10th prompt in the
+// seeded order is set aside for it here, and data/practice.json keeps that
+// set stable from one refresh to the next.
 //
-// data/schedule.json is public, so it never says what a day's prompt is: it
-// keeps h = sha256(date + ':' + prompt key) and a = sha256 of the answer
-// list. Finding a prompt from h means running this generator over the data,
-// which is no shortcut over working the prompt out yourself.
+// FROZEN DAYS: every day up to tomorrow (9:00 AM ET day) already in
+// data/schedule.json keeps its lock byte for byte. Later days keep their
+// prompts while they still pass, with answers rebuilt from new data; a lock
+// is rewritten only when its rounds change.
+//
+// data/schedule.json is public, so it holds only hashes: h = sha256(date +
+// ':' + key) per round, a = sha256 of the day's rounds.
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
 import { lock, fetchPubkey } from './lib/lock.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const DAYS = 365;
+const MAX_DAYS = 365;
+const ROUNDS = 5;
+const PRACTICE_EVERY = 10;
 const DAY_MS = 86400000;
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const sha = (s) => createHash('sha256').update(s).digest('hex');
 const rd = (f) => JSON.parse(readFileSync(ROOT + f, 'utf8'));
 const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * DAY_MS).toISOString().slice(0, 10);
 
-// The 9:00 AM ET day, as the server's dailyDate().
 const etFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
 export function dailyDate(ms) {
   const p = Object.fromEntries(etFmt.formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
@@ -42,88 +51,127 @@ export function dailyDate(ms) {
   return new Date(d).toISOString().slice(0, 10);
 }
 
-const now = Date.now();
-const today = dailyDate(now);
+const today = dailyDate(Date.now());
 const frozenThrough = addDays(today, 1);
-const byType = rd('.cache/candidates.json');
+const cand = rd('.cache/candidates.json');
 const excluded = new Set(rd('data/excluded.json').keys);
 const old = existsSync(ROOT + 'data/schedule.json') ? rd('data/schedule.json') : null;
 const START = old ? old.start : arg('start', today);
+const all = new Map(cand.prompts.map((c) => [c.key, c]));
+const hashOf = (date, key) => sha(date + ':' + key);
+function keyFor(date, h) { for (const k of all.keys()) if (hashOf(date, k) === h) return k; return null; }
 
-// Candidates by key, and every key's hash for each day it could sit on.
-const all = new Map();
-for (const list of Object.values(byType)) for (const c of list) all.set(c.key, c);
-const answersOf = (c) => c.answers.map((a) => ({ id: a.id, name: a.name, score: a.score, link: a.link || null }));
-const answersHash = (c) => sha(JSON.stringify(answersOf(c)));
-function keyFor(date, h) {
-  for (const k of all.keys()) if (sha(date + ':' + k) === h) return k;
-  return null;
-}
-
-// Seeded order per type, as generate-prompts.mjs (same data, same schedule).
-function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-const rand = rng(20261112);
-for (const t in byType) for (let i = byType[t].length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [byType[t][i], byType[t][j]] = [byType[t][j], byType[t][i]]; }
-const ROTATION = ['two-teams', 'award-team', 'team-college', 'teammate', 'country-team', 'two-teams', 'team-draft'];
-
-// The launch day for the page's game numbers (rules/launch.json).
+// The launch day for the page's numbers.
 const LAUNCH = rd('rules/launch.json').launch;
 if (!/^\d{4}-\d{2}-\d{2}$/.test(LAUNCH)) throw new Error('rules/launch.json: launch must be YYYY-MM-DD');
-mkdirSync(ROOT + 'public', { recursive: true });
+mkdirSync(ROOT + 'public/prompts', { recursive: true });
+mkdirSync(ROOT + 'public/practice', { recursive: true });
 writeFileSync(ROOT + 'public/config.json', JSON.stringify({ launch: LAUNCH }) + '\n');
 
-const pub = await fetchPubkey();
-mkdirSync(ROOT + 'public/prompts', { recursive: true });
+// Seeded order (same data, same schedule).
+function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const rand = rng(20261112);
+const order = [...cand.prompts].sort((a, b) => a.key.localeCompare(b.key));
+for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
 
-const used = new Set(excluded);
-const recent = [];   // candidates of the days so far (null where unknown)
+// Practice-only pool: kept from the last build, topped up to every 10th prompt.
+const prevPractice = existsSync(ROOT + 'data/practice.json') ? rd('data/practice.json').keys : null;
+let practiceKeys;
+if (prevPractice) practiceKeys = prevPractice.filter((k) => all.has(k));
+else practiceKeys = order.filter((c, i) => i % PRACTICE_EVERY === PRACTICE_EVERY - 1 && !excluded.has(c.key)).map((c) => c.key);
+const practice = new Set(practiceKeys);
+
+const pub = await fetchPubkey();
+const used = new Set([...excluded, ...practice]);
 const days = [];
-let wrote = 0, kept = 0, replaced = 0;
-for (let i = 0; i < DAYS; i++) {
+const recent = [];   // units of the last days
+let kept = 0, wrote = 0, replaced = 0;
+
+const roundOf = (c) => ({ key: c.key, type: c.type, group: c.group, text: c.text, rule: c.rule, teams: c.teams, cond: c.cond, answers: c.answers.map((a) => [a.i, a.s]) });
+const GROUP_ORDER = { A: 0, D: 1, E: 2, B: 3, C: 4 };
+
+for (let i = 0; i < MAX_DAYS; i++) {
   const date = addDays(START, i);
   const prev = old && old.days[i] && old.days[i].date === date ? old.days[i] : null;
   const lockPath = `${ROOT}public/prompts/${date}.lock`;
   if (prev && date <= frozenThrough && existsSync(lockPath)) {
-    // Frozen: lock untouched. Its prompt, if still a candidate, is used up.
-    const k = keyFor(date, prev.h);
-    if (k) used.add(k);
-    recent.push(k ? all.get(k) : null);
+    for (const h of [].concat(prev.h)) { const k = keyFor(date, h); if (k) used.add(k); }
+    recent.push([]);
     days.push(prev);
     kept++;
     continue;
   }
-  let c = prev ? (() => { const k = keyFor(date, prev.h); return k && !used.has(k) ? all.get(k) : null; })() : null;
-  if (prev && !c) replaced++;
-  if (!c) c = choose(i);
-  if (!c) throw new Error(`ran out of prompts on ${date}`);
-  used.add(c.key);
-  recent.push(c);
-  const entry = { n: i + 1, date, h: sha(date + ':' + c.key), a: answersHash(c) };
-  if (!prev || prev.a !== entry.a || prev.h !== entry.h || !existsSync(lockPath)) {
-    const plain = { v: 1, game: 'deep-cut', n: i + 1, date, text: c.text, answers: answersOf(c) };
+  // Keep this day's prompts if they still pass and are free.
+  let picks = [];
+  if (prev && Array.isArray(prev.h)) {
+    picks = prev.h.map((h) => keyFor(date, h)).filter((k) => k && !used.has(k)).map((k) => all.get(k));
+    if (picks.length !== prev.h.length) replaced++;
+  }
+  picks = fillDay(picks, recent.slice(-2).flat());
+  if (picks.length < ROUNDS) break;   // the pool is used up: the schedule ends here
+  picks.sort((a, b) => GROUP_ORDER[a.group] - GROUP_ORDER[b.group]);
+  for (const c of picks) used.add(c.key);
+  recent.push(picks.flatMap((c) => c.units));
+  const rounds = picks.map(roundOf);
+  const entry = { date, v: 2, h: picks.map((c) => hashOf(date, c.key)), a: sha(JSON.stringify(rounds)) };
+  if (!prev || prev.a !== entry.a || !existsSync(lockPath)) {
+    const plain = { v: 2, game: 'deep-cut', date, scoring: cand.prompts[0].scoring, asOf: cand.asOf, rounds };
     writeFileSync(lockPath, JSON.stringify(await lock(plain, pub)) + '\n');
     wrote++;
   }
   days.push(entry);
 }
+// Locks past the end of the schedule (a shorter schedule than before) go.
+const scheduled = new Set(days.map((d) => d.date));
+for (const f of readdirSync(ROOT + 'public/prompts')) if (f.endsWith('.lock') && !scheduled.has(f.slice(0, 10)) && f.slice(0, 10) > frozenThrough) unlinkSync(ROOT + 'public/prompts/' + f);
 
-function choose(i) {
-  const recentUnits = new Set(recent.slice(-6).filter(Boolean).flatMap((c) => c.units));
-  const recentStars = new Set(recent.slice(-30).filter(Boolean).map((c) => c.star).filter(Boolean));
-  for (let k = 0; k < ROTATION.length; k++) {
-    const list = byType[ROTATION[(i + k) % ROTATION.length]] || [];
-    for (const strict of [true, false]) for (const c of list) {
-      if (used.has(c.key)) continue;
-      if (strict && c.units.some((u) => recentUnits.has(u))) continue;
-      if (c.star && recentStars.has(c.star)) continue;
-      return c;
+// Five rounds: no team twice in a day, teams from the last two days avoided
+// when possible, the scarcest groups first. Passes: 1 per group, then 2 per
+// group, then (when the pool runs thin) up to 3 from group D, whose types
+// differ (birthplace, career start, college, draft), never more than 2 of
+// one type and never more than 2 two-team rounds.
+function fillDay(picks, recentUnits) {
+  const per = {}, perType = {};
+  const dayUnits = new Set();
+  for (const c of picks) { per[c.group] = (per[c.group] || 0) + 1; perType[c.type] = (perType[c.type] || 0) + 1; c.units.forEach((u) => dayUnits.add(u)); }
+  const cap = (pass, g) => (pass === 0 ? 1 : pass === 1 ? 2 : g === 'D' ? 3 : 2);
+  const free = (c) => !used.has(c.key) && !picks.includes(c);
+  const remaining = {};
+  for (const c of order) if (free(c)) remaining[c.group] = (remaining[c.group] || 0) + 1;
+  for (const pass of [0, 1, 2]) {
+    const strict = pass === 0;
+    while (picks.length < ROUNDS) {
+      const groups = Object.keys(remaining).filter((g) => remaining[g] > 0 && (per[g] || 0) < cap(pass, g))
+        .sort((a, b) => (per[a] || 0) - (per[b] || 0) || remaining[b] - remaining[a]);
+      let got = null;
+      for (const g of groups) {
+        got = order.find((c) => c.group === g && free(c) && (perType[c.type] || 0) < 2 && !c.units.some((u) => dayUnits.has(u)) && (!strict || !c.units.some((u) => recentUnits.includes(u))));
+        if (got) break;
+      }
+      if (!got) break;
+      picks.push(got);
+      per[got.group] = (per[got.group] || 0) + 1;
+      perType[got.type] = (perType[got.type] || 0) + 1;
+      remaining[got.group]--;
+      got.units.forEach((u) => dayUnits.add(u));
     }
   }
-  return null;
+  return picks;
 }
 
+// Practice locks, numbered 1..N in a stable (sorted) order.
+for (const f of readdirSync(ROOT + 'public/practice')) if (f.endsWith('.lock')) unlinkSync(ROOT + 'public/practice/' + f);
+const pk = [...practice].sort();
+for (let n = 1; n <= pk.length; n++) {
+  const c = all.get(pk[n - 1]);
+  writeFileSync(`${ROOT}public/practice/${n}.lock`, JSON.stringify(await lock({ v: 2, game: 'deep-cut', practice: n, scoring: c.scoring, asOf: cand.asOf, round: roundOf(c) }, pub)) + '\n');
+}
+writeFileSync(ROOT + 'public/practice/index.json', JSON.stringify({ v: 1, count: pk.length }) + '\n');
+writeFileSync(ROOT + 'data/practice.json', JSON.stringify({ _about: 'Practice-only prompt keys (scripts/build.mjs): never scheduled as a Daily.', keys: pk }, null, 1) + '\n');
+
 writeFileSync(ROOT + 'data/schedule.json', JSON.stringify({
-  _about: 'Deep Cut days (scripts/build.mjs). h = sha256(date:prompt key), a = sha256(answer list). The prompts themselves are only in the encrypted public/prompts/<date>.lock files.',
-  v: 1, start: START, days,
+  _about: 'Deep Cut days (scripts/build.mjs). v2 days: h = sha256(date:key) per round, a = sha256(rounds). v1 days (before five rounds): one h. The prompts are only in the encrypted public/prompts/<date>.lock files.',
+  v: 2, start: START, days,
 }, null, 1) + '\n');
-console.log(`start ${START}, today ${today}, frozen through ${frozenThrough}: ${kept} kept, ${wrote} locks written, ${replaced} prompts replaced`);
+const last = days[days.length - 1].date;
+console.log(`start ${START}, today ${today}, frozen through ${frozenThrough}: ${kept} kept, ${wrote} locks written, ${replaced} days with a prompt replaced; schedule ends ${last} (${days.length} days); practice pool ${pk.length}`);

@@ -55,6 +55,7 @@ export function unitName(id) {
   return `${u.name} (${u.from - 1}-${u.to === null ? 'present' : u.to})`;
 }
 export const unitInfo = (id) => UNITS.get(id);
+export const allUnits = () => [...UNITS.values()];
 
 // College names: salary-season-finder spells them one way ("Michigan St"),
 // nba-career-map another ("Michigan State", "Duke (2017–2018)"). Canonical is
@@ -117,6 +118,8 @@ const normName = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLow
 export function buildPlayers() {
   const bio = src('bio'), awards = src('awards'), rs = src('rsStats'), po = src('poStats');
   const ssf = src('ssf').seasons, slugs = src('slugs').slugs.player, careers = src('careers');
+  // Headshots: Jorge's nba-headshots face-fill set, by exact name (recent players only).
+  const heads = new Map(src('hsPlayers').players.filter((h) => h.headshot && h.headshot.filename).map((h) => [h.full_name, h.headshot.filename.replace(/\.png$/, '')]));
   const births = new Map();
   for (const [n, pl] of Object.entries(src('births'))) births.set(normName(n), pl);
 
@@ -149,7 +152,7 @@ export function buildPlayers() {
     const link = slug ? `https://hoopsmatic.com/salary-season-finder/player/${slug}/`
       : c ? `https://hoopsmatic.com/nba-career-map/player/${slugify(b.PLAYER)}.html` : null;
     const p = {
-      id: slug || slugify(b.PLAYER), name: b.PLAYER, link,
+      id: slug || slugify(b.PLAYER), name: b.PLAYER, link, head: heads.get(b.PLAYER) || null,
       country: b.NATIONALITY || null,
       birthplace: births.get(normName(b.PLAYER)) || null,
       bornIn: birthCountry(births.get(normName(b.PLAYER))),
@@ -174,7 +177,9 @@ export function buildPlayers() {
     if (!unit || gp < 1) continue;
     // Early seasons have MIN 0 (not kept then): count 20 a game.
     const min = +r.MIN > 0 ? +r.MIN : gp * 20;
-    p.seasons.push({ y, code: r.TEAM, unit, gp, min });
+    // reb is 0 before 1950-51 (not kept then); stat prompts only use rebounds from then on.
+    p.seasons.push({ y, code: r.TEAM, unit, gp, min, pts: +r.PTS || 0, reb: +r.REB || 0, ast: +r.AST || 0,
+      stl: +r.STL || 0, blk: +r.BLK || 0, tpm: +r['3P'] || 0 });
     p.units.add(unit);
     p.gp += gp; p.min += min;
     p.firstYear = p.firstYear ? Math.min(p.firstYear, y) : y;
