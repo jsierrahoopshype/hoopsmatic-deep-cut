@@ -232,7 +232,7 @@
     renderStatus();
     $('q-label').textContent = `Question ${i + 1} of ${RUN.rounds.length}` + (RUN.kind === 'practice' ? ' · practice' : RUN.replay ? ' · replay' : '');
     $('teams').replaceWith(Object.assign(teamsNode(r.teams), { id: 'teams' }));
-    $('prompt').textContent = r.text;
+    $('prompt').textContent = shortQ(r.text);
     $('rule').textContent = r.rule || '';
     $('q').value = ''; sel = null; list = []; drawSugg(); $('submit').disabled = true; $('msg').textContent = ''; $('msg').className = 'msg';
     $('timer').textContent = String(SECONDS); $('timefill').style.width = '100%';
@@ -324,7 +324,7 @@
   function showReveal(i) {
     renderStatus();
     const o = RUN.out[i] || {}, r = RUN.rounds[i];
-    $('rv-label').textContent = `Question ${i + 1}: ${r.text.replace(/^Name a player (who )?/, '… ')}`;
+    $('rv-label').textContent = `Question ${i + 1} · Name a player who… ${shortQ(r.text).replace(/^[A-Z](?=[a-z])/, (x) => x.toLowerCase())}`;
     const box = $('rv-body'); box.textContent = '';
     if (o.timeout || !o.pick) {
       box.appendChild(el('p', 'rv-line zero', '⏱ Time’s up: 0/100.'));
@@ -411,7 +411,7 @@
       const sc = scoreOf(v) || 0;
       const li = el('li');
       li.appendChild(el('span', 'es' + (sc ? '' : ' zero'), String(sc)));
-      li.appendChild(el('span', 'eq', `${i + 1}. ${r.text.replace(/^Name a player (who )?/, '')}`));
+      li.appendChild(el('span', 'eq', `${i + 1}. ${shortQ(r.text)}`));
       const pk = el('span', 'ep');
       if (v === 't') pk.textContent = '⏱ Time ran out';
       else if (v && typeof v === 'object') { const p = { ...playerOf(v.i), name: (o.pick && o.pick.name) || playerOf(v.i).name }; pk.append(v.w ? '✗ ' : '✓ '); pk.appendChild(nameNode(p)); if (v.w) pk.append(' (doesn’t fit)'); }
@@ -493,6 +493,15 @@
     g.textAlign = 'center'; g.fillStyle = '#888899'; g.font = '500 26px "DM Sans", sans-serif'; g.fillText('hoopsmatic.com/deep-cut', W / 2, 1010);
     return cv;
   }
+  // Questions are short (Jorge, Nov 14): "Name a player who…" is shown once,
+  // as a fixed line above them. A text built the old way ("Name a player who
+  // played for …") is shortened the same way.
+  function shortQ(t) {
+    const m = String(t || '').match(/^Name (?:a|an NBA) player (?:who )?(.*)$/);
+    if (!m) return t;
+    const rest = m[1];
+    return rest.charAt(0).toUpperCase() + rest.slice(1);
+  }
   // A question's short label for the image: its first team's short name, or what it is about.
   function shortLabel(r) {
     if (r.teams && r.teams[0]) return r.teams[0].short;
@@ -565,9 +574,10 @@ const SOC_ICON={
     try {
       const r = await api('reveal', { token: RUN.token });
       box.textContent = '';
+      box.appendChild(el('p', 'lead small', 'Name a player who\u2026'));
       r.rounds.forEach((rd, i) => {
         const det = el('details', 'ans-round');
-        det.appendChild(el('summary', null, `${i + 1}. ${rd.text.replace(/^Name a player (who )?/, '')} (${rd.answers.length})`));
+        det.appendChild(el('summary', null, `${i + 1}. ${shortQ(rd.text)} (${rd.answers.length})`));
         const total = rd.answers.reduce((a, x) => a + (x.picked || 0), 0);
         const ol = el('ol', 'ans-list');
         const v = RUN.state.rounds[i], mine = v && typeof v === 'object' ? v.i : null;

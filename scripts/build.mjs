@@ -87,13 +87,14 @@ for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 
 const prevPractice = existsSync(ROOT + 'data/practice.json') ? rd('data/practice.json').keys : null;
 let practiceKeys;
 if (prevPractice) practiceKeys = prevPractice.filter((k) => all.has(k));
-else practiceKeys = order.filter((c, i) => i % PRACTICE_EVERY === PRACTICE_EVERY - 1 && !excluded.has(c.key) && c.era !== 'old').map((c) => c.key);
+else practiceKeys = order.filter((c, i) => i % PRACTICE_EVERY === PRACTICE_EVERY - 1 && !excluded.has(c.key) && c.era !== 'old' && !c.headline).map((c) => c.key);
 const practice = new Set(practiceKeys);
 
 const pub = await fetchPubkey();
 const used = new Set([...excluded, ...practice]);
 const days = [];
 const recent = [];   // units of the last days
+const recentT = [];  // themes of the last days
 let kept = 0, wrote = 0, replaced = 0;
 
 // Every question: its most obvious answer scores exactly 1 and its least
@@ -116,7 +117,8 @@ const roundOf = (c) => ({ key: c.key, type: c.type, group: c.group, text: c.text
 const GROUP_ORDER = { A: 0, G: 1, D: 2, C: 3, F: 4, E: 5, P: 6, B: 7, H: 8 };
 
 // Day rules (see fillDay).
-const TYPE_CAP = 2, MIN_MODERN = 5, MAX_80S = 2, MIN_TYPES = 6, MAX_ABF = 3;
+const TYPE_CAP = 2, MIN_MODERN = 5, MAX_80S = 2, MIN_TYPES = 6, MAX_ABF = 3, MAX_TEAM = 4, MIN_HEAD = 3;
+const HB = new Set(['height', 'birth-city']);   // at most one of the two a day
 const ABF = new Set(['A', 'B', 'F']);   // two teams, teammate, roster
 const CATS = ['money', 'accolade', 'record', 'physical', 'origin'];
 const typeTotal = {};
@@ -140,18 +142,31 @@ for (let i = 0; i < MAX_DAYS; i++) {
     picks = prev.h.map((h) => keyFor(date, h)).filter((k) => k && !used.has(k)).map((k) => all.get(k));
     if (picks.length !== prev.h.length) replaced++;
   }
-  picks = fillDay(picks, recent.slice(-2).flat());
+  picks = fillDay(picks, recent.slice(-2).flat(), recentT.slice(-3).flat());
   if (picks.length < ROUNDS) break;   // the pool is used up: the schedule ends here
   // Groups take turns: A G D C F E P B H ...
-  const nth = {};
-  const keyed = picks.map((c) => { nth[c.group] = (nth[c.group] || 0) + 1; return [nth[c.group], GROUP_ORDER[c.group], c]; });
-  picks = keyed.sort((x, y) => x[0] - y[0] || x[1] - y[1]).map((x) => x[2]);
+  // A seeded shuffle per date, so the days don't share a slot pattern;
+  // no two team questions or two of one category back to back where avoidable.
+  {
+    const r = rng(parseInt(sha('order:' + date).slice(0, 8), 16));
+    const pool = [...picks].sort((a, b) => a.key.localeCompare(b.key));
+    for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
+    const out = [];
+    while (pool.length) {
+      const prev = out[out.length - 1];
+      let k = pool.findIndex((c) => !prev || ((!c.team || !prev.team) && (!c.cat || c.cat !== prev.cat)));
+      if (k < 0) k = 0;
+      out.push(pool.splice(k, 1)[0]);
+    }
+    picks = out;
+  }
   for (const c of picks) used.add(c.key);
   recent.push(picks.flatMap((c) => c.units));
+  recentT.push(picks.map((c) => c.theme));
   const rounds = picks.map(roundOf);
   for (const c of picks) checkErrs.push(...checkQuestion(c, FACTS, FI));
   extremes.days[date] = picks.map((c) => checkExtremes(c, date));
-  dayMeta[date] = picks.map((c) => [c.type, c.era, c.cat, c.group]);
+  dayMeta[date] = picks.map((c) => [c.type, c.era, c.cat, c.group, c.team ? 1 : 0, c.headline ? 1 : 0, c.family]);
   const entry = { date, v: 2, h: picks.map((c) => hashOf(date, c.key)), a: sha(JSON.stringify(rounds)) };
   if (!prev || prev.a !== entry.a || !existsSync(lockPath)) {
     const plain = { v: 2, game: 'deep-cut', date, scoring: cand.prompts[0].scoring, asOf: cand.asOf, rounds };
@@ -164,7 +179,14 @@ for (let i = 0; i < MAX_DAYS; i++) {
 const scheduled = new Set(days.map((d) => d.date));
 for (const f of readdirSync(ROOT + 'public/prompts')) if (f.endsWith('.lock') && !scheduled.has(f.slice(0, 10)) && f.slice(0, 10) > frozenThrough) unlinkSync(ROOT + 'public/prompts/' + f);
 
-// Ten questions a day (Jorge, Nov 13, 2026):
+// Ten questions a day (Jorge, Nov 13, 2026; the first four rules Nov 14):
+//   - at most 4 questions that mention a team;
+//   - at least 3 headline questions (no team: game highs, combine, award
+//     votes, clubs abroad, single-season salary, draft, medals, birthplace);
+//   - height and birth city/state: at most 1 of the two;
+//   - one threshold of a family a day (never "25+ rebounds" and "26+");
+//   - no theme (a question with its team taken out) from the 3 days before,
+//     where the pool allows;
 //   - at least one question from each category: money (exactly one: the
 //     scarcest pool), accolade, record, physical (or draft), origin;
 //   - at least 6 different question types, none more than twice;
@@ -177,8 +199,14 @@ for (const f of readdirSync(ROOT + 'public/prompts')) if (f.endsWith('.lock') &&
 //     of its pool left comes next.
 function dayOk(picks) {
   const perType = {}, cats = new Set(), units = new Set();
-  let modern = 0, eighties = 0, abf = 0;
+  let modern = 0, eighties = 0, abf = 0, team = 0, head = 0, hb = 0;
+  const fams = new Set();
   for (const c of picks) {
+    if (c.team) team++;
+    if (c.headline) head++;
+    if (HB.has(c.type)) hb++;
+    if (fams.has(c.family)) return false;
+    fams.add(c.family);
     perType[c.type] = (perType[c.type] || 0) + 1;
     if (perType[c.type] > TYPE_CAP) return false;
     if (c.cat) cats.add(c.cat);
@@ -188,16 +216,21 @@ function dayOk(picks) {
     if (ABF.has(c.group)) abf++;
     for (const u of c.units) { if (units.has(u)) return false; units.add(u); }
   }
-  return picks.length === ROUNDS && modern >= MIN_MODERN && eighties <= MAX_80S && abf <= MAX_ABF
+  return picks.length === ROUNDS && team <= MAX_TEAM && head >= MIN_HEAD && hb <= 1 && modern >= MIN_MODERN && eighties <= MAX_80S && abf <= MAX_ABF
     && Object.keys(perType).length >= MIN_TYPES && CATS.every((k) => cats.has(k));
 }
-function fillDay(picks, recentUnits) {
+function fillDay(picks, recentUnits, recentThemes = []) {
   if (picks.length && !dayOk(picks)) picks = [];
   const perType = {}, cats = new Set();
   const dayUnits = new Set(), dayCodes = new Set();
-  let modern = 0, eighties = 0, abf = 0;
+  let modern = 0, eighties = 0, abf = 0, team = 0, head = 0, hb = 0;
+  const fams = new Set();
   const take = (c) => {
     picks.push(c);
+    if (c.team) team++;
+    if (c.headline) head++;
+    if (HB.has(c.type)) hb++;
+    fams.add(c.family);
     perType[c.type] = (perType[c.type] || 0) + 1;
     if (c.cat) cats.add(c.cat);
     c.units.forEach((u) => dayUnits.add(u));
@@ -215,13 +248,17 @@ function fillDay(picks, recentUnits) {
       const needCats = CATS.filter((k) => !cats.has(k));
       const needTypes = Math.max(0, MIN_TYPES - Object.keys(perType).length);
       const needModern = Math.max(0, MIN_MODERN - modern);
+      const needHead = Math.max(0, MIN_HEAD - head);
       const fits = (c) => free(c) && (perType[c.type] || 0) < TYPE_CAP
+        && (!c.team || team < MAX_TEAM) && (!HB.has(c.type) || hb < 1) && !fams.has(c.family)
+        && (needHead < left || c.headline)
         && (!ABF.has(c.group) || abf < MAX_ABF)
         && (c.cat !== 'money' || !cats.has('money'))   // money is the scarcest pool: one a day
         && (c.era !== '80s' || eighties < MAX_80S)
         && !c.units.some((u) => dayUnits.has(u))
         && (c.group !== 'F' || !c.units.some((u) => dayCodes.has(u.split('|')[0])))
         && (!strict || !c.units.some((u) => recentUnits.includes(u)))
+        && (!strict || !recentThemes.includes(c.theme)) && !picks.some((x) => x.theme === c.theme)
         // what this pick leaves must still be able to meet the day's minimums
         && (needCats.length < left || needCats.includes(c.cat))
         && (needTypes < left || !perType[c.type])
@@ -231,7 +268,8 @@ function fillDay(picks, recentUnits) {
       const types = Object.keys(typeTotal).filter((t) => (perType[t] || 0) < TYPE_CAP)
         .sort((a, b) => (perType[a] || 0) - (perType[b] || 0) || (typeUsed[a] || 0) / typeTotal[a] - (typeUsed[b] || 0) / typeTotal[b]);
       let got = null;
-      for (const pref of [(c) => (!want || c.cat === want) && (modern >= MIN_MODERN || c.era === 'modern'), (c) => !want || c.cat === want, () => true]) {
+      for (const pref of [(c) => (!want || c.cat === want) && (head >= MIN_HEAD || c.headline) && (modern >= MIN_MODERN || c.era === 'modern'),
+        (c) => (!want || c.cat === want) && (head >= MIN_HEAD || c.headline), (c) => !want || c.cat === want, () => true]) {
         for (const t of types) { got = order.find((c) => c.type === t && fits(c) && pref(c)); if (got) break; }
         if (got) break;
       }
@@ -295,7 +333,7 @@ for (const d of days) dayPage(d.date);
 for (const f of readdirSync(ROOT + 'public')) if (/^\d{4}-\d{2}-\d{2}$/.test(f) && !scheduled.has(f) && f > frozenThrough) rmSync(`${ROOT}public/${f}`, { recursive: true, force: true });
 
 if (checkErrs.length) { console.error(checkErrs.slice(0, 30).join('\n')); throw new Error(`answer check: ${checkErrs.length} problems`); }
-writeFileSync(ROOT + 'data/day-rules.json', JSON.stringify({ _about: 'Per scheduled day, each question\'s [type, era, category, group] (scripts/build.mjs). The tests check the day rules against it.', days: dayMeta }) + '\n');
+writeFileSync(ROOT + 'data/day-rules.json', JSON.stringify({ _about: 'Per scheduled day, each question\'s [type, era, category, group, mentions a team, headline, threshold family] (scripts/build.mjs). The tests check the day rules against it.', days: dayMeta }) + '\n');
 writeFileSync(ROOT + 'data/extremes.json', JSON.stringify({ _about: 'Lowest and highest score of every scheduled and practice question (scripts/build.mjs): always [1, 100].', ...extremes }) + '\n');
 writeFileSync(ROOT + 'data/schedule.json', JSON.stringify({
   _about: 'Deep Cut days (scripts/build.mjs). v2 days: h = sha256(date:key) per round, a = sha256(rounds). v1 days (before five rounds): one h. The prompts are only in the encrypted public/prompts/<date>.lock files.',

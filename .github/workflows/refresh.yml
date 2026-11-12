@@ -17,7 +17,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,6 +26,12 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/pull-data.mjs --latest
+      # Single-game highs (Jorge, Nov 14: no hand updates): rebuilt every week
+      # from Alberto's box-score archive (aderoa/nba-boxscores), so this
+      # season's games count as soon as the archive has them. NBA.com can't
+      # be the fallback from here: cdn.nba.com answers 403 to every client
+      # and stats.nba.com refuses datacenter IPs (the archive's own notes).
+      - run: git clone --depth 1 --filter=blob:none --no-checkout https://github.com/aderoa/nba-boxscores .cache/boxscores && node scripts/game-highs.mjs .cache/boxscores
       - run: node scripts/generate-prompts.mjs > /dev/null
       # Headshot sources for new players (NBA.com and Jorge's sites; cached in data/headshots.json).
       - run: node scripts/headshots.mjs

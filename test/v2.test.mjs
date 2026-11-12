@@ -131,7 +131,7 @@ test('roster prompts: one team, one season, exact era name, 1+ game', () => {
 
 // ---------- the day's mix (Jorge, Nov 13, 2026) ----------
 const dayRules = rd('data/day-rules.json').days;
-test('every day: one of each category, 6+ types, none more than twice, at most 3 two-team/teammate/roster, leaning recent', () => {
+test('every day: one of each category, 6+ types, none more than twice, at most 3 two-team/teammate/roster, at most 4 with a team, 3+ headlines, leaning recent', () => {
   const dates = schedule.days.filter((d) => d.v === 2).map((d) => d.date);
   assert.deepEqual(Object.keys(dayRules).sort(), dates.sort(), 'every scheduled day has its rules line');
   for (const [date, qs] of Object.entries(dayRules)) {
@@ -145,6 +145,10 @@ test('every day: one of each category, 6+ types, none more than twice, at most 3
     assert.ok(qs.filter((q) => q[1] === 'modern').length >= 5, `${date}: fewer than 5 mostly-recent questions`);
     assert.ok(qs.filter((q) => q[1] === '80s').length <= 2, `${date}: more than 2 from the 1980s`);
     assert.ok(!qs.some((q) => q[1] === 'old'), `${date}: a question whose answers are mostly before 1980-81`);
+    assert.ok(qs.filter((q) => q[4]).length <= 4, `${date}: more than 4 questions mention a team`);
+    assert.ok(qs.filter((q) => q[5]).length >= 3, `${date}: fewer than 3 headline questions`);
+    assert.ok(qs.filter((q) => q[0] === 'height' || q[0] === 'birth-city').length <= 1, `${date}: height and birth city/state together`);
+    assert.equal(new Set(qs.map((q) => q[6])).size, 10, `${date}: two thresholds of one family`);
   }
 });
 const unitId = (name) => facts.units.findIndex((u) => u.name === name);
@@ -169,4 +173,10 @@ test('new question types read the facts', () => {
   assert.equal(evaluate({ t: 'votes', a: 'MVP', u: lal }, byN('Kobe Bryant'), F).ok, true, 'MVP votes');
   assert.equal(evaluate({ t: 'allany', a: 'allStar', u: mia }, byN('Shaquille O\'Neal'), F).ok, true, 'All-Star, any team');
   assert.equal(evaluate({ t: 'pick', lo: 1, hi: 10, u: unitId('Toronto Raptors') }, byN('Vince Carter'), F).ok, true, 'draft pick');
+  assert.equal(evaluate({ t: 'gameany', k: 'pts', v: 100 }, byN('Wilt Chamberlain'), F).ok, true, 'no-team game high');
+  assert.equal(evaluate({ t: 'gameany', k: 'p2020', v: 1 }, byN('Kevin Love'), F).ok, true, '20-20 game');
+  assert.equal(evaluate({ t: 'class', y: 2003 }, byN('LeBron James'), F).ok, true, 'draft class');
+  assert.equal(evaluate({ t: 'votesany', a: 'MVP', top: 1 }, byN('Steve Nash'), F).ok, true, 'MVP voting');
+  assert.equal(evaluate({ t: 'club', name: 'Real Madrid', c: 'Spain' }, byN('Luka Doncic'), F).ok, true, 'a club abroad');
+  assert.equal(evaluate({ t: 'mateany', p: byN('Stephen Curry').i }, byN('Klay Thompson'), F).ok, true, 'teammate, any team');
 });

@@ -13,9 +13,10 @@
 //                 r: [[season, unit#]] titles, a: { allStar|allRookie|allDefense|allNba: [[season, unit#]] },
 //                 $: [[season, salary $M]], w: { roy|smoy|mip|dpoy|asmvp: [season] },
 //                 pw: [[season, unit#]] Player of the Week, x: [[G|O, club, from, to, country]],
-//                 ht: listed height (in), cb: [wingspan, max vertical, height w/o shoes, year] | null,
+//                 ht: listed height (in), cb: [wingspan, max vertical, height w/o shoes, year, reach] | null,
 //                 vt: [[season, award, rank, unit#]], md: medals, pt: [[season, unit#]] highest-paid,
-//                 ce: career earnings $M, gh: [[season, unit#, pts, reb, ast, threes, triple-doubles]] } ] }
+//                 ce: career earnings $M, gh: [[season, unit#, pts, reb, ast, threes, triple-doubles,
+//                 40+ games, 50+ games, 20-20 games, steals, blocks]] (box-score highs) } ] }
 //   Seasons are stored by ending year (1997 = 1996-97). unit# indexes units.
 //
 // ELIGIBILITY (Jorge, Nov 12, 2026):
@@ -54,7 +55,7 @@
 //   { t: 'gleague', u }              a G League (D-League) team, and played for u
 //   { t: 'points', v, u }            v+ regular-season points, played for u
 //   { t: 'height', ge|le: inches, u }  listed height (bio) at least / at most, played for u
-//   { t: 'combine', k: ws|vert|hgt, v, u? }  draft combine wingspan, max vertical or height
+//   { t: 'combine', k: ws|vert|hgt|reach, v, u? }  draft combine wingspan, max vertical or height
 //                                    without shoes of v inches or more (2000 on)
 //   { t: 'pick', lo, hi, u }         drafted with pick lo to hi, played for u
 //   { t: 'votes', a, top?, u }       received votes for award a (MVP|DPOY|MIP|Sixth Man|ROY),
@@ -62,6 +63,24 @@
 //   { t: 'allany', a, u }            made an allStar|allNba|allDefense team (any team), played for u
 //   { t: 'medal', u }                won an Olympic or World Cup medal, played for u
 //   { t: 'ringany', u }              won a title with any team, played for u
+//   No team at all (Jorge, Nov 13: headline questions):
+//   { t: 'mateany', p }              a teammate of star p (same team, same season)
+//   { t: 'statany', k, v }           a season averaging v+ of k with 40+ games for one team
+//   { t: 'gameany', k, v }           a regular-season game with v+ of k (pts|reb|ast|tpm), or
+//                                    k = 'p2020' (20+ points and 20+ rebounds), or a career
+//                                    count of v+ games of kind k = 'td'|'n40'|'n50'
+//   { t: 'salaryany', v } / { t: 'earnany', v }  a $v M+ season / career
+//   { t: 'votesany', a, top? }       received votes for award a (top-N if top)
+//   { t: 'heightany', ge|le }        listed height
+//   { t: 'collegeany', c, cn }       went to college c
+//   { t: 'bornc', c }                born in country c
+//   { t: 'class', y }                drafted in the y draft
+//   { t: 'debut', y }                first NBA season y
+//   { t: 'career', k, v }            v+ career regular-season k (pts|reb|ast|stl|blk|tpm|g)
+//   { t: 'count', k, v }             v+ allStar|allNba|allDefense selections, rings, franchises or seasons
+//   { t: 'medalkind', kind }         an Olympic Gold|Silver|Bronze or World Cup ... medal (kind: 'Olympic', 'Olympic Gold', ...)
+//   { t: 'abroadafter', c }          a pro club in country c that started after his NBA debut
+//   { t: 'club', name, c }           played for club name (country c), any time, in his career history
 //   { t: 'game', k: pts|reb|ast|tpm|td, v, u }  a regular-season game with v+ of k for u
 //                                    (td: a triple-double)
 //   { t: 'paytop', u }               the highest-paid player on u in a season
@@ -90,7 +109,7 @@ export const SOLO_NAMES = SOLO;
 const ft = (i) => `${Math.floor(i / 12)}-${Math.round((i % 12) * 100) / 100}`;
 const ordinal = (n) => (!n ? 'votes' : n + (n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'));
 const VOTE_NAME = { MVP: 'MVP', DPOY: 'Defensive Player of the Year', MIP: 'Most Improved Player', 'Sixth Man': 'Sixth Man of the Year', ROY: 'Rookie of the Year' };
-const GAME_WORD = { pts: 'points', reb: 'rebounds', ast: 'assists', tpm: 'threes', td: 'triple-doubles' };
+const GAME_WORD = { pts: 'points', reb: 'rebounds', ast: 'assists', tpm: 'threes', td: 'triple-doubles', stl: 'steals', blk: 'blocks' };
 const money = (v) => '$' + (v >= 10 ? Math.floor(v) : v.toFixed(1)) + 'M';
 const clubText = (x) => `${x[1]}${x[0] === 'O' ? ` (${x[4]})` : ' (G League)'} ${x[2] === x[3] ? x[2] : x[2] + '-' + (x[3] === 9999 ? 'present' : x[3])}`;
 const pts = (n) => n.toLocaleString('en-US');
@@ -106,7 +125,7 @@ function windowed(p, m) {
 const AWARD = { allStar: 'an All-Star team', allRookie: 'an All-Rookie team', allDefense: 'an All-Defensive team', allNba: 'an All-NBA team' };
 
 export function index(facts) {
-  return { units: facts.units, byId: new Map(facts.players.map((p) => [p.i, p])), asOf: facts.asOf || null };
+  return { units: facts.units, byId: new Map(facts.players.map((p) => [p.i, p])), asOf: facts.asOf || null, boxThrough: facts.boxThrough || null };
 }
 
 export const seasonLabel = (y) => `${y - 1}-${String(y).slice(2)}`;
@@ -316,7 +335,7 @@ function evalCore(c, p, F) {
       return { ok: true, link: stint(p, c.u).games, ev: [`Listed at ${ft(p.ht)}`, stintText(F, p, c.u)], fail: null };
     }
     case 'combine': {
-      const cb = p.cb, i = { ws: 0, vert: 1, hgt: 2 }[c.k], label = { ws: 'wingspan', vert: 'max vertical', hgt: 'height without shoes' }[c.k];
+      const cb = p.cb, i = { ws: 0, vert: 1, hgt: 2, reach: 4 }[c.k], label = { ws: 'wingspan', vert: 'max vertical', hgt: 'height without shoes', reach: 'standing reach' }[c.k];
       if (!cb || cb[i] == null) return no(`No ${label} at the draft combine for him in the data.`);
       if (cb[i] < c.v) return no(`${label[0].toUpperCase() + label.slice(1)} at the ${cb[3]} combine: ${c.k === 'vert' ? cb[i] + ' in' : ft(cb[i])}.`);
       if (c.u !== undefined && !has(c.u)) return no(`${label}: ${c.k === 'vert' ? cb[i] + ' in' : ft(cb[i])}. ${teamFail(F, p, c.u)}`);
@@ -349,9 +368,10 @@ function evalCore(c, p, F) {
       return { ok: true, link: stint(p, c.u).games, ev: [`Title${p.r.length > 1 ? 's' : ''}: ${p.r.map((r) => `${seasonLabel(r[0])} ${F.units[r[1]].short}`).join(', ')}`, stintText(F, p, c.u)], fail: null };
     }
     case 'medal': {
-      if (!p.md) return no('No Olympic or World Cup medal in the data.');
-      if (!has(c.u)) return no(`${plural(p.md, 'medal')}. ${teamFail(F, p, c.u)}`);
-      return { ok: true, link: stint(p, c.u).games, ev: [`Olympic/World Cup medals: ${p.md}`, stintText(F, p, c.u)], fail: null };
+      const md = Array.isArray(p.md) ? p.md.length : p.md || 0;
+      if (!md) return no('No Olympic or World Cup medal in the data.');
+      if (!has(c.u)) return no(`${plural(md, 'medal')}. ${teamFail(F, p, c.u)}`);
+      return { ok: true, link: stint(p, c.u).games, ev: [`Olympic/World Cup medals: ${Array.isArray(p.md) ? p.md.join(', ') : md}`, stintText(F, p, c.u)], fail: null };
     }
     case 'game': {
       const col = { pts: 2, reb: 3, ast: 4, tpm: 5, td: 6 }[c.k];
@@ -374,6 +394,113 @@ function evalCore(c, p, F) {
       if (!(p.ce >= c.v)) return no(p.ce ? `Career earnings ${money(p.ce)}, under ${money(c.v)}.` : 'No salary in the data for him (salaries from 1990-91).');
       if (!has(c.u)) return no(`Career earnings ${money(p.ce)}. ${teamFail(F, p, c.u)}`);
       return { ok: true, link: stint(p, c.u).games, ev: [`Career earnings ${money(p.ce)}`, stintText(F, p, c.u)], fail: null };
+    }
+    case 'mateany': {
+      const star = F.byId.get(c.p);
+      if (p.i === c.p) return no(`That's ${star.n} himself.`);
+      const sy = new Set(star.s.map((s) => s[0] + '|' + s[1]));
+      const rows = p.s.filter((s) => sy.has(s[0] + '|' + s[1]));
+      if (!rows.length) return no(`Never on the same team in the same season as ${star.n}.`);
+      const g = rows.reduce((a, s) => a + s[2], 0);
+      const byU = new Map(); for (const r of rows) (byU.get(r[1]) || byU.set(r[1], []).get(r[1])).push(r[0]);
+      return { ok: true, link: g, ev: [...byU].map(([u, ys]) => `${F.units[u].short} ${seasonsText(ys)} with ${star.n}`).concat(`${plural(g, 'game')} together`), fail: null };
+    }
+    case 'statany': {
+      const m = STAT[c.k];
+      const rows = p.s.filter((s) => s[2] >= STAT_MIN_GAMES && (!m.from || s[0] >= m.from));
+      const q = rows.filter((s) => s[m.col] / s[2] >= c.v);
+      if (!q.length) {
+        const best = [...rows].sort((a, b) => b[m.col] / b[2] - a[m.col] / a[2])[0];
+        return no(best ? `Best season with ${STAT_MIN_GAMES}+ games for one team: ${(best[m.col] / best[2]).toFixed(1)} ${m.word} a game (${seasonLabel(best[0])}).` : `Never played ${STAT_MIN_GAMES}+ games in a season for one team.`);
+      }
+      return { ok: true, link: q.reduce((a, s) => a + s[2], 0), ev: q.slice(0, 4).map((s) => `${(s[m.col] / s[2]).toFixed(1)} ${m.word} a game, ${seasonLabel(s[0])} ${F.units[s[1]].short}`), fail: null };
+    }
+    case 'gameany': {
+      const gh = p.gh || [];
+      if (!gh.length) return no('No box scores for him in the archive.');
+      const COUNT = { td: 6, n40: 7, n50: 8 };
+      if (COUNT[c.k] !== undefined) {
+        const n = gh.reduce((a, g) => a + (g[COUNT[c.k]] || 0), 0);
+        const w = { td: 'triple-double', n40: '40-point game', n50: '50-point game' }[c.k];
+        if (n < c.v) return no(`${plural(n, w)} in the box scores.`);
+        return { ok: true, link: n, ev: [`${plural(n, w)} in the regular season`], fail: null };
+      }
+      if (c.k === 'p2020') {
+        const hit = gh.filter((g) => (g[9] || 0) > 0);
+        if (!hit.length) return no('No 20-point, 20-rebound game in the box scores.');
+        return { ok: true, link: hit.reduce((a, g) => a + g[9], 0), ev: hit.slice(0, 4).map((g) => `${plural(g[9], '20-20 game')}, ${seasonLabel(g[0])} ${F.units[g[1]].short}`), fail: null };
+      }
+      const col = { pts: 2, reb: 3, ast: 4, tpm: 5, stl: 10, blk: 11 }[c.k];
+      const best = gh.reduce((b, g) => (g[col] > b[col] ? g : b), gh[0]);
+      if (best[col] < c.v) return no(`His best game: ${best[col]} ${GAME_WORD[c.k]}.`);
+      const hit = gh.filter((g) => g[col] >= c.v);
+      return { ok: true, link: hit.length, ev: hit.slice(0, 4).map((g) => `${g[col]} ${GAME_WORD[c.k]}, ${seasonLabel(g[0])} ${F.units[g[1]].short}`), fail: null };
+    }
+    case 'salaryany': {
+      const big = (p.$ || []).filter((x) => x[1] >= c.v);
+      if (!big.length) { const top = [...(p.$ || [])].sort((a, b) => b[1] - a[1])[0]; return no(top ? `His top salary: ${money(top[1])} (${seasonLabel(top[0])}).` : 'No salary in the data for him (salaries are kept from 1990-91).'); }
+      return { ok: true, link: big.length, ev: big.slice(0, 4).map((x) => `${money(x[1])} in ${seasonLabel(x[0])}`), fail: null };
+    }
+    case 'earnany': {
+      if (!(p.ce >= c.v)) return no(p.ce ? `Career earnings ${money(p.ce)}.` : 'No salary in the data for him (salaries are kept from 1990-91).');
+      return { ok: true, link: p.g, ev: [`Career earnings ${money(p.ce)}`], fail: null };
+    }
+    case 'votesany': {
+      const all = (p.vt || []).filter((v) => v[1] === c.a && (!c.top || (v[2] && v[2] <= c.top)));
+      if (!all.length) return no(c.top ? `Never finished in the top ${c.top} of ${VOTE_NAME[c.a]} voting.` : `Never received ${VOTE_NAME[c.a]} votes.`);
+      return { ok: true, link: all.length, ev: all.slice(0, 5).map((v) => `${VOTE_NAME[c.a]} voting ${seasonLabel(v[0])}: ${ordinal(v[2])}`), fail: null };
+    }
+    case 'heightany': {
+      if (!p.ht) return no('His height is not in the data.');
+      if (!(c.ge ? p.ht >= c.ge : p.ht <= c.le)) return no(`Listed at ${ft(p.ht)}.`);
+      return { ok: true, link: p.g, ev: [`Listed at ${ft(p.ht)}`], fail: null };
+    }
+    case 'collegeany': {
+      if (p.c !== c.c) return no(p.cn ? `Went to ${p.cn}, not ${c.cn}.` : 'No college in the data for him.');
+      return { ok: true, link: p.g, ev: [`College: ${p.cn}`, `${plural(p.g, 'NBA game')}`], fail: null };
+    }
+    case 'bornc': {
+      if (!p.b) return no('His birthplace is not in the data.');
+      if (p.b !== c.c) return no(`Born in ${p.bp}.`);
+      return { ok: true, link: p.g, ev: [`Born in ${p.bp}`], fail: null };
+    }
+    case 'class': {
+      if (p.d !== c.y) return no(p.d ? `Drafted in ${p.d}.` : 'Not drafted, or no draft year in the data.');
+      return { ok: true, link: p.g, ev: [`${p.d} draft${p.k ? `, No. ${p.k}` : ''}`, `${plural(p.g, 'NBA game')}`], fail: null };
+    }
+    case 'debut': {
+      if (p.f !== c.y) return no(`His first NBA season was ${seasonLabel(p.f)}.`);
+      return { ok: true, link: p.g, ev: [`First NBA season ${seasonLabel(p.f)}`, `${plural(p.g, 'NBA game')}`], fail: null };
+    }
+    case 'career': {
+      const col = { pts: 3, reb: 4, ast: 5, stl: 6, blk: 7, tpm: 8 }[c.k];
+      const n = c.k === 'g' ? p.g : p.s.reduce((a, s) => a + s[col], 0);
+      const w = { pts: 'points', reb: 'rebounds', ast: 'assists', stl: 'steals', blk: 'blocks', tpm: 'three-pointers', g: 'games' }[c.k];
+      if (n < c.v) return no(`${pts(n)} career regular-season ${w}.`);
+      return { ok: true, link: p.g, ev: [`${pts(n)} career regular-season ${w}`], fail: null };
+    }
+    case 'count': {
+      const n = c.k === 'rings' ? p.r.length : c.k === 'teams' ? new Set(p.s.map((s) => F.units[s[1]].code)).size
+        : c.k === 'seasons' ? new Set(p.s.map((s) => s[0])).size : (p.a[c.k] || []).length;
+      const w = { rings: 'title', teams: 'franchise', seasons: 'season', allStar: 'All-Star selection', allNba: 'All-NBA selection', allDefense: 'All-Defensive selection' }[c.k];
+      if (n < c.v) return no(`${plural(n, w)}.`);
+      return { ok: true, link: p.g, ev: [plural(n, w)], fail: null };
+    }
+    case 'medalkind': {
+      const md = Array.isArray(p.md) ? p.md : [];
+      const hit = md.filter((m) => m.startsWith(c.kind));
+      if (!hit.length) return no(md.length ? `Medals: ${md.join(', ')}.` : 'No Olympic or World Cup medal in the data.');
+      return { ok: true, link: p.g, ev: [`${hit.join(', ')}`], fail: null };
+    }
+    case 'club': {
+      const x = (p.x || []).filter((x) => x[0] === 'O' && x[1] === c.name && x[4] === c.c);
+      if (!x.length) return no(`No ${c.name} stint in his career history.`);
+      return { ok: true, link: p.g, ev: x.slice(0, 3).map(clubText), fail: null };
+    }
+    case 'abroadafter': {
+      const x = (p.x || []).filter((x) => x[0] === 'O' && x[4] === c.c && x[2] >= p.f);
+      if (!x.length) return no(`No pro club in ${c.c} after his NBA debut in his career history.`);
+      return { ok: true, link: p.g, ev: [...x.slice(0, 3).map(clubText), `First NBA season ${seasonLabel(p.f)}`], fail: null };
     }
     default: return no('Unknown prompt.');
   }
@@ -410,7 +537,17 @@ export function ruleText(c, F) {
   if (c.t === 'votes') parts.push(`${VOTE_NAME[c.a]} voting; the season counts for the team he played the most games for.`);
   if (c.t === 'allany') parts.push('A selection with any team; then at least 1 game for them at any time.');
   if (c.t === 'medal') parts.push('Olympic or FIBA World Cup medal, any country.');
-  if (c.t === 'game') parts.push('A regular-season game for them (box scores through 2025-26).');
+  if (c.t === 'game' || c.t === 'gameany') parts.push(`Regular-season games (box scores${F.boxThrough ? ' through ' + seasonLabel(F.boxThrough) : ''}${c.k === 'stl' || c.k === 'blk' ? '; steals and blocks are recorded from 1973-74' : ''}).`);
+  if (c.t === 'statany') parts.push(`A single season with ${STAT_MIN_GAMES}+ games for one team${STAT[c.k].from ? ` (${STAT[c.k].word} are recorded from ${seasonLabel(STAT[c.k].from)})` : ''}.`);
+  if (c.t === 'salaryany') parts.push('That season\'s salary (Salary Season Finder, from 1990-91).');
+  if (c.t === 'earnany') parts.push('Career earnings in Salary Season Finder (salaries from 1990-91).');
+  if (c.t === 'votesany') parts.push(`${VOTE_NAME[c.a]} voting, any season.`);
+  if (c.t === 'heightany') parts.push('His listed height (NBA.com).');
+  if (c.t === 'bornc') parts.push('Birthplace, not nationality.');
+  if (c.t === 'career') parts.push('Regular-season totals, whole career.');
+  if (c.t === 'medalkind') parts.push('Olympic or FIBA World Cup, any country.');
+  if (c.t === 'club') parts.push('Any time in his career history (Wikipedia, via the NBA Career Map).');
+  if (c.t === 'abroadafter') parts.push('A pro club in his career history that started after his first NBA season.');
   if (c.t === 'paytop') parts.push('Top salary on the team that season (Salary Season Finder, from 1990-91).');
   if (c.t === 'earn') parts.push('Career earnings in Salary Season Finder (salaries from 1990-91).');
   return parts.join(' ');
