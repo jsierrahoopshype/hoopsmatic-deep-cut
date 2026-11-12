@@ -136,22 +136,20 @@
     if (!url) return el('span', cls, p.name);
     const a = el('a', cls, p.name); a.href = url; return a;
   }
-  // Initials sit under every photo, so a slow or missing image still shows
-  // something; the photo covers them once it loads.
+  // A real headshot or nothing (Jorge, Nov 12): no initials anywhere. A
+  // player without a photo gets no image, and one whose photo fails to load
+  // loses the whole circle, so the layout closes up.
   function headNode(p, size) {
-    const box = el('span', 'head' + (size ? ' ' + size : ''));
-    box.appendChild(el('span', 'ini', initials(p.name)));
     const src = !p.head ? null : p.head.startsWith('n:') ? NBA_HEADS + p.head.slice(2) + '.png' : HEADS + p.head.replace(/^f:/, '') + '.webp';
-    if (src) {
-      const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = src;
-      if (p.head.startsWith('n:')) box.classList.add('nba');
-      img.onerror = () => img.remove();
-      box.appendChild(img);
-    }
+    if (!src) return null;
+    const box = el('span', 'head' + (size ? ' ' + size : ''));
+    const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = src;
+    if (p.head.startsWith('n:')) box.classList.add('nba');
+    img.onerror = () => box.remove();
+    box.appendChild(img);
     return box;
   }
-
-  const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+  const addHead = (parent, p, size) => { const h = headNode(p, size); if (h) parent.appendChild(h); };
   function teamsNode(teams) {
     const box = el('div', 'teams');
     for (const t of teams || []) {
@@ -269,7 +267,7 @@
     busy = true;
     try {
       const r = await api('timeout', { token: RUN.token, round: i });
-      RUN.token = r.token; RUN.state = r.state; RUN.out[i] = r; save();
+      RUN.token = r.token; RUN.state = r.state; RUN.out[i] = r; keepBadge(r); save();
       showReveal(i);
     } catch (e) { $('msg').textContent = 'Time’s up, but the server couldn’t be reached. Refresh to continue.'; $('msg').className = 'msg err'; }
     finally { busy = false; }
@@ -308,7 +306,7 @@
       const r = await api('pick', { token: RUN.token, round: i, id: p.id });
       if (!r || !r.state) throw new Error((r && r.error) || 'no_state');   // nothing changed: try again
       clearInterval(tick);
-      RUN.token = r.token; RUN.state = r.state; RUN.out[i] = r; save();
+      RUN.token = r.token; RUN.state = r.state; RUN.out[i] = r; keepBadge(r); save();
       showReveal(i);
     } catch (e) {
       // Nothing changed on the server; the clock keeps running. Try again.
@@ -333,7 +331,7 @@
     } else {
       const p = { ...playerOf(o.pick.id), name: o.pick.name };
       const main = el('div', 'rv-main');
-      main.appendChild(headNode(p));
+      addHead(main, p);
       const t = el('div');
       if (o.pick.ok) {
         t.appendChild(playerLine(p, o.pick.score));
@@ -350,28 +348,56 @@
       const e = el('div', 'ends');
       for (const [k, x] of [['Most obvious', o.extremes.low], ['Least obvious', o.extremes.high]]) {
         const row = el('p'); row.appendChild(el('span', 'k', k)); const pl = { ...playerOf(x.id), name: x.name };
-        row.appendChild(headNode(pl, 'sm')); row.appendChild(nameNode(pl)); row.append(` ${x.score}/100`);
+        addHead(row, pl, 'sm'); row.appendChild(nameNode(pl)); row.append(` ${x.score}/100`);
         e.appendChild(row);
       }
       e.appendChild(el('p', 'muted', `${o.extremes.count} players fit this question.`));
       box.appendChild(e);
     }
-    const last = RUN.state.done;
-    $('next').textContent = last ? 'See your final score' : 'Next question';
     show('reveal');
     $('next').focus();
+    autoNext();
   }
-  $('next').addEventListener('click', () => {
+  // Auto-advance (Jorge, Nov 12): 4 seconds after a reveal the game moves on
+  // by itself, counting down on the button ("Next in 3"); a tap goes at once.
+  // The countdown pauses while the tab is hidden, so the next question's
+  // clock (which starts when it opens) never runs unseen. With reduced
+  // motion the button shows the countdown as plain text, without the fill.
+  const AUTO_NEXT = 4;
+  let autoTick = null, autoLeft = 0;
+  const reduceMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function nextLabel() {
+    const last = RUN.state.done;
+    $('next').textContent = autoLeft > 0 ? (last ? `Final score in ${autoLeft}` : `Next in ${autoLeft}`) : (last ? 'See your final score' : 'Next question');
+  }
+  function stopAuto() { clearInterval(autoTick); autoTick = null; $('next').classList.remove('auto'); $('next').style.removeProperty('--auto'); }
+  function autoNext() {
+    stopAuto();
+    autoLeft = AUTO_NEXT;
+    nextLabel();
+    if (!reduceMotion()) { $('next').classList.add('auto'); $('next').style.setProperty('--auto', AUTO_NEXT + 's'); }
+    autoTick = setInterval(() => {
+      if (document.hidden) return;
+      autoLeft--;
+      if (autoLeft <= 0) { stopAuto(); goNext(); } else nextLabel();
+    }, 1000);
+  }
+  document.addEventListener('visibilitychange', () => $('next').classList.toggle('paused', document.hidden));
+  function goNext() {
+    stopAuto(); autoLeft = 0;
+    if ($('reveal').classList.contains('hide')) return;
     if (RUN.state.done) return showEnd(true);
     RUN.cur = RUN.state.rounds.findIndex((v) => v === null); save();
     openQuestion();
-  });
+  }
+  $('next').addEventListener('click', goNext);
 
   // ---------- end of run ----------
   function showEnd(fresh) {
     clearInterval(tick);
     const s = RUN.state;
     if (fresh && !RUN.recorded) { record(); RUN.recorded = true; save(); }
+    sendBadge();
     renderStatus();
     $('end-title').textContent = RUN.kind === 'practice' ? 'Practice score' : 'Final score';
     $('end-score').textContent = `${s.score}/100`;
@@ -397,22 +423,26 @@
     drawBoard();
   }
   function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : dayUrl(RUN.date) + (extra ? '?' + extra : ''); }
-  // Share text (Jorge, Nov 12): no answers anywhere.
-  //   Deep Cut #1 · 74/100
-  //   one square per question: green 67-100, yellow 34-66, orange 1-33, black 0
-  //   Deepest cut: 96/100
-  //   Can you go deeper? <exact puzzle link>
+  // One square per question: green 67-100, yellow 34-66, orange 1-33, black 0.
   const square = (sc) => (!sc ? '\u2B1B' : sc >= 67 ? '\uD83D\uDFE9' : sc >= 34 ? '\uD83D\uDFE8' : '\uD83D\uDFE7');
-  // Deep Cut #1 · 74/100 · Bench mob
-  // 7 of 10 right · deepest cut 96/100
-  // ten squares
-  // Can you go deeper? <clean puzzle link>
-  // (the channel tag goes only into the link the social buttons open)
-  function shareText(channel) {
+  // Share text (Jorge, Nov 12; no answers, no title: the title stays on the
+  // image, and no ?mode or ?ref in any link people see):
+  //   Deep Cut #1 · 74/100
+  //   7 of 10 right · deepest cut: 96
+  //   ten squares
+  //   Name the NBA player nobody else would. <clean puzzle link>
+  // Practice:
+  //   Deep Cut practice · 6 of 10 right · deepest cut: 70
+  //   ten squares
+  //   Name the NBA player nobody else would. hoopsmatic.com/deep-cut/
+  const TAGLINE = 'Name the NBA player nobody else would.';
+  const shareUrl = () => (RUN.kind === 'practice' ? SITE : dayUrl(RUN.date));
+  function shareText(withLink = true) {
     const s = RUN.state, st = runStats();
-    const head = RUN.kind === 'practice' ? 'Deep Cut practice' : shareName(RUN.date);
-    return `${head} \u00B7 ${s.score}/100 \u00B7 ${tierOf(s.score)}\n${st.right} of ${st.n} right` + (st.deepest ? ` \u00B7 deepest cut ${st.deepest}/100` : '') +
-      `\n${st.scores.map(square).join('')}\nCan you go deeper? ${puzzleUrl('')}`;
+    const right = `${st.right} of ${st.n} right` + (st.deepest ? ` \u00B7 deepest cut: ${st.deepest}` : '');
+    const head = RUN.kind === 'practice' ? `Deep Cut practice \u00B7 ${right}` : `${shareName(RUN.date)} \u00B7 ${s.score}/100\n${right}`;
+    const link = RUN.kind === 'practice' ? 'hoopsmatic.com/deep-cut/' : shareUrl();
+    return `${head}\n${st.scores.map(square).join('')}\n${TAGLINE}` + (withLink ? ' ' + link : '');
   }
   // The result image (1080x1080, spoiler-free; Jorge, Nov 12): the title the
   // score earns, the score, one row per question (its team logo or short
@@ -479,7 +509,7 @@ const SOC_ICON={
   };
   const SOC = [['x', 'X'], ['bsky', 'Bluesky'], ['fb', 'Facebook'], ['wa', 'WhatsApp'], ['reddit', 'Reddit'], ['telegram', 'Telegram']];
   function socialUrl(kind) {
-    const url = puzzleUrl('ref=share-deepcut-' + kind), text = shareText(kind).replace(/\nCan you go deeper\? .*$/, '\nCan you go deeper?');
+    const url = shareUrl(), text = shareText(false);
     const u = encodeURIComponent(url), t = encodeURIComponent(text), tu = encodeURIComponent(text + ' ' + url);
     switch (kind) {
       case 'x': return 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u;
@@ -497,7 +527,7 @@ const SOC_ICON={
       try { $('share-img').src = cv.toDataURL('image/png'); cv.toBlob((b) => { shareBlob = b; }, 'image/png'); }
       catch (e) { /* a logo without CORS would taint the canvas: the block still works without the image */ }
     });
-    $('share-url').value = puzzleUrl('');
+    $('share-url').value = shareUrl();
     const soc = $('share-social'); soc.textContent = '';
     for (const [k, name] of SOC) {
       const b = el('button', 'soc soc-' + k); b.type = 'button'; b.setAttribute('aria-label', 'Share on ' + name);
@@ -518,7 +548,7 @@ const SOC_ICON={
   }
   const msg = (t) => { $('share-msg').textContent = t; };
   $('share-url').addEventListener('click', () => $('share-url').select());
-  $('share-copylink').addEventListener('click', async () => { try { await navigator.clipboard.writeText(shareText('')); msg('Text + link copied.'); } catch (e) { msg('Copy blocked here.'); } });
+  $('share-copylink').addEventListener('click', async () => { try { await navigator.clipboard.writeText(shareText()); msg('Text + link copied.'); } catch (e) { msg('Copy blocked here.'); } });
   $('sh-download').addEventListener('click', () => {
     const a = document.createElement('a'); a.href = $('share-img').src; a.download = 'deep-cut-result.png'; document.body.appendChild(a); a.click(); a.remove(); msg('Saved to your downloads.');
   });
@@ -544,7 +574,7 @@ const SOC_ICON={
         for (const a of rd.answers) {
           const li = el('li', a.id === mine ? 'me' : '');
           const p = { ...playerOf(a.id), name: a.name };
-          li.appendChild(headNode(p, 'sm')); li.appendChild(nameNode(p, 'an')); li.appendChild(el('span', 'as', `${a.s}/100`));
+          addHead(li, p, 'sm'); li.appendChild(nameNode(p, 'an')); li.appendChild(el('span', 'as', `${a.s}/100`));
           if (a.picked !== undefined && total) li.appendChild(el('span', 'muted', `${Math.round((100 * a.picked) / total)}% picked`));
           ol.appendChild(li);
         }
@@ -590,11 +620,27 @@ const SOC_ICON={
     } catch (x) { $('board-msg').textContent = 'Couldn’t reach the server. Try again.'; }
   });
 
-  // ---------- badges (this browser only) ----------
-  // HoopsMatic's badge server is live, but Deep Cut isn't registered with it
-  // yet (it needs a receipt key shared with hoopsmatic-badges), so for now
-  // the badges are kept here: a 7-day Daily streak, a 100 on a question, and
-  // each title reached on a Daily.
+  // ---------- badges ----------
+  // HoopsMatic badges (hoopsmatic-badges, game "deepcut"): when a device
+  // finishes its first attempt at today's Daily, the Deep Cut server's reply
+  // carries a sealed receipt ("badge"), signed with Deep Cut's own key. The
+  // page hands it to the games script (HMGames.badgeResult), which sends it
+  // to hoopsmatic.com/badges and draws the badge card in #games-promo. The
+  // receipt is kept with the run until it has been handed over.
+  function keepBadge(r) { if (r && typeof r.badge === 'string') RUN.badge = r.badge; }
+  function sendBadge() {
+    if (!RUN || !RUN.badge || RUN.badgeSent) return;
+    const go = () => {
+      if (!window.HMGames || !window.HMGames.badgeResult) return false;
+      window.HMGames.badgeResult('deepcut', RUN.badge).then((reply) => {
+        if (reply && (reply.ok || reply.error === 'receipt already used')) { RUN.badgeSent = true; save(); }
+      });
+      return true;
+    };
+    if (!go()) window.addEventListener('load', go, { once: true });
+  }
+  // The browser copy (the fallback, kept from before): a 7-day Daily streak,
+  // a 100 on a question, and each title reached on a Daily.
   const BADGES = [['streak7', '7-day streak'], ['hundred', 'A 100 on a question'], ...TIERS.map((t) => ['tier:' + t[2], t[2]])];
   function awardBadges(R) {
     const B = store.get('dc-badges') || { have: {} };
@@ -664,7 +710,7 @@ const SOC_ICON={
       RUN.cur = left;
       try {
         const r = await api('timeout', { token: RUN.token, round: left });
-        RUN.token = r.token; RUN.state = r.state; RUN.out[left] = r; save();
+        RUN.token = r.token; RUN.state = r.state; RUN.out[left] = r; keepBadge(r); save();
         return showReveal(left);
       } catch (e) { $('sub').textContent = 'Couldn’t reach the server. Refresh to try again.'; return; }
     }
@@ -697,6 +743,7 @@ const SOC_ICON={
       face.style.opacity = String(1 - k * 0.13);
       face.style.filter = k ? `grayscale(${Math.min(1, k * 0.18)})` : '';
       const img = new Image(); img.alt = ''; img.src = HEADS + head.slice(2) + '.webp'; img.title = name;
+      img.onerror = () => face.remove();   // no photo, no circle
       face.appendChild(img); row.appendChild(face);
     });
     const q = el('span', 'scale-q', '?'); const qs = 30; q.style.width = q.style.height = qs + 'px'; q.style.fontSize = Math.round(qs * 0.5) + 'px';
