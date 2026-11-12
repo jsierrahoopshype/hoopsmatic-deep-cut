@@ -181,7 +181,7 @@
   if (params.has('c') && !document.querySelector('meta[name="robots"][content^="noindex"]')) {
     const m = document.createElement('meta'); m.name = 'robots'; m.content = 'noindex, follow'; document.head.appendChild(m);
   }
-  let RUN = null, sel = null, list = [], hi = -1, busy = false, tick = null, endsAt = 0;
+  let RUN = null, sel = null, list = [], hi = -1, busy = false, tick = null, endsAt = 0, opening = false;
   const runKey = () => (RUN.kind === 'practice' ? 'dc-run-practice' : (RUN.replay ? 'dc-replay-' : 'dc-run-') + RUN.date);
   const save = () => { if (RUN) store.set(runKey(), RUN); };
   const scoreOf = (v) => (v && typeof v === 'object' ? v.s : v === null ? null : 0);
@@ -212,10 +212,14 @@
     $('rule').textContent = r.rule || '';
     $('q').value = ''; sel = null; list = []; drawSugg(); $('submit').disabled = true; $('msg').textContent = ''; $('msg').className = 'msg';
     $('timer').textContent = String(SECONDS); $('timefill').style.width = '100%';
+    // The box stays closed until the server has started this question's clock,
+    // so a pick can never go out before the question is open.
+    $('q').disabled = true; opening = true;
     show('card');
     let o;
-    try { o = await api('open', { token: RUN.token, round: i }); }
-    catch (e) { $('msg').textContent = 'Couldn’t reach the server. Check your connection and refresh; the question’s clock hasn’t started.'; $('msg').className = 'msg err'; return; }
+    try { o = await api('open', { token: RUN.token, round: i }); if (!o || !o.state) throw new Error('no_state'); }
+    catch (e) { opening = false; $('msg').textContent = 'Couldn’t reach the server. Check your connection and refresh; the question’s clock hasn’t started.'; $('msg').className = 'msg err'; return; }
+    opening = false; $('q').disabled = false;
     RUN.token = o.token; RUN.state = o.state; save();
     if (o.already) { RUN.out[i] = o; save(); return showReveal(i); }
     endsAt = Date.now() + o.endsIn;
@@ -271,11 +275,12 @@
   });
   $('submit').addEventListener('click', submit);
   async function submit() {
-    if (!sel || busy || !RUN || RUN.state.done) return;
+    if (!sel || busy || opening || !RUN || RUN.state.done) return;
     const i = RUN.cur, p = sel;
     busy = true; $('submit').disabled = true; $('submit').textContent = 'Checking…'; $('msg').textContent = '';
     try {
       const r = await api('pick', { token: RUN.token, round: i, id: p.id });
+      if (!r || !r.state) throw new Error((r && r.error) || 'no_state');   // nothing changed: try again
       clearInterval(tick);
       RUN.token = r.token; RUN.state = r.state; RUN.out[i] = r; save();
       showReveal(i);
