@@ -185,7 +185,33 @@
   const runKey = () => (RUN.kind === 'practice' ? 'dc-run-practice' : (RUN.replay ? 'dc-replay-' : 'dc-run-') + RUN.date);
   const save = () => { if (RUN) store.set(runKey(), RUN); };
   const scoreOf = (v) => (v && typeof v === 'object' ? v.s : v === null ? null : 0);
-  const show = (id) => { for (const s of ['intro', 'card', 'reveal', 'result']) $(s).classList.toggle('hide', s !== id); };
+  // The end screen is four panels: the score (#result), Keep playing, share,
+  // the leaderboard, then the optional answer list.
+  const END = ['result', 'end-keep', 'end-share', 'end-board', 'end-answers'];
+  const show = (id) => {
+    for (const s of ['intro', 'card', 'reveal']) $(s).classList.toggle('hide', s !== id);
+    for (const s of END) $(s).classList.toggle('hide', id !== 'result');
+    $('keep').classList.toggle('hide', id === 'result');
+  };
+  // The title a final score earns (Jorge, Nov 12).
+  const TIERS = [[0, 20, 'Box score reader'], [21, 40, 'League Pass regular'], [41, 60, 'Bench mob'], [61, 80, 'Deep cut'], [81, 100, 'Basketball archaeologist']];
+  const tierOf = (sc) => (TIERS.find((t) => sc >= t[0] && sc <= t[1]) || TIERS[0])[2];
+  function runStats() {
+    const v = RUN.state.rounds, scores = v.map((x) => scoreOf(x) || 0);
+    return { scores, right: v.filter((x) => x && typeof x === 'object' && !x.w).length, timeouts: v.filter((x) => x === 't').length, deepest: Math.max(0, ...scores), n: v.length };
+  }
+  const statsLine = (st) => `${st.right} of ${st.n} right` + (st.timeouts ? ` \u00B7 ${st.timeouts} timeout${st.timeouts === 1 ? '' : 's'}` : '') + (st.deepest ? ` \u00B7 deepest cut ${st.deepest}` : '');
+  // A random id for this browser; the server keeps only a keyed hash of it,
+  // and only for the leaderboard.
+  function device() {
+    let d = store.get('dc-device');
+    if (typeof d !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(d)) {
+      const b = crypto.getRandomValues(new Uint8Array(16));
+      d = btoa(String.fromCharCode.apply(null, b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      store.set('dc-device', d);
+    }
+    return d;
+  }
 
   function renderStatus() {
     const s = RUN.state, n = s.n;
@@ -349,6 +375,9 @@
     renderStatus();
     $('end-title').textContent = RUN.kind === 'practice' ? 'Practice score' : 'Final score';
     $('end-score').textContent = `${s.score}/100`;
+    $('end-tier').textContent = tierOf(s.score);
+    $('end-line').textContent = statsLine(runStats());
+    $('end-note').textContent = RUN.kind === 'practice' ? 'Practice: kept apart from your Daily record.' : RUN.replay ? 'Replay: your first attempt is the one on the leaderboard and in your record.' : '';
     const ol = $('end-list'); ol.textContent = '';
     RUN.rounds.forEach((r, i) => {
       const v = s.rounds[i], o = RUN.out[i] || {};
@@ -364,6 +393,7 @@
     });
     drawShare();
     show('result');
+    drawBoard();
   }
   function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : dayUrl(RUN.date) + (extra ? '?' + extra : ''); }
   // Share text (Jorge, Nov 12): no answers anywhere.
@@ -372,38 +402,71 @@
   //   Deepest cut: 96/100
   //   Can you go deeper? <exact puzzle link>
   const square = (sc) => (!sc ? '\u2B1B' : sc >= 67 ? '\uD83D\uDFE9' : sc >= 34 ? '\uD83D\uDFE8' : '\uD83D\uDFE7');
+  // Deep Cut #1 · 74/100 · Bench mob
+  // 7 of 10 right · deepest cut 96/100
+  // ten squares
+  // Can you go deeper? <clean puzzle link>
+  // (the channel tag goes only into the link the social buttons open)
   function shareText(channel) {
-    const s = RUN.state, scores = s.rounds.map((v) => scoreOf(v) || 0);
+    const s = RUN.state, st = runStats();
     const head = RUN.kind === 'practice' ? 'Deep Cut practice' : shareName(RUN.date);
-    const deepest = Math.max(...scores);
-    return `${head} \u00B7 ${s.score}/100\n${scores.map(square).join('')}\n` + (deepest ? `Deepest cut: ${deepest}/100\n` : '') + `Can you go deeper? ${puzzleUrl(channel ? 'ref=share-deepcut-' + channel : '')}`;
+    return `${head} \u00B7 ${s.score}/100 \u00B7 ${tierOf(s.score)}\n${st.right} of ${st.n} right` + (st.deepest ? ` \u00B7 deepest cut ${st.deepest}/100` : '') +
+      `\n${st.scores.map(square).join('')}\nCan you go deeper? ${puzzleUrl('')}`;
   }
-  // The result image (spoiler-free): the score and one square per question.
-  function resultCanvas() {
-    const s = RUN.state, scores = s.rounds.map((v) => scoreOf(v) || 0);
+  // The result image (1080x1080, spoiler-free; Jorge, Nov 12): the title the
+  // score earns, the score, one row per question (its team logo or short
+  // label, a bar, the number; never a player), the stats line, the depth
+  // band with a marker at the average, hoopsmatic.com/deep-cut.
+  const loadImg = (src) => new Promise((res) => { const i = new Image(); i.crossOrigin = 'anonymous'; i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+  async function resultCanvas() {
+    const s = RUN.state, st = runStats();
     const W = 1080, H = 1080, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     const g = cv.getContext('2d');
+    try { await document.fonts.ready; } catch (e) { /* fonts optional */ }
+    g.fillStyle = '#0b0b1c'; g.fillRect(0, 0, W, H);
     const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#15153a'); bg.addColorStop(1, '#0a0a1a');
-    g.fillStyle = '#0b0b1c'; g.fillRect(0, 0, W, H); g.fillStyle = bg; g.fillRect(40, 40, W - 80, H - 80);
-    g.strokeStyle = '#3a3a6a'; g.lineWidth = 3; g.strokeRect(40, 40, W - 80, H - 80);
-    g.textAlign = 'center';
-    g.fillStyle = '#aaaadd'; g.font = '600 34px Oswald, sans-serif'; g.fillText('HOOPSMATIC', W / 2, 150);
-    const tg = g.createLinearGradient(260, 0, 820, 0); tg.addColorStop(0, '#ff6b35'); tg.addColorStop(1, '#ffd700');
-    g.fillStyle = tg; g.font = '700 120px Oswald, sans-serif'; g.fillText('DEEP CUT', W / 2, 280);
-    g.fillStyle = '#ffd700'; g.font = '600 44px Oswald, sans-serif';
-    g.fillText((RUN.kind === 'practice' ? 'PRACTICE' : dayLabel(RUN.date).toUpperCase() + ' \u00B7 ' + longDate(RUN.date).toUpperCase()), W / 2, 350);
-    g.fillStyle = '#ffffff'; g.font = '700 170px "JetBrains Mono", monospace'; g.fillText(`${s.score}`, W / 2, 560);
-    g.fillStyle = '#aaaadd'; g.font = '600 44px "JetBrains Mono", monospace'; g.fillText('/100', W / 2, 620);
-    const n = scores.length, sz = Math.min(72, Math.floor((W - 200) / n) - 12), gap = 12, x0 = (W - (n * sz + (n - 1) * gap)) / 2;
-    scores.forEach((sc, k) => {
-      g.fillStyle = !sc ? '#2a2a3a' : sc >= 67 ? '#4ade80' : sc >= 34 ? '#facc15' : '#fb923c';
-      g.fillRect(x0 + k * (sz + gap), 690, sz, sz);
+    g.fillStyle = bg; g.fillRect(36, 36, W - 72, H - 72);
+    g.strokeStyle = '#3a3a6a'; g.lineWidth = 2; g.strokeRect(36, 36, W - 72, H - 72);
+    const L = 84, R = W - 84;
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    const tg = g.createLinearGradient(L, 0, L + 330, 0); tg.addColorStop(0, '#ff6b35'); tg.addColorStop(1, '#ffd700');
+    g.fillStyle = tg; g.font = '700 54px Oswald, sans-serif'; g.fillText('DEEP CUT', L, 112);
+    g.fillStyle = '#aaaadd'; g.font = '500 26px Oswald, sans-serif';
+    g.fillText((RUN.kind === 'practice' ? 'PRACTICE' : (dayLabel(RUN.date) + ' \u00B7 ' + longDate(RUN.date)).toUpperCase()), L, 152);
+    g.textAlign = 'right'; g.fillStyle = '#ffd700'; g.font = '700 96px "JetBrains Mono", monospace'; g.fillText(String(s.score), R - 90, 132);
+    g.fillStyle = '#aaaadd'; g.font = '600 32px "JetBrains Mono", monospace'; g.fillText('/100', R, 132);
+    g.textAlign = 'left'; g.fillStyle = '#ffffff'; g.font = '700 46px Oswald, sans-serif'; g.fillText(tierOf(s.score).toUpperCase(), L, 230);
+    // Ten rows.
+    const top = 270, rowH = 52, logos = await Promise.all(RUN.rounds.map((r) => (r.teams && r.teams[0] && r.teams[0].logo
+      ? loadImg(LOGOS + (r.teams[0].logo.includes('/') ? r.teams[0].logo : 'current/svg/' + r.teams[0].logo) + '.svg') : Promise.resolve(null))));
+    RUN.rounds.forEach((r, k) => {
+      const y = top + k * rowH, sc = st.scores[k], v = s.rounds[k];
+      g.fillStyle = '#eef0f3'; g.beginPath(); g.arc(L + 20, y + 20, 20, 0, Math.PI * 2); g.fill();
+      if (logos[k]) g.drawImage(logos[k], L + 4, y + 4, 32, 32);
+      else { g.fillStyle = '#333'; g.font = '700 13px "DM Sans", sans-serif'; g.textAlign = 'center'; g.fillText(shortLabel(r).slice(0, 3).toUpperCase(), L + 20, y + 25); g.textAlign = 'left'; }
+      g.fillStyle = '#e0e0ff'; g.font = '500 24px "DM Sans", sans-serif'; g.fillText(shortLabel(r), L + 56, y + 28);
+      const bx = L + 330, bw = R - 90 - bx;
+      g.fillStyle = '#0e0e2a'; g.fillRect(bx, y + 10, bw, 20);
+      if (sc) { const bar = g.createLinearGradient(bx, 0, bx + bw, 0); bar.addColorStop(0, '#ff6b35'); bar.addColorStop(1, '#ffd700'); g.fillStyle = bar; g.fillRect(bx, y + 10, Math.max(4, bw * sc / 100), 20); }
+      g.textAlign = 'right'; g.fillStyle = sc ? '#ffd700' : '#ff6b6b'; g.font = '700 28px "JetBrains Mono", monospace';
+      g.fillText(sc ? String(sc) : v === 't' ? '\u23F1' : '\u2717', R, y + 30); g.textAlign = 'left';
     });
-    const deepest = Math.max(...scores);
-    g.fillStyle = '#e0e0ff'; g.font = '500 40px "DM Sans", sans-serif';
-    if (deepest) g.fillText(`Deepest cut: ${deepest}/100`, W / 2, 860);
-    g.fillStyle = '#888899'; g.font = '500 34px "DM Sans", sans-serif'; g.fillText('hoopsmatic.com/deep-cut', W / 2, 960);
+    // Stats line, the depth band with a marker at the average.
+    g.fillStyle = '#e0e0ff'; g.font = '500 28px "DM Sans", sans-serif'; g.fillText(statsLine(st), L, 840);
+    const by = 900, band = g.createLinearGradient(L, 0, R, 0); band.addColorStop(0, '#ffd700'); band.addColorStop(0.7, '#2a2a55'); band.addColorStop(1, '#0e0e2a');
+    g.fillStyle = band; g.fillRect(L, by, R - L, 6);
+    const mx = L + (R - L) * Math.max(0, Math.min(100, s.score)) / 100;
+    g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(mx, by - 4); g.lineTo(mx - 12, by - 24); g.lineTo(mx + 12, by - 24); g.closePath(); g.fill();
+    g.fillStyle = '#aaaadd'; g.font = '600 20px Oswald, sans-serif'; g.fillText('1  OBVIOUS', L, by + 36);
+    g.textAlign = 'right'; g.fillText('DEEP CUT  100', R, by + 36);
+    g.textAlign = 'center'; g.fillStyle = '#888899'; g.font = '500 26px "DM Sans", sans-serif'; g.fillText('hoopsmatic.com/deep-cut', W / 2, 1010);
     return cv;
+  }
+  // A question's short label for the image: its first team's short name, or what it is about.
+  function shortLabel(r) {
+    if (r.teams && r.teams[0]) return r.teams[0].short;
+    const m = r.text.match(/college at ([^,.]+?)(?: and| started|$|\.)/);
+    return m ? m[1] : (r.type || 'NBA').replace(/-/g, ' ');
   }
 const SOC_ICON={
     x:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93zM17.61 20.64h2.04L6.49 3.24H4.3z"/></svg>',
@@ -428,10 +491,11 @@ const SOC_ICON={
     return url;
   }
   let shareBlob = null;
-  function drawShare() {
-    const cv = resultCanvas();
-    $('share-img').src = cv.toDataURL('image/png');
-    cv.toBlob((b) => { shareBlob = b; }, 'image/png');
+  async function drawShare() {
+    resultCanvas().then((cv) => {
+      try { $('share-img').src = cv.toDataURL('image/png'); cv.toBlob((b) => { shareBlob = b; }, 'image/png'); }
+      catch (e) { /* a logo without CORS would taint the canvas: the block still works without the image */ }
+    });
     $('share-url').value = puzzleUrl('');
     const soc = $('share-social'); soc.textContent = '';
     for (const [k, name] of SOC) {
@@ -488,6 +552,61 @@ const SOC_ICON={
     } catch (e) { box.textContent = 'Couldn’t load the answers. Try again.'; $('show-all').classList.remove('hide'); }
   });
 
+  // ---------- the daily leaderboard (server: board/<date>, board/name) ----------
+  // Today's first attempt is on it (the server records the score from its own
+  // record of the run); a name is optional; your rank shows without one.
+  // Practice never; a past day shows its board read-only.
+  async function drawBoard() {
+    const box = $('end-board');
+    if (RUN.kind !== 'daily') { box.classList.add('hide'); return; }
+    const isToday = RUN.date === today && !RUN.replay;
+    box.querySelector('.panel-title').textContent = RUN.date === today ? 'Today’s leaderboard' : `Leaderboard · ${longDate(RUN.date)}`;
+    let b;
+    try { b = await api('board/' + RUN.date + '?token=' + encodeURIComponent(RUN.token)); }
+    catch (e) { $('board-you').textContent = 'The leaderboard couldn’t load. Refresh to try again.'; return; }
+    const you = b.you;
+    $('board-you').textContent = '';
+    if (you) { $('board-you').append('You’re '); $('board-you').appendChild(el('b', null, `#${you.rank}`)); $('board-you').append(` of ${you.of} with ${you.score}/100` + (you.name ? `, as ${you.name}.` : '.')); }
+    else $('board-you').textContent = isToday ? 'Your run isn’t on the board.' : RUN.date === today ? 'Replays don’t count: your first attempt is the one on the board.' : 'Past days don’t count toward the board.';
+    $('board-form').classList.toggle('hide', !(isToday && you && !you.name));
+    const ol = $('board-list'); ol.textContent = '';
+    for (const x of b.top) {
+      const li = el('li', you && x.id === you.id ? 'me' : '');
+      li.append(el('span', 'br', `#${x.rank}`), el('span', null, x.name), el('span', 'bs', `${x.score}`));
+      ol.appendChild(li);
+    }
+    $('board-note').textContent = b.top.length ? `Top ${b.top.length} named of ${b.entries} today. One entry per device per day, first attempt only.` : `No names yet. ${b.entries} ${b.entries === 1 ? 'player has' : 'players have'} finished. Add yours above.`;
+  }
+  $('board-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('board-name-in').value.trim();
+    if (name.length < 2) { $('board-msg').textContent = 'Use 2 to 24 characters.'; return; }
+    try {
+      const r = await fetch(API + 'board/name', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: RUN.token, name }) });
+      const j = await r.json();
+      if (!r.ok) { $('board-msg').textContent = j.error === 'bad_name' ? 'That name isn’t allowed. Try another.' : 'Couldn’t save the name. Try again.'; return; }
+      $('board-msg').textContent = 'Saved.'; drawBoard();
+    } catch (x) { $('board-msg').textContent = 'Couldn’t reach the server. Try again.'; }
+  });
+
+  // ---------- badges (this browser only) ----------
+  // HoopsMatic's badge server is live, but Deep Cut isn't registered with it
+  // yet (it needs a receipt key shared with hoopsmatic-badges), so for now
+  // the badges are kept here: a 7-day Daily streak, a 100 on a question, and
+  // each title reached on a Daily.
+  const BADGES = [['streak7', '7-day streak'], ['hundred', 'A 100 on a question'], ...TIERS.map((t) => ['tier:' + t[2], t[2]])];
+  function awardBadges(R) {
+    const B = store.get('dc-badges') || { have: {} };
+    const give = (id) => { if (!B.have[id]) B.have[id] = today; };
+    if (runStats().scores.some((x) => x === 100)) give('hundred');
+    if (RUN.kind === 'daily' && !RUN.replay) {
+      give('tier:' + tierOf(RUN.state.score));
+      let streak = 0; for (let d = today; R.daily[d]; d = addDays(d, -1)) streak++;
+      if (streak >= 7) give('streak7');
+    }
+    store.set('dc-badges', B);
+  }
+
   // ---------- personal records (this browser only) ----------
   // A completed Daily = all its questions answered. Only the first attempt at
   // a date counts; replays and practice are kept apart.
@@ -496,6 +615,7 @@ const SOC_ICON={
     if (RUN.kind === 'practice') { R.practice.played++; R.practice.total += RUN.state.score; R.practice.best = Math.max(R.practice.best, RUN.state.score); }
     else if (!RUN.replay && !R.daily[RUN.date]) R.daily[RUN.date] = { score: RUN.state.score, n: RUN.state.n };
     store.set('dc-records-v3', R);
+    awardBadges(R);
     drawRecords();
   }
   function drawRecords() {
@@ -517,6 +637,13 @@ const SOC_ICON={
     for (const [k, v] of rows) { dl.appendChild(el('dt', null, k)); dl.appendChild(el('dd', null, v)); }
     box.appendChild(el('h3', 'panel-sub', 'Your record (this browser)'));
     box.appendChild(dl);
+    const B = store.get('dc-badges');
+    if (B) {
+      box.appendChild(el('h3', 'panel-sub', 'Badges (kept in this browser)'));
+      const bx = el('div', 'badges');
+      for (const [id, label] of BADGES) bx.appendChild(el('span', 'badge' + (B.have[id] ? '' : ' off'), (B.have[id] ? '\u2713 ' : '') + label));
+      box.appendChild(bx);
+    }
   }
 
   function resetLine(endsAtIso) {
@@ -547,19 +674,40 @@ const SOC_ICON={
       ? `${s.n} questions, ${SECONDS} seconds each, one pick per question. The clock starts when you press the button.`
       : `Welcome back. ${RUN.cur} of ${s.n} answered. The clock for question ${RUN.cur + 1} starts when you press the button.`;
     $('begin').textContent = `Start question ${RUN.cur + 1}`;
-    drawMosaic();
+    drawScale();
     show('intro');
   }
-  // Start screen: a mosaic of real headshots (public/mosaic.json), light grey.
-  let mosaicDone = false;
-  function drawMosaic() {
-    if (mosaicDone) return;
-    mosaicDone = true;
-    fetch('/deep-cut/mosaic.json').then((r) => r.json()).then((j) => {
-      const box = $('mosaic');
-      for (const p of j.players.slice(0, 18)) { const sp = el('span'); const img = new Image(); img.alt = ''; img.src = HEADS + p[2] + '.webp'; img.onerror = () => sp.remove(); sp.appendChild(img); box.appendChild(sp); }
-    }).catch(() => {});
+  // Start screen: the depth scale (Jorge, Nov 12). From the most obvious
+  // answer (1, LeBron, big and crisp) to a deep cut (100, a silhouette with a
+  // question mark), real players getting smaller and fainter in between;
+  // light-grey photo backgrounds; a gold-to-navy line labelled under it.
+  const SCALE = [['LeBron James', 'f:2544-lebron-james'], ['Brook Lopez', 'f:201572-brook-lopez'], ['Naz Reid', 'f:1629675-naz-reid'],
+    ['Garrison Mathews', 'f:1629726-garrison-mathews'], ['Ryan Rollins', 'f:1631157-ryan-rollins'], ['Baylor Scheierman', 'f:1631248-baylor-scheierman']];
+  let scaleDone = false;
+  function drawScale() {
+    if (scaleDone) return;
+    scaleDone = true;
+    const box = $('scale'), row = el('div', 'scale-row');
+    const n = SCALE.length + 1;
+    SCALE.forEach(([name, head], k) => {
+      // 64 px down to 29 px, so the band and the silhouette fit a 320 px phone.
+      const size = Math.round(64 - k * 7), face = el('span', 'scale-face');
+      face.style.width = face.style.height = size + 'px';
+      face.style.opacity = String(1 - k * 0.13);
+      face.style.filter = k ? `grayscale(${Math.min(1, k * 0.18)})` : '';
+      const img = new Image(); img.alt = ''; img.src = HEADS + head.slice(2) + '.webp'; img.title = name;
+      face.appendChild(img); row.appendChild(face);
+    });
+    const q = el('span', 'scale-q', '?'); const qs = 30; q.style.width = q.style.height = qs + 'px'; q.style.fontSize = Math.round(qs * 0.5) + 'px';
+    row.appendChild(q);
+    box.appendChild(row);
+    box.appendChild(el('div', 'scale-line'));
+    const lab = el('div', 'scale-labels');
+    const a = el('span'); a.appendChild(el('b', null, '1')); a.append('Obvious');
+    const b = el('span'); b.append('Deep cut'); b.appendChild(el('b', null, '100'));
+    lab.append(a, b); box.appendChild(lab);
   }
+
   $('begin').addEventListener('click', () => { $('begin').disabled = true; openQuestion().finally(() => { $('begin').disabled = false; }); });
 
   async function startDaily() {
@@ -585,7 +733,7 @@ const SOC_ICON={
     if (saved && saved.v === 4 && !(replay && saved.state.done)) RUN = saved;
     else {
       let st;
-      try { st = await api('start', { date: wantDate }); } catch (e) { $('sub').textContent = 'Couldn’t start the puzzle. Refresh to try again.'; return; }
+      try { st = await api('start', replay ? { date: wantDate } : { date: wantDate, device: device() }); } catch (e) { $('sub').textContent = 'Couldn’t start the puzzle. Refresh to try again.'; return; }
       RUN = { v: 4, kind: 'daily', date: wantDate, replay: !!replay, rounds: day.rounds, token: st.token, state: st.state, out: {}, cur: 0 };
       save();
     }

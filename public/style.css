@@ -103,13 +103,38 @@ button { font: inherit; color: inherit; }
 .head.sm { width: 28px; height: 28px; flex-basis: 28px; font-size: 11px; }
 .head.nba img { object-position: 50% 0; transform: scale(1.25); transform-origin: 50% 15%; }
 
-/* Start screen mosaic: real photos only, light-grey circles. */
-.mosaic { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 0 0 16px; }
-.mosaic span { aspect-ratio: 1; border-radius: 50%; background: var(--head-bg); overflow: hidden; border: 1px solid var(--line2); }
-.mosaic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Start screen: the depth scale. One band from the most obvious answer
+   (1, a big crisp star) to a deep cut (100, a silhouette), the faces getting
+   smaller and fainter; a thin gold-to-navy line under it. */
+.scale { margin: 4px 0 18px; }
+.scale-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; min-width: 0; }
+.scale-face { flex: 0 0 auto; border-radius: 50%; background: var(--head-bg); overflow: hidden; border: 1px solid var(--line2); }
+.scale-face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scale-q { flex: 0 0 auto; border-radius: 50%; background: #05050f; border: 1px dashed #6a6a9a; display: flex; align-items: center; justify-content: center; font-family: var(--oswald); color: var(--muted); }
+.scale-line { height: 3px; margin: 12px 0 6px; border-radius: 2px; background: linear-gradient(90deg, var(--gold), #2a2a55 70%, #0e0e2a); }
+.scale-labels { display: flex; justify-content: space-between; font-family: var(--oswald); letter-spacing: 2px; text-transform: uppercase; font-size: 12px; color: var(--text2); }
+.scale-labels b { color: var(--gold); font-family: var(--mono); letter-spacing: 0; margin-right: 6px; }
+.scale-labels span:last-child b { color: var(--muted); margin: 0 0 0 6px; }
 
 /* End of run */
-.big { font: 700 56px/1 var(--mono); margin: 4px 0 12px; color: var(--gold); text-align: center; }
+.big { font: 700 64px/1 var(--mono); margin: 4px 0 6px; color: var(--gold); text-align: center; }
+.tier { margin: 0; text-align: center; font-family: var(--oswald); font-size: 22px; letter-spacing: 3px; text-transform: uppercase; color: #fff; }
+.end-line { margin: 6px 0 12px; text-align: center; color: var(--text2); font-size: 14px; }
+.keep-card { border-color: var(--gold); }
+.keep-card .cta { text-decoration: none; margin-top: 4px; }
+.ghost.wide { display: flex; width: 100%; margin-top: 8px; min-height: 48px; }
+.board-you { margin: 0 0 10px; font-size: 16px; }
+.board-you b { font-family: var(--mono); color: var(--gold); }
+.board-name { display: flex; gap: 8px; margin: 0 0 6px; }
+.board-name input { flex: 1; min-width: 0; min-height: 44px; background: #0f0f24; border: 1px solid #2a2a52; border-radius: 10px; color: #fff; font: inherit; padding: 0 12px; }
+.board-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.board-list li { display: grid; grid-template-columns: 2.4em 1fr auto; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.board-list .br { font-family: var(--mono); color: var(--muted); }
+.board-list .bs { font-family: var(--mono); color: var(--gold); font-weight: 700; }
+.board-list li.me { background: rgba(255, 215, 0, .08); }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.badge { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold); font-family: var(--oswald); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.badge.off { border-color: var(--line2); color: var(--muted); }
 .end-list { list-style: none; margin: 0 0 8px; padding: 0; counter-reset: q; }
 .end-list li { display: grid; grid-template-columns: 2.4em 1fr; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .end-list .es { font: 700 15px/1.3 var(--mono); color: var(--gold); text-align: right; }
@@ -117,7 +142,7 @@ button { font: inherit; color: inherit; }
 .end-list .eq { color: var(--text2); }
 .end-list .ep { grid-column: 2; color: var(--text); }
 /* The 73-9 game's share block (its CSS, inline instead of a modal). */
-.share-box { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 18px; }
+.share-box { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .share-img { width: 100%; max-height: 52vh; object-fit: contain; border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,.6); }
 .share-link { display: flex; width: 100%; gap: 8px; }
 .share-url { flex: 1; min-width: 0; background: #0f0f24; border: 1px solid #2a2a52; border-radius: 10px; color: #cfcff0; font-family: var(--mono); font-size: 12px; padding: 10px 12px; }
