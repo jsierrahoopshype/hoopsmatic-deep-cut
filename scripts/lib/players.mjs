@@ -113,6 +113,12 @@ export function birthCountry(place) {
   if (CA_PROVINCES.has(last)) return 'Canada';
   return CITY_COUNTRY[last] || last;
 }
+const SOLO = { 'Rookie of the Year': 'roy', 'Sixth Man of the Year': 'smoy', 'Most Improved Player': 'mip',
+  'Defensive Player of the Year': 'dpoy', 'All-Star MVP': 'asmvp' };
+const MERGE_NAME = (n) => MERGE[n] || n;
+const GLEAGUE = JSON.parse(readFileSync(ROOT + 'rules/gleague.json', 'utf8')).teams;
+// Every NBA/BAA name in the franchise file, plus the Career Map's spelling of the Clippers.
+const NBA_NAMES = new Set(['LA Clippers', ...Object.values(F).flat().map((e) => `${e.city} ${e.nickname}`)]);
 const normName = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 export function buildPlayers() {
@@ -160,6 +166,7 @@ export function buildPlayers() {
       pick: s?.draft_pick || null, college,
       seasons: [], units: new Set(), gp: 0, min: 0,
       allStar: [], allRookie: [], allDefense: [], allNba: [], rings: [], aw: {},
+      salary: {}, solo: {}, potw: [], clubs: [],
       firstYear: null, lastYear: null,
     };
     players.push(p);
@@ -225,6 +232,35 @@ export function buildPlayers() {
       if (unit) p.rings.push({ y, unit });
     } else if (LIST[a.AWARD] && y) {
       p[LIST[a.AWARD]].push({ y, units: unitsIn(p, y) });
+    } else if (SOLO[a.AWARD] && y) {
+      (p.solo[SOLO[a.AWARD]] ??= []).push(y);
+    } else if (a.AWARD === 'Player of the Week' && y) {
+      // The team named on the award, matched to the era he played for it that season.
+      const row = p.seasons.find((s) => s.y === y && unitInfo(s.unit).name === MERGE_NAME(a.TEAM));
+      if (row) p.potw.push({ y, unit: row.unit });
+    }
+  }
+  // Salaries (Salary Season Finder): the season's salary, by season ending
+  // year, only for seasons already played (the data also lists future deals).
+  for (const r of ssf) {
+    const p = byName.get(r.player), y = +String(r.season).slice(0, 4) + 1;
+    if (!p || !(r.salary > 0) || !p.seasons.some((x) => x.y === y)) continue;
+    p.salary[y] = Math.max(p.salary[y] || 0, r.salary);
+  }
+  // Clubs outside the NBA (the Career Map's Wikipedia career histories):
+  // G League teams (rules/gleague.json, from the year each joined) and pro
+  // clubs outside the United States. [kind G|O, club, from, to, country].
+  for (const c of careers) {
+    const p = byName.get(c.player);
+    if (!p) continue;
+    for (const h of c.career_history || []) {
+      if (NBA_NAMES.has(h.team)) continue;
+      const m = String(h.years || '').match(/^(\d{4})(?:\s*[-–]\s*(\d{4}|present))?$/);
+      if (!m) continue;
+      const from = +m[1], to = m[2] === 'present' ? 9999 : +(m[2] || m[1]);
+      const join = GLEAGUE[h.team];
+      if (join !== undefined) { if (from >= join) p.clubs.push(['G', h.team, from, to, h.country || 'USA']); continue; }
+      if (h.country && h.country !== 'USA') p.clubs.push(['O', h.team, from, to, h.country]);
     }
   }
   for (const p of players) {

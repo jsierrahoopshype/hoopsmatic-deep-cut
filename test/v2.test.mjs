@@ -128,3 +128,39 @@ test('roster prompts: one team, one season, exact era name, 1+ game', () => {
   assert.equal(no.ok, false);
   assert.match(no.fail, /SuperSonics, not the Oklahoma City Thunder/);
 });
+
+// ---------- eras and question variety (Jorge, Nov 12, 2026) ----------
+const dayRules = rd('data/day-rules.json').days;
+test('every day: no type more than twice, 5+ about 2010-11 or later, at most 2 about the 1980s, nothing before 1980-81', () => {
+  const dates = schedule.days.filter((d) => d.v === 2).map((d) => d.date);
+  assert.deepEqual(Object.keys(dayRules).sort(), dates.sort(), 'every scheduled day has its rules line');
+  for (const [date, qs] of Object.entries(dayRules)) {
+    assert.equal(qs.length, 10, date);
+    const per = {};
+    for (const [type] of qs) per[type] = (per[type] || 0) + 1;
+    assert.ok(Math.max(...Object.values(per)) <= 2, `${date}: a type more than twice`);
+    assert.ok(qs.filter((q) => q[1] === 'modern').length >= 5, `${date}: fewer than 5 modern`);
+    assert.ok(qs.filter((q) => q[1] === '80s').length <= 2, `${date}: more than 2 from the 1980s`);
+    for (const q of qs) assert.ok(q[2] >= 1981, `${date}: a ${q[0]} question reaches before 1980-81`);
+  }
+});
+const unitId = (name) => facts.units.findIndex((u) => u.name === name);
+const byN = (n) => facts.players.find((p) => p.n === n);
+test('eras: a link only before 1980-81 never counts, and says so', () => {
+  const r = evaluate({ t: 'teams', u: [unitId('Milwaukee Bucks'), unitId('Los Angeles Lakers')], m: 1981 }, byN('Kareem Abdul-Jabbar'), F);
+  assert.equal(r.ok, false);
+  assert.match(r.fail, /^Only before 1980-81/);
+  assert.equal(evaluate({ t: 'teams', u: [unitId('Milwaukee Bucks'), unitId('Los Angeles Lakers')] }, byN('Kareem Abdul-Jabbar'), F).ok, true, 'without m it would count');
+});
+test('new question types read the facts', () => {
+  const mia = unitId('Miami Heat');
+  assert.equal(evaluate({ t: 'salary', v: 20, u: mia, m: 1981 }, byN('Ryan Anderson'), F).ok, true, 'salary: $20M+ in a season he played for Miami');
+  assert.equal(evaluate({ t: 'salary', v: 20, u: mia, m: 1981 }, byN('Jimmy Butler'), F).ok, true);
+  assert.equal(evaluate({ t: 'bornin', pl: 'Chicago, Illinois', pn: 'Chicago', m: 1981 }, byN('Jabari Parker'), F).ok, true, 'born in Chicago');
+  assert.equal(evaluate({ t: 'abroad', c: 'Spain', m: 1981 }, byN('Walter Tavares'), F).ok, true, 'Spain before the NBA');
+  assert.equal(evaluate({ t: 'abroad', c: 'Spain', m: 1981 }, byN('Kyrie Irving'), F).ok, false);
+  const p = facts.players.find((x) => (x.x || []).some((c) => c[0] === 'G'));
+  const u = p.s.find((s) => s[0] >= 2002)[1];
+  assert.equal(evaluate({ t: 'gleague', u, m: 1981 }, p, F).ok, true, 'G League and an NBA team');
+  assert.equal(evaluate({ t: 'points', v: 10000, u: unitId('Los Angeles Lakers'), m: 1981 }, byN('Magic Johnson'), F).ok, false, 'points: careers that began before 1980-81 don\'t count');
+});

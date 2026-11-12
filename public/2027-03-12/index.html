@@ -40,6 +40,8 @@
   </div>
 
   <section id="intro" class="panel hide">
+    <!-- The depth scale: from the most obvious answer (1) to a deep cut (100). -->
+    <div class="scale" id="scale" aria-hidden="true"></div>
     <h2 class="panel-title">Today’s ten</h2>
     <p id="intro-text" class="intro-text"></p>
     <button id="begin" class="cta" type="button">Start question 1</button>
@@ -69,13 +71,49 @@
   <section id="result" class="panel hide">
     <h2 class="panel-title" id="end-title">Final score</h2>
     <p class="big" id="end-score"></p>
+    <p class="tier" id="end-tier"></p>
+    <p class="end-line" id="end-line"></p>
+    <details class="end-fold"><summary>Your ten answers</summary>
     <ol class="end-list" id="end-list"></ol>
-    <div class="sharebox">
-      <h3 class="panel-sub">Share</h3>
-      <pre id="share-text"></pre>
-      <div id="shares" class="shares"></div>
-      <p class="note">Links open this exact puzzle. A challenge link shows your score as a target; it is not a verified record.</p>
+    </details>
+    <p class="note" id="end-note"></p>
+  </section>
+
+  <section id="end-keep" class="panel keep-card hide">
+    <h2 class="panel-title">Keep playing</h2>
+    <a class="cta" id="end-practice" href="/deep-cut/?mode=practice&amp;new=1">Unlimited practice</a>
+    <a class="ghost wide" href="/deep-cut/?view=archive">Past days</a>
+  </section>
+
+  <section id="end-share" class="panel hide">
+    <h2 class="panel-title">Share</h2>
+    <!-- The 73-9 game's share block (hoopsmatic.com/73-9-game), inline here:
+         result image, link + Copy, the six social buttons, Download / Copy /
+         Play again, a message line. -->
+    <div class="share-box" id="share-box">
+      <img class="share-img" id="share-img" alt="Your Deep Cut result: title, score and one bar per question, no answers">
+      <div class="share-link"><input class="share-url" id="share-url" readonly aria-label="Share link"><button class="share-copybtn" id="share-copylink" type="button">Copy</button></div>
+      <div class="share-social" id="share-social"></div>
+      <div class="share-btns"><button class="btn" id="sh-download" type="button">Download</button><button class="btn ghost" id="sh-copy" type="button">Copy</button><button class="btn ghost" id="sh-again" type="button">Play again</button></div>
+      <div class="share-msg" id="share-msg" aria-live="polite"></div>
+      <p class="share-small" id="share-small"></p>
     </div>
+  </section>
+
+  <section id="end-board" class="panel hide">
+    <h2 class="panel-title">Today’s leaderboard</h2>
+    <p class="board-you" id="board-you"></p>
+    <form class="board-name hide" id="board-form" autocomplete="off">
+      <label for="board-name-in" class="vh">Your name</label>
+      <input id="board-name-in" maxlength="24" placeholder="Your name (optional)">
+      <button class="share-copybtn" type="submit">Save</button>
+    </form>
+    <p class="share-msg" id="board-msg" aria-live="polite"></p>
+    <ol class="board-list" id="board-list"></ol>
+    <p class="note" id="board-note"></p>
+  </section>
+
+  <section id="end-answers" class="panel hide">
     <div class="answers-box">
       <button id="show-all" class="ghost" type="button">Show every answer</button>
       <div id="show-confirm" class="confirm hide" role="group" aria-label="Show answers?">

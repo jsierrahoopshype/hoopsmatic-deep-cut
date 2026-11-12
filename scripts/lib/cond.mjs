@@ -10,7 +10,9 @@
 //                 f: first season, l: last season, d: draft class|null, k: pick|null,
 //                 g: career regular-season games,
 //                 s: [[season, unit#, games, points, rebounds, assists, steals, blocks, threes made]],
-//                 r: [[season, unit#]] titles, a: { allStar|allRookie|allDefense|allNba: [[season, unit#]] } }] }
+//                 r: [[season, unit#]] titles, a: { allStar|allRookie|allDefense|allNba: [[season, unit#]] },
+//                 $: [[season, salary $M]], w: { roy|smoy|mip|dpoy|asmvp: [season] },
+//                 pw: [[season, unit#]] Player of the Week, x: [[G|O, club, from, to, country]] } ] }
 //   Seasons are stored by ending year (1997 = 1996-97). unit# indexes units.
 //
 // ELIGIBILITY (Jorge, Nov 12, 2026):
@@ -38,6 +40,20 @@
 //   { t: 'top10', u }                top-10 pick in the 1990-2025 drafts, played for u
 //   { t: 'stat', k, v, u }           a season averaging v+ of k (ppg|rpg|apg|spg|bpg|tpg)
 //                                    with 40+ games for u that season
+//   { t: 'salary', v, u }            a salary of $v million+ in a season he played for u
+//   { t: 'bornin', pl, pn, u? }      born in city or U.S. state pl ("Chicago, Illinois",
+//                                    "Texas"; pn = its short name), played for u (or
+//                                    any NBA game in the seasons that count)
+//   { t: 'solo', a }                 won a single-winner award a (roy|smoy|mip|dpoy|asmvp)
+//   { t: 'potw', u }                 a Player of the Week award with u
+//   { t: 'abroad', c?, u? }          a pro club outside the U.S. (in country c) that ended
+//                                    before his first NBA season; played for u
+//   { t: 'gleague', u }              a G League (D-League) team, and played for u
+//   { t: 'points', v, u }            v+ regular-season points, played for u
+//   Any condition can carry m (Jorge, Nov 12, 2026: no question depends on
+//   anything before 1980-81): only seasons ending in m or later count (1981 =
+//   1980-81 on; 2011 = 2010-11 on). For 'abroad' and 'points', m is the
+//   first NBA season allowed; G League stints count if they ran into m-1 or later.
 //
 // evaluate(cond, player, F) -> { ok, link, ev: [text], fail: text|null }
 //   link = the games behind the qualifying connection (scoring, score.mjs);
@@ -54,6 +70,20 @@ const STAT = {
   bpg: { col: 7, word: 'blocks', from: 1974 },
   tpg: { col: 8, word: 'three-pointers', from: 1980 },  // the three-point line, 1979-80
 };
+const SOLO = { roy: 'Rookie of the Year', smoy: 'Sixth Man of the Year', mip: 'Most Improved Player', dpoy: 'Defensive Player of the Year', asmvp: 'All-Star MVP' };
+export const SOLO_NAMES = SOLO;
+const money = (v) => '$' + (v >= 10 ? Math.floor(v) : v.toFixed(1)) + 'M';
+const clubText = (x) => `${x[1]}${x[0] === 'O' ? ` (${x[4]})` : ' (G League)'} ${x[2] === x[3] ? x[2] : x[2] + '-' + (x[3] === 9999 ? 'present' : x[3])}`;
+const pts = (n) => n.toLocaleString('en-US');
+// Only seasons from m on (see CONDITIONS).
+function windowed(p, m) {
+  const a = {};
+  for (const [k, v] of Object.entries(p.a || {})) a[k] = v.filter((x) => x[0] >= m);
+  const w = {};
+  for (const [k, v] of Object.entries(p.w || {})) w[k] = v.filter((y) => y >= m);
+  return { ...p, s: p.s.filter((x) => x[0] >= m), r: p.r.filter((x) => x[0] >= m), a, w,
+    $: (p.$ || []).filter((x) => x[0] >= m), pw: (p.pw || []).filter((x) => x[0] >= m), x: (p.x || []).filter((x) => x[0] !== 'G' || x[3] >= m - 1) };
+}
 const AWARD = { allStar: 'an All-Star team', allRookie: 'an All-Rookie team', allDefense: 'an All-Defensive team', allNba: 'an All-NBA team' };
 
 export function index(facts) {
@@ -95,6 +125,12 @@ function teamFail(F, p, u) {
 }
 
 export function evaluate(c, p, F) {
+  if (!c.m) return evalCore(c, p, F);
+  const r = evalCore(c, windowed(p, c.m), F);
+  if (!r.ok && evalCore(c, p, F).ok) return { ...r, fail: `Only before ${seasonLabel(c.m)}. This question counts ${seasonLabel(c.m)} and later.` };
+  return r;
+}
+function evalCore(c, p, F) {
   const no = (fail) => ({ ok: false, link: 0, ev: [], fail });
   const has = (u) => p.s.some((s) => s[1] === u);
   switch (c.t) {
@@ -192,6 +228,69 @@ export function evaluate(c, p, F) {
       return { ok: true, link: q.reduce((a, s) => a + s[2], 0),
         ev: q.map((s) => `${(s[m.col] / s[2]).toFixed(1)} ${m.word} a game, ${seasonLabel(s[0])} (${plural(s[2], 'game')})`), fail: null };
     }
+    case 'salary': {
+      const sal = p.$ || [];
+      const big = sal.filter((x) => x[1] >= c.v);
+      if (!big.length) {
+        const top = [...sal].sort((a, b) => b[1] - a[1])[0];
+        return no(top ? `His top salary was ${money(top[1])} (${seasonLabel(top[0])}), under ${money(c.v)}.` : 'No salary in the data for him (salaries are kept from 1990-91).');
+      }
+      const rows = p.s.filter((x) => x[1] === c.u && big.some((b) => b[0] === x[0]));
+      if (!rows.length) return no(has(c.u) ? `Earned ${money(c.v)}+ in ${seasonsText(big.map((b) => b[0]))}, but not in a season he played for the ${F.units[c.u].short}.` : teamFail(F, p, c.u));
+      const g = rows.reduce((a, x) => a + x[2], 0);
+      return { ok: true, link: g, ev: rows.map((x) => `${money(big.find((b) => b[0] === x[0])[1])} in ${seasonLabel(x[0])}, ${plural(x[2], 'game')} for the ${F.units[c.u].short}`), fail: null };
+    }
+    case 'bornin': {
+      if (!p.bp) return no('His birthplace is not in the data.');
+      const hit = p.bp === c.pl || p.bp.endsWith(', ' + c.pl);
+      if (!hit) return no(`Born in ${p.bp}, not in ${c.pn}.`);
+      if (c.u === undefined) {
+        if (!p.s.length) return no(`Born in ${p.bp}, but no NBA game in the seasons that count.`);
+        return { ok: true, link: p.s.reduce((a, x) => a + x[2], 0), ev: [`Born in ${p.bp}`, `NBA seasons ${seasonsText(p.s.map((x) => x[0]))}`], fail: null };
+      }
+      if (!has(c.u)) return no(`Born in ${p.bp}. ${teamFail(F, p, c.u)}`);
+      return { ok: true, link: stint(p, c.u).games, ev: [`Born in ${p.bp}`, stintText(F, p, c.u)], fail: null };
+    }
+    case 'solo': {
+      const ys = (p.w || {})[c.a] || [];
+      if (!ys.length) return no(`Never won ${SOLO[c.a]}.`);
+      return { ok: true, link: p.g, ev: [`${SOLO[c.a]} ${ys.map(seasonLabel).join(', ')}`, `${plural(p.g, 'career game')}`], fail: null };
+    }
+    case 'potw': {
+      const mine = (p.pw || []).filter((x) => x[1] === c.u);
+      if (!mine.length) {
+        if (!has(c.u)) return no(teamFail(F, p, c.u));
+        return no((p.pw || []).length ? `His Player of the Week awards came with another team.` : `Never won a Player of the Week award.`);
+      }
+      return { ok: true, link: stint(p, c.u).games, ev: [`Player of the Week with the ${F.units[c.u].short}: ${seasonsText(mine.map((x) => x[0]))}`, stintText(F, p, c.u)], fail: null };
+    }
+    case 'abroad': {
+      if (c.m && p.f < c.m) return no(`His NBA debut was in ${seasonLabel(p.f)}; this question counts debuts in ${seasonLabel(c.m)} or later.`);
+      const abroad = (p.x || []).filter((x) => x[0] === 'O');
+      const before = abroad.filter((x) => x[3] <= p.f - 1);
+      const want = c.c ? before.filter((x) => x[4] === c.c) : before;
+      if (!want.length) {
+        if (c.c && before.length) return no(`Played abroad before the NBA in ${[...new Set(before.map((x) => x[4]))].join(' and ')}, not ${c.c}.`);
+        if (abroad.length) return no(`His clubs outside the U.S. came after his NBA debut (${seasonLabel(p.f)}).`);
+        return no('No pro club outside the United States in his career history.');
+      }
+      if (c.u !== undefined && !has(c.u)) return no(`${clubText(want[0])}. ${teamFail(F, p, c.u)}`);
+      return { ok: true, link: c.u !== undefined ? stint(p, c.u).games : p.g,
+        ev: [...want.slice(0, 3).map(clubText), `First NBA season ${seasonLabel(p.f)}`, ...(c.u !== undefined ? [stintText(F, p, c.u)] : [])], fail: null };
+    }
+    case 'gleague': {
+      const g = (p.x || []).filter((x) => x[0] === 'G');
+      if (!g.length) return no(has(c.u) ? `Played for the ${F.units[c.u].short}, but no G League team in his career history.` : 'No G League team in his career history.');
+      if (!has(c.u)) return no(`${clubText(g[0])}. ${teamFail(F, p, c.u)}`);
+      return { ok: true, link: stint(p, c.u).games, ev: [...g.slice(0, 3).map(clubText), stintText(F, p, c.u)], fail: null };
+    }
+    case 'points': {
+      if (c.m && p.f < c.m) return no(`His NBA career began in ${seasonLabel(p.f)}; this question counts careers that began in ${seasonLabel(c.m)} or later.`);
+      const total = p.s.reduce((a, x) => a + x[3], 0);
+      if (total < c.v) return no(`${pts(total)} regular-season points, under ${pts(c.v)}.`);
+      if (!has(c.u)) return no(`${pts(total)} points. ${teamFail(F, p, c.u)}`);
+      return { ok: true, link: stint(p, c.u).games, ev: [`${pts(total)} regular-season points`, stintText(F, p, c.u)], fail: null };
+    }
     default: return no('Unknown prompt.');
   }
 }
@@ -212,6 +311,14 @@ export function ruleText(c, F) {
   if (c.t === 'born' || c.t === 'bornout') parts.push('Birthplace, not nationality. U.S. territories count as outside the United States.');
   if (c.t === 'start' || c.t === 'colstart') parts.push(`His first NBA season started in the ${c.d}s.`);
   if (c.t === 'top10') parts.push('Picks 1 to 10 in the 1990 to 2025 drafts.');
+  if (c.t === 'salary') parts.push('That season\'s salary (Salary Season Finder, from 1990-91), in a season he played at least 1 game for them.');
+  if (c.t === 'bornin') parts.push('Birthplace, not hometown.');
+  if (c.t === 'solo') parts[0] = `Won ${SOLO[c.a]} at least once.`;
+  if (c.t === 'potw') parts.push('The team named on the award.');
+  if (c.t === 'abroad') parts.push(`A pro club outside the United States, in his career history, that ended before his NBA debut (${seasonLabel(c.m || 1947)} or later).`);
+  if (c.t === 'gleague') parts.push('Any G League or D-League team (2001-02 on), at any point in his career.');
+  if (c.t === 'points') parts.push(`Regular-season points, in a career that began in ${seasonLabel(c.m || 1947)} or later.`);
+  if (c.m && c.t !== 'abroad' && c.t !== 'points') parts.push(`Only ${seasonLabel(c.m)} and later counts.`);
   return parts.join(' ');
 }
 

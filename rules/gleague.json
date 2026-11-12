@@ -1,0 +1,16 @@
+{
+ "_about": "NBA G League (NBA Development League 2001-2017) teams, by the name Wikipedia career histories use, with the first season (starting year) each name played in the league. A stint counts as G League only from that year on (several teams were in the CBA or another league before). Moderate confidence on join years; checked against each team's Wikipedia page by Claude on Nov 12, 2026.",
+ "teams": {
+  "Asheville Altitude": 2001, "Columbus Riverdragons": 2001, "Fayetteville Patriots": 2001, "Greenville Groove": 2001, "Huntsville Flight": 2001, "Mobile Revelers": 2001, "North Charleston Lowgators": 2001, "Roanoke Dazzle": 2001,
+  "Charleston Lowgators": 2003, "Florida Flame": 2004, "Albuquerque Thunderbirds": 2005, "Austin Toros": 2005, "Fort Worth Flyers": 2005, "Tulsa 66ers": 2005,
+  "Anaheim Arsenal": 2006, "Bakersfield Jam": 2006, "Colorado 14ers": 2006, "Dakota Wizards": 2006, "Idaho Stampede": 2006, "Los Angeles D-Fenders": 2006, "Sioux Falls Skyforce": 2006, "Arkansas RimRockers": 2006,
+  "Fort Wayne Mad Ants": 2007, "Iowa Energy": 2007, "Rio Grande Valley Vipers": 2007, "Utah Flash": 2007,
+  "Erie BayHawks": 2008, "Reno Bighorns": 2008, "Maine Red Claws": 2009, "Springfield Armor": 2009, "Texas Legends": 2010, "Canton Charge": 2011, "Santa Cruz Warriors": 2012,
+  "Delaware 87ers": 2013, "Austin Spurs": 2014, "Grand Rapids Drive": 2014, "Oklahoma City Blue": 2014, "Westchester Knicks": 2014, "Raptors 905": 2015,
+  "Greensboro Swarm": 2016, "Long Island Nets": 2016, "Northern Arizona Suns": 2016, "Salt Lake City Stars": 2016, "Windy City Bulls": 2016,
+  "Agua Caliente Clippers": 2017, "Iowa Wolves": 2017, "Lakeland Magic": 2017, "Memphis Hustle": 2017, "South Bay Lakers": 2017, "Wisconsin Herd": 2017,
+  "Capital City Go-Go": 2018, "Delaware Blue Coats": 2018, "Stockton Kings": 2018, "College Park Skyhawks": 2019, "NBA G League Ignite": 2020,
+  "Birmingham Squadron": 2021, "Cleveland Charge": 2021, "Grand Rapids Gold": 2021, "Maine Celtics": 2021, "Mexico City Capitanes": 2021, "Motor City Cruise": 2021,
+  "Indiana Mad Ants": 2024, "Osceola Magic": 2023, "Rip City Remix": 2023, "Valley Suns": 2024, "Noblesville Boom": 2025
+ }
+}
