@@ -39,6 +39,7 @@ h2 { font-size: 18px; margin: 0 0 8px; }
 .sugg li:only-child button { border-radius: var(--radius); }
 .sugg button[aria-selected="true"], .sugg button:hover { background: var(--accent-dim); }
 .sugg .nm { font-weight: 600; }
+.sugg .aka { font-weight: 400; color: var(--text2); }
 .sugg .yr { color: var(--text2); font-size: 14px; white-space: nowrap; }
 .sugg .none { padding: 10px 12px; color: var(--text2); font-size: 14px; border: 1px solid var(--border); border-radius: var(--radius); }
 .tries { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; }

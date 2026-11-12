@@ -1,0 +1,2780 @@
+{
+ "_about": "Basketball nicknames, from the NBA Crossword (hoopsmatic-crossword data/extracted/nicknames.json at commit ad5c5851dd81ccaad20a652e80a199c240c381c9), extracted from Wikipedia \"List of nicknames in basketball\" revision 1384370824 (CC BY-SA 4.0). Used only to match what a player types in the suggestion box; the game always shows the real name.",
+ "source": {
+  "repo": "jsierrahoopshype/hoopsmatic-crossword",
+  "path": "data/extracted/nicknames.json",
+  "commit": "ad5c5851dd81ccaad20a652e80a199c240c381c9",
+  "wikipedia": "https://en.wikipedia.org/w/index.php?oldid=1384370824",
+  "license": "CC BY-SA 4.0"
+ },
+ "nicknames": [
+  {
+   "player": "Kareem Abdul-Jabbar",
+   "nickname": "The Captain"
+  },
+  {
+   "player": "Kareem Abdul-Jabbar",
+   "nickname": "Captain Hook"
+  },
+  {
+   "player": "Bam Adebayo",
+   "nickname": "Bam"
+  },
+  {
+   "player": "Bam Adebayo",
+   "nickname": "The Onomatopoeia"
+  },
+  {
+   "player": "Abiodun Adegoke",
+   "nickname": "Big Naija"
+  },
+  {
+   "player": "Ray Allen",
+   "nickname": "Ray Ray"
+  },
+  {
+   "player": "Ray Allen",
+   "nickname": "Sugar Ray"
+  },
+  {
+   "player": "Ray Allen",
+   "nickname": "Jesus Shuttlesworth"
+  },
+  {
+   "player": "Rafer Alston",
+   "nickname": "Skip To My Lou"
+  },
+  {
+   "player": "Jose Alvarado",
+   "nickname": "Grand Theft Alvarado"
+  },
+  {
+   "player": "Chris Andersen",
+   "nickname": "Birdman"
+  },
+  {
+   "player": "Anthony Anderson",
+   "nickname": "Double A"
+  },
+  {
+   "player": "Greg Anderson",
+   "nickname": "Cadillac"
+  },
+  {
+   "player": "Giannis Antetokounmpo",
+   "nickname": "Greek Freak"
+  },
+  {
+   "player": "Giannis Antetokounmpo",
+   "nickname": "The Alphabet"
+  },
+  {
+   "player": "Carmelo Anthony",
+   "nickname": "Melo"
+  },
+  {
+   "player": "Carmelo Anthony",
+   "nickname": "Captain America"
+  },
+  {
+   "player": "Carmelo Anthony",
+   "nickname": "The Patriot"
+  },
+  {
+   "player": "Carmelo Anthony",
+   "nickname": "Hoodie Melo"
+  },
+  {
+   "player": "Ogugua Anunoby Jr.",
+   "nickname": "OG"
+  },
+  {
+   "player": "Nate Archibald",
+   "nickname": "Tiny"
+  },
+  {
+   "player": "Gilbert Arenas",
+   "nickname": "Agent Zero"
+  },
+  {
+   "player": "Gilbert Arenas",
+   "nickname": "The Hibachi"
+  },
+  {
+   "player": "Gilbert Arenas",
+   "nickname": "Black President"
+  },
+  {
+   "player": "Gilbert Arenas",
+   "nickname": "Nacho"
+  },
+  {
+   "player": "Gilbert Arenas",
+   "nickname": "Gil"
+  },
+  {
+   "player": "Gilbert Arenas",
+   "nickname": "High-Noon"
+  },
+  {
+   "player": "Gilbert Arenas",
+   "nickname": "The Gambler"
+  },
+  {
+   "player": "Trevor Ariza",
+   "nickname": "Cobra"
+  },
+  {
+   "player": "Trevor Ariza",
+   "nickname": "Switchblade"
+  },
+  {
+   "player": "Trevor Ariza",
+   "nickname": "Athreeza"
+  },
+  {
+   "player": "Paul Arizin",
+   "nickname": "Pitchin' Paul"
+  },
+  {
+   "player": "Stacey Augmon",
+   "nickname": "Plastic Man"
+  },
+  {
+   "player": "Ken Bannister",
+   "nickname": "The Manimal"
+  },
+  {
+   "player": "Andrea Bargnani",
+   "nickname": "Il Mago"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "Chuck"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "The Round Mound of Rebound"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "Sir Charles"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "Prince Charles"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "Leaning Tower of Pizza"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "Pillsbury Dough Boy"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "The Human Refrigerator"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "The Flying Coke Machine"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "The Crisco Kid"
+  },
+  {
+   "player": "Charles Barkley",
+   "nickname": "Boy Gorge"
+  },
+  {
+   "player": "Harrison Barnes",
+   "nickname": "The Black Falcon"
+  },
+  {
+   "player": "Jim Barnes",
+   "nickname": "Bad News"
+  },
+  {
+   "player": "Marvin Barnes",
+   "nickname": "Bad News"
+  },
+  {
+   "player": "Dick Barnett",
+   "nickname": "Fall Back Baby"
+  },
+  {
+   "player": "Rowan Alexander Barrett Jr.",
+   "nickname": "RJ"
+  },
+  {
+   "player": "Brent Barry",
+   "nickname": "Bones"
+  },
+  {
+   "player": "Jerry Baskerville",
+   "nickname": "Hound"
+  },
+  {
+   "player": "Bradley Beal",
+   "nickname": "Big Panda"
+  },
+  {
+   "player": "Alfred Beard",
+   "nickname": "Butch"
+  },
+  {
+   "player": "Michael Beasley",
+   "nickname": "B-Easy"
+  },
+  {
+   "player": "Michael Beasley",
+   "nickname": "Big Mike"
+  },
+  {
+   "player": "Michael Beasley",
+   "nickname": "Super Cool Beas"
+  },
+  {
+   "player": "Marco Belinelli",
+   "nickname": "Beli"
+  },
+  {
+   "player": "Walt Bellamy",
+   "nickname": "Bells"
+  },
+  {
+   "player": "Gursimrana Singh Bhullar",
+   "nickname": "Sim"
+  },
+  {
+   "player": "Chauncey Billups",
+   "nickname": "Mr. Big Shot"
+  },
+  {
+   "player": "Larry Bird",
+   "nickname": "The Great White Hope"
+  },
+  {
+   "player": "Larry Bird",
+   "nickname": "The Hick from French Lick"
+  },
+  {
+   "player": "Larry Bird",
+   "nickname": "Larry Legend"
+  },
+  {
+   "player": "Larry Bird",
+   "nickname": "Uncle Larry"
+  },
+  {
+   "player": "Bismack Biyombo",
+   "nickname": "Bizzy Bo"
+  },
+  {
+   "player": "Bismack Biyombo",
+   "nickname": "BB-8"
+  },
+  {
+   "player": "Bismack Biyombo",
+   "nickname": "Biznation"
+  },
+  {
+   "player": "Bismack Biyombo",
+   "nickname": "Big Bizness"
+  },
+  {
+   "player": "Daron Blaylock",
+   "nickname": "Mookie"
+  },
+  {
+   "player": "Eric Bledsoe",
+   "nickname": "The Bledshow"
+  },
+  {
+   "player": "Tyrone Bogues",
+   "nickname": "Muggsy"
+  },
+  {
+   "player": "Devin Booker",
+   "nickname": "Book"
+  },
+  {
+   "player": "Devin Booker",
+   "nickname": "D-Book"
+  },
+  {
+   "player": "Chris Bosh",
+   "nickname": "CB4"
+  },
+  {
+   "player": "Chris Bosh",
+   "nickname": "The Boshtrich"
+  },
+  {
+   "player": "Chris Boucher",
+   "nickname": "Slimm Duck"
+  },
+  {
+   "player": "Bill Bradley",
+   "nickname": "Dollar Bill"
+  },
+  {
+   "player": "Bill Bradley",
+   "nickname": "The Secretary of State"
+  },
+  {
+   "player": "Bill Bradley",
+   "nickname": "Mr. President"
+  },
+  {
+   "player": "Shawn Bradley",
+   "nickname": "The Enormous Mormon"
+  },
+  {
+   "player": "Ignas Brazdeikis",
+   "nickname": "Iggy"
+  },
+  {
+   "player": "Mikal Bridges",
+   "nickname": "The Warden"
+  },
+  {
+   "player": "Mikal Bridges",
+   "nickname": "Brooklyn Bridges"
+  },
+  {
+   "player": "Jon Brockman",
+   "nickname": "The Brockness Monster"
+  },
+  {
+   "player": "Fred Brown",
+   "nickname": "Downtown Freddie"
+  },
+  {
+   "player": "Fred Brown",
+   "nickname": "from downtown"
+  },
+  {
+   "player": "Jalen Brunson",
+   "nickname": "Captain Clutch"
+  },
+  {
+   "player": "Jalen Brunson",
+   "nickname": "King of New York"
+  },
+  {
+   "player": "Joe Bryant",
+   "nickname": "Jellybean"
+  },
+  {
+   "player": "Kobe Bryant",
+   "nickname": "Black Mamba"
+  },
+  {
+   "player": "Kobe Bryant",
+   "nickname": "KB-24"
+  },
+  {
+   "player": "Kobe Bryant",
+   "nickname": "Vino"
+  },
+  {
+   "player": "Jimmy Butler",
+   "nickname": "Jimmy Buckets"
+  },
+  {
+   "player": "Jimmy Butler",
+   "nickname": "Jimmy Jordan"
+  },
+  {
+   "player": "Joe Caldwell",
+   "nickname": "Pogo"
+  },
+  {
+   "player": "Joe Caldwell",
+   "nickname": "Jumping Joe"
+  },
+  {
+   "player": "Kentavious Caldwell-Pope",
+   "nickname": "KCP"
+  },
+  {
+   "player": "Brian Cardinal",
+   "nickname": "The Custodian"
+  },
+  {
+   "player": "Antoine Carr",
+   "nickname": "Big Dawg"
+  },
+  {
+   "player": "Vince Carter",
+   "nickname": "Vinsanity"
+  },
+  {
+   "player": "Vince Carter",
+   "nickname": "Old Man Vince"
+  },
+  {
+   "player": "Vince Carter",
+   "nickname": "Air Canada"
+  },
+  {
+   "player": "Vince Carter",
+   "nickname": "Half Man Half Amazing"
+  },
+  {
+   "player": "Vince Carter",
+   "nickname": "VC"
+  },
+  {
+   "player": "Alex Caruso",
+   "nickname": "The Bald Mamba"
+  },
+  {
+   "player": "Alex Caruso",
+   "nickname": "Carushow"
+  },
+  {
+   "player": "Sam Cassell",
+   "nickname": "Sam I Am"
+  },
+  {
+   "player": "Sam Cassell",
+   "nickname": "The Space-man"
+  },
+  {
+   "player": "Wilt Chamberlain",
+   "nickname": "Wilt the Stilt"
+  },
+  {
+   "player": "Wilt Chamberlain",
+   "nickname": "The Big Dipper"
+  },
+  {
+   "player": "Wilt Chamberlain",
+   "nickname": "dip"
+  },
+  {
+   "player": "Derrick Chievous",
+   "nickname": "Band-Aid"
+  },
+  {
+   "player": "Nathaniel Clifton",
+   "nickname": "Sweetwater"
+  },
+  {
+   "player": "Craig Claxton",
+   "nickname": "Speedy"
+  },
+  {
+   "player": "Vernal Coles",
+   "nickname": "Bimbo"
+  },
+  {
+   "player": "DeMarcus Cousins",
+   "nickname": "Boogie"
+  },
+  {
+   "player": "Bob Cousy",
+   "nickname": "The Houdini of the Hardwood"
+  },
+  {
+   "player": "Bob Cousy",
+   "nickname": "Cooz"
+  },
+  {
+   "player": "Forrest Cox",
+   "nickname": "Frosty"
+  },
+  {
+   "player": "John Arthur Cox III",
+   "nickname": "Chubby"
+  },
+  {
+   "player": "Jamal Crawford",
+   "nickname": "J Crossover"
+  },
+  {
+   "player": "Jamal Crawford",
+   "nickname": "Crawssover Crawford"
+  },
+  {
+   "player": "Jamal Crawford",
+   "nickname": "L.A.'s Dance Instructor"
+  },
+  {
+   "player": "Jamal Crawford",
+   "nickname": "Mr And-One"
+  },
+  {
+   "player": "Billy Cunningham",
+   "nickname": "Kangaroo Kid"
+  },
+  {
+   "player": "Stephen Curry",
+   "nickname": "Splash Brothers"
+  },
+  {
+   "player": "Stephen Curry",
+   "nickname": "Baby-Faced Assassin"
+  },
+  {
+   "player": "Stephen Curry",
+   "nickname": "Chef Curry"
+  },
+  {
+   "player": "Stephen Curry",
+   "nickname": "Steph"
+  },
+  {
+   "player": "Stephen Curry",
+   "nickname": "The Golden Boy"
+  },
+  {
+   "player": "Bob Dandridge",
+   "nickname": "Bobby D"
+  },
+  {
+   "player": "Mel Davis",
+   "nickname": "Killer"
+  },
+  {
+   "player": "Glen Davis",
+   "nickname": "Big Baby"
+  },
+  {
+   "player": "Glen Davis",
+   "nickname": "Uno-Uno"
+  },
+  {
+   "player": "Ricky Davis",
+   "nickname": "Ricky Buckets"
+  },
+  {
+   "player": "Ricky Davis",
+   "nickname": "Get Buckets"
+  },
+  {
+   "player": "Walter Davis",
+   "nickname": "The Greyhound"
+  },
+  {
+   "player": "Walter Davis",
+   "nickname": "The Candyman"
+  },
+  {
+   "player": "Walter Davis",
+   "nickname": "Sweet D"
+  },
+  {
+   "player": "Walter Davis",
+   "nickname": "The Man with the Velvet Touch"
+  },
+  {
+   "player": "Darryl Dawkins",
+   "nickname": "Chocolate Thunder"
+  },
+  {
+   "player": "Dewayne Dedmon",
+   "nickname": "The Mechanic"
+  },
+  {
+   "player": "Matthew Dellavedova",
+   "nickname": "Delly"
+  },
+  {
+   "player": "Matthew Dellavedova",
+   "nickname": "The Curry Stopper"
+  },
+  {
+   "player": "DeMar DeRozan",
+   "nickname": "Deebo"
+  },
+  {
+   "player": "Dimitris Diamantidis",
+   "nickname": "3D"
+  },
+  {
+   "player": "Boris Diaw",
+   "nickname": "Tea Time"
+  },
+  {
+   "player": "Josh Dix",
+   "nickname": "John Chips"
+  },
+  {
+   "player": "Josh Dix",
+   "nickname": "JD"
+  },
+  {
+   "player": "Josh Dix",
+   "nickname": "Jelly"
+  },
+  {
+   "player": "Luka Dončić",
+   "nickname": "Luka Magic"
+  },
+  {
+   "player": "Luka Dončić",
+   "nickname": "The Don"
+  },
+  {
+   "player": "Luguentz Dort",
+   "nickname": "Dorture Chamber"
+  },
+  {
+   "player": "Luguentz Dort",
+   "nickname": "Dortress"
+  },
+  {
+   "player": "Clyde Drexler",
+   "nickname": "Clyde the Glide"
+  },
+  {
+   "player": "Goran Dragic",
+   "nickname": "The Dragon"
+  },
+  {
+   "player": "Goran Dragic",
+   "nickname": "Gold Dragon"
+  },
+  {
+   "player": "Andre Drummond",
+   "nickname": "Big Penguin"
+  },
+  {
+   "player": "Tim Duncan",
+   "nickname": "The Big Fundamental"
+  },
+  {
+   "player": "Tim Duncan",
+   "nickname": "Slam Duncan"
+  },
+  {
+   "player": "Tim Duncan",
+   "nickname": "Old Man Riverwalk"
+  },
+  {
+   "player": "Tim Duncan",
+   "nickname": "Twin Towers"
+  },
+  {
+   "player": "Kevin Durant",
+   "nickname": "KD"
+  },
+  {
+   "player": "Kevin Durant",
+   "nickname": "Durantula"
+  },
+  {
+   "player": "Kevin Durant",
+   "nickname": "The Servant"
+  },
+  {
+   "player": "Kevin Durant",
+   "nickname": "Slim Reaper"
+  },
+  {
+   "player": "Kevin Durant",
+   "nickname": "Easy Money Sniper"
+  },
+  {
+   "player": "Kevin Durant",
+   "nickname": "Snake"
+  },
+  {
+   "player": "Anthony Edwards",
+   "nickname": "Ant-Man"
+  },
+  {
+   "player": "Anthony Edwards",
+   "nickname": "Ant"
+  },
+  {
+   "player": "Theodore Edwards",
+   "nickname": "Blue"
+  },
+  {
+   "player": "Pervis Ellison",
+   "nickname": "Never Nervous Pervis"
+  },
+  {
+   "player": "Pervis Ellison",
+   "nickname": "Out of Service Pervis"
+  },
+  {
+   "player": "Joel Embiid",
+   "nickname": "The Process"
+  },
+  {
+   "player": "Julius Erving",
+   "nickname": "Dr. J"
+  },
+  {
+   "player": "Patrick Ewing",
+   "nickname": "The Beast of the East"
+  },
+  {
+   "player": "Kahlil Ameer Felder Jr.",
+   "nickname": "Kay"
+  },
+  {
+   "player": "Derek Fisher",
+   "nickname": "D-Fish"
+  },
+  {
+   "player": "Eric Floyd",
+   "nickname": "Sleepy"
+  },
+  {
+   "player": "De'Aaron Fox",
+   "nickname": "Swipa"
+  },
+  {
+   "player": "Clarence Francis",
+   "nickname": "Bevo"
+  },
+  {
+   "player": "Steve Francis",
+   "nickname": "Stevie Franchise"
+  },
+  {
+   "player": "Walt Frazier",
+   "nickname": "Clyde"
+  },
+  {
+   "player": "James Taft Fredette",
+   "nickname": "Jimmer"
+  },
+  {
+   "player": "James Taft Fredette",
+   "nickname": "The Lonely Master"
+  },
+  {
+   "player": "James Taft Fredette",
+   "nickname": "Jimo Dashen"
+  },
+  {
+   "player": "James Taft Fredette",
+   "nickname": "The Lonely God"
+  },
+  {
+   "player": "Lloyd Bernard Free",
+   "nickname": "World"
+  },
+  {
+   "player": "Lloyd Bernard Free",
+   "nickname": "World B. Free"
+  },
+  {
+   "player": "Lloyd Bernard Free",
+   "nickname": "The Prince of Midair"
+  },
+  {
+   "player": "Markelle Fultz",
+   "nickname": "Quick Wash"
+  },
+  {
+   "player": "Aaron Gordon",
+   "nickname": "Air Gordon"
+  },
+  {
+   "player": "Dan Gadzuric",
+   "nickname": "The Flying Dutchman"
+  },
+  {
+   "player": "Harry Gallatin",
+   "nickname": "The Horse"
+  },
+  {
+   "player": "Danilo Gallinari",
+   "nickname": "Il Gallo"
+  },
+  {
+   "player": "Danilo Gallinari",
+   "nickname": "The Rooster"
+  },
+  {
+   "player": "Kevin Garnett",
+   "nickname": "Big Ticket"
+  },
+  {
+   "player": "Kevin Garnett",
+   "nickname": "KG"
+  },
+  {
+   "player": "Kevin Garnett",
+   "nickname": "The Kid"
+  },
+  {
+   "player": "Marc Gasol",
+   "nickname": "Big Spain"
+  },
+  {
+   "player": "Marc Gasol",
+   "nickname": "The Big Burrito"
+  },
+  {
+   "player": "Paul George",
+   "nickname": "PG-13"
+  },
+  {
+   "player": "Paul George",
+   "nickname": "Young Trece"
+  },
+  {
+   "player": "Paul George",
+   "nickname": "Playoff P"
+  },
+  {
+   "player": "Paul George",
+   "nickname": "Podcast P"
+  },
+  {
+   "player": "Paul George",
+   "nickname": "Pandemic P"
+  },
+  {
+   "player": "George Gervin",
+   "nickname": "The Iceman"
+  },
+  {
+   "player": "George Gervin",
+   "nickname": "Iceberg Slim"
+  },
+  {
+   "player": "George Gervin",
+   "nickname": "Ice"
+  },
+  {
+   "player": "Daniel Gibson",
+   "nickname": "Boobie"
+  },
+  {
+   "player": "Shai Gilgeous-Alexander",
+   "nickname": "SGA"
+  },
+  {
+   "player": "Shai Gilgeous-Alexander",
+   "nickname": "Mr. Buy 2 Get 1 Free"
+  },
+  {
+   "player": "Armen Gilliam",
+   "nickname": "The Hammer"
+  },
+  {
+   "player": "Artis Gilmore",
+   "nickname": "A Train"
+  },
+  {
+   "player": "Manu Ginóbili",
+   "nickname": "The Magician"
+  },
+  {
+   "player": "Manu Ginóbili",
+   "nickname": "Gino"
+  },
+  {
+   "player": "Manu Ginóbili",
+   "nickname": "El Contusione"
+  },
+  {
+   "player": "Manu Ginóbili",
+   "nickname": "Manudona"
+  },
+  {
+   "player": "George Glamack",
+   "nickname": "The Blind Bomber"
+  },
+  {
+   "player": "Rudy Gobert",
+   "nickname": "The Stifle Tower"
+  },
+  {
+   "player": "Rudy Gobert",
+   "nickname": "The French Rejection"
+  },
+  {
+   "player": "Ben Gordon",
+   "nickname": "Madison Square Gordon"
+  },
+  {
+   "player": "Marcin Gortat",
+   "nickname": "The Polish Hammer"
+  },
+  {
+   "player": "Travis Grant",
+   "nickname": "Machine Gun"
+  },
+  {
+   "player": "Jeff Green",
+   "nickname": "Iron Man"
+  },
+  {
+   "player": "Jeff Green",
+   "nickname": "Uncle Jeff"
+  },
+  {
+   "player": "Darrell Griffith",
+   "nickname": "Dr. Dunkenstein"
+  },
+  {
+   "player": "Robert Gruenig",
+   "nickname": "Ace"
+  },
+  {
+   "player": "Tom Gugliotta",
+   "nickname": "Googs"
+  },
+  {
+   "player": "Harold Hairston",
+   "nickname": "Happy"
+  },
+  {
+   "player": "Harvey Wade Halbrook",
+   "nickname": "Swede"
+  },
+  {
+   "player": "Richard Hamilton",
+   "nickname": "Rip"
+  },
+  {
+   "player": "Tom Hammonds",
+   "nickname": "The Terminator"
+  },
+  {
+   "player": "Anfernee Hardaway",
+   "nickname": "Penny"
+  },
+  {
+   "player": "Anfernee Hardaway",
+   "nickname": "pretty"
+  },
+  {
+   "player": "Tyler Hansbrough",
+   "nickname": "Psycho T"
+  },
+  {
+   "player": "James Harden",
+   "nickname": "The Beard"
+  },
+  {
+   "player": "James Harden",
+   "nickname": "El Chapo"
+  },
+  {
+   "player": "Tobias Harris",
+   "nickname": "Tobi & Bobi"
+  },
+  {
+   "player": "Isaiah Hartenstein",
+   "nickname": "Hartenstein's Monster"
+  },
+  {
+   "player": "Connie Hawkins",
+   "nickname": "The Hawk"
+  },
+  {
+   "player": "Udonis Haslem",
+   "nickname": "U.D."
+  },
+  {
+   "player": "John Havlicek",
+   "nickname": "Hondo"
+  },
+  {
+   "player": "Elvin Hayes",
+   "nickname": "The Big E"
+  },
+  {
+   "player": "Elvin Hayes",
+   "nickname": ","
+  },
+  {
+   "player": "Tommy Heinsohn",
+   "nickname": "Ack Ack"
+  },
+  {
+   "player": "Tommy Heinsohn",
+   "nickname": "),"
+  },
+  {
+   "player": "Tommy Heinsohn",
+   "nickname": ","
+  },
+  {
+   "player": "Juan Hernangómez",
+   "nickname": "Juancho"
+  },
+  {
+   "player": "Juan Hernangómez",
+   "nickname": "Bo Cruz"
+  },
+  {
+   "player": "Juan Hernangómez",
+   "nickname": "Cruz Missile"
+  },
+  {
+   "player": "Tyler Herro",
+   "nickname": "Baby Goat"
+  },
+  {
+   "player": "Tyler Herro",
+   "nickname": "Boy Wonder"
+  },
+  {
+   "player": "Mario Hezonja",
+   "nickname": "Super Mario"
+  },
+  {
+   "player": "Buddy Hield",
+   "nickname": "Buddy Love"
+  },
+  {
+   "player": "Grant Hill",
+   "nickname": ","
+  },
+  {
+   "player": "Darnell Hillman",
+   "nickname": "Dr. Dunk"
+  },
+  {
+   "player": "Charlie Hoefer",
+   "nickname": "Dutch"
+  },
+  {
+   "player": "Fred Hoiberg",
+   "nickname": "The Mayor"
+  },
+  {
+   "player": "Lionel Hollins",
+   "nickname": "(The) L-Train"
+  },
+  {
+   "player": "Chet Holmgren",
+   "nickname": "Big Oxtail"
+  },
+  {
+   "player": "Chet Holmgren",
+   "nickname": "Abraham Lincoln"
+  },
+  {
+   "player": "William Holzman",
+   "nickname": "Red"
+  },
+  {
+   "player": "Robert Horry",
+   "nickname": "Big Shot Rob"
+  },
+  {
+   "player": "Robert Horry",
+   "nickname": "Big Shot Bob"
+  },
+  {
+   "player": "Dwight Howard",
+   "nickname": "Superman"
+  },
+  {
+   "player": "Dwight Howard",
+   "nickname": "Foul on You"
+  },
+  {
+   "player": "Dwight Howard",
+   "nickname": "D12"
+  },
+  {
+   "player": "Kevin Huerter",
+   "nickname": "Red Velvet"
+  },
+  {
+   "player": "Rodney Hundley",
+   "nickname": "Hot Rod"
+  },
+  {
+   "player": "Serge Ibaka",
+   "nickname": "I-block-a"
+  },
+  {
+   "player": "Serge Ibaka",
+   "nickname": "Serge Protector"
+  },
+  {
+   "player": "Serge Ibaka",
+   "nickname": "Air Congo"
+  },
+  {
+   "player": "Andre Iguodala",
+   "nickname": "Iggy"
+  },
+  {
+   "player": "Zydrunas Ilgauskas",
+   "nickname": "Big Z"
+  },
+  {
+   "player": "Ersan İlyasova",
+   "nickname": "Turkish Thunder"
+  },
+  {
+   "player": "Ersan İlyasova",
+   "nickname": "Ghostface Ilya"
+  },
+  {
+   "player": "Brandon Ingram",
+   "nickname": "B.I."
+  },
+  {
+   "player": "Brandon Ingram",
+   "nickname": "Sleepy Reaper"
+  },
+  {
+   "player": "Brandon Ingram",
+   "nickname": "Slim Reaper"
+  },
+  {
+   "player": "Kyrie Irving",
+   "nickname": "Uncle Drew"
+  },
+  {
+   "player": "Kyrie Irving",
+   "nickname": "Kyriediculous"
+  },
+  {
+   "player": "Kyrie Irving",
+   "nickname": "The Ankletaker"
+  },
+  {
+   "player": "Jonathan Isaac",
+   "nickname": "The Minister of Defense"
+  },
+  {
+   "player": "Allen Iverson",
+   "nickname": "A.I."
+  },
+  {
+   "player": "Allen Iverson",
+   "nickname": "The Answer"
+  },
+  {
+   "player": "Allen Iverson",
+   "nickname": "Bubba Chuck"
+  },
+  {
+   "player": "Allen Iverson",
+   "nickname": "Steven John Ray the Third"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": "King James"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": "The King"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": "The Chosen One"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": "(The) L-Train"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": "LBJ"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": "The Akron Hammer"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": "LeBronto"
+  },
+  {
+   "player": "LeBron James",
+   "nickname": ","
+  },
+  {
+   "player": "Richard Lee Jemison III",
+   "nickname": "Trey"
+  },
+  {
+   "player": "Keith Jennings",
+   "nickname": "Mister"
+  },
+  {
+   "player": "Earvin Johnson",
+   "nickname": "Magic"
+  },
+  {
+   "player": "Earvin Johnson",
+   "nickname": "Buck"
+  },
+  {
+   "player": "Earvin Johnson",
+   "nickname": "E.J."
+  },
+  {
+   "player": "Gus Johnson",
+   "nickname": "Honeycomb"
+  },
+  {
+   "player": "Joe Johnson",
+   "nickname": "Iso Joe"
+  },
+  {
+   "player": "Larry Johnson",
+   "nickname": "Grandmama"
+  },
+  {
+   "player": "Larry Johnson",
+   "nickname": "LJ"
+  },
+  {
+   "player": "Vinnie Johnson",
+   "nickname": "The Microwave"
+  },
+  {
+   "player": "Vinnie Johnson",
+   "nickname": "gets hot instantly"
+  },
+  {
+   "player": "Nikola Jokić",
+   "nickname": "Joker"
+  },
+  {
+   "player": "Isaiah Joe",
+   "nickname": "Strokin’ Joe"
+  },
+  {
+   "player": "Isaiah Joe",
+   "nickname": "Zai"
+  },
+  {
+   "player": "Damon Jones",
+   "nickname": "The World's Greatest Shooter"
+  },
+  {
+   "player": "Ronald Jones",
+   "nickname": "Popeye"
+  },
+  {
+   "player": "Sam Jones",
+   "nickname": "Sad Sam"
+  },
+  {
+   "player": "Sam Jones",
+   "nickname": "Mr. Clutch"
+  },
+  {
+   "player": "Sam Jones",
+   "nickname": "The Shooter"
+  },
+  {
+   "player": "Michael Jordan",
+   "nickname": "Air Jordan"
+  },
+  {
+   "player": "Michael Jordan",
+   "nickname": "His Airness"
+  },
+  {
+   "player": "Michael Jordan",
+   "nickname": "MJ"
+  },
+  {
+   "player": "Michael Jordan",
+   "nickname": "The G.O.A.T"
+  },
+  {
+   "player": "Michael Jordan",
+   "nickname": "The Black Cat"
+  },
+  {
+   "player": "Greg Kelser",
+   "nickname": "Special K"
+  },
+  {
+   "player": "Shawn Kemp",
+   "nickname": "The Reignman"
+  },
+  {
+   "player": "Shawn Kemp",
+   "nickname": "The Family Man"
+  },
+  {
+   "player": "John Graham Kerr",
+   "nickname": "Red"
+  },
+  {
+   "player": "Jason Kidd",
+   "nickname": "J-Kidd"
+  },
+  {
+   "player": "Andrei Kirilenko",
+   "nickname": "AK47"
+  },
+  {
+   "player": "Louis Herman Klotz",
+   "nickname": "Red"
+  },
+  {
+   "player": "Dalton Knecht",
+   "nickname": "Kneckt 4"
+  },
+  {
+   "player": "Kon Knueppel",
+   "nickname": "The Konman"
+  },
+  {
+   "player": "Furkan Korkmaz",
+   "nickname": "Furk the Turk"
+  },
+  {
+   "player": "Toni Kukoc",
+   "nickname": "Croatian Sensation"
+  },
+  {
+   "player": "Toni Kukoc",
+   "nickname": "The Waiter"
+  },
+  {
+   "player": "Toni Kukoc",
+   "nickname": "Euro-Magic"
+  },
+  {
+   "player": "Michael Kidd-Gilchrist",
+   "nickname": "MKG"
+  },
+  {
+   "player": "Jonathan Kuminga",
+   "nickname": "The Kum Bucket"
+  },
+  {
+   "player": "Trajan Langdon",
+   "nickname": "The Alaskan Assassin"
+  },
+  {
+   "player": "Meadow George Lemon",
+   "nickname": "Meadowlark"
+  },
+  {
+   "player": "Lafayette Lever",
+   "nickname": "Fat"
+  },
+  {
+   "player": "Kawhi Leonard",
+   "nickname": "The Claw"
+  },
+  {
+   "player": "Kawhi Leonard",
+   "nickname": "Sugar K"
+  },
+  {
+   "player": "Meyers Leonard",
+   "nickname": "Meyers Legend"
+  },
+  {
+   "player": "Nancy Lieberman",
+   "nickname": "Lady Magic"
+  },
+  {
+   "player": "Damian Lillard",
+   "nickname": "Dame Dolla"
+  },
+  {
+   "player": "Damian Lillard",
+   "nickname": "Sub Zero"
+  },
+  {
+   "player": "Damian Lillard",
+   "nickname": "Logo Lillard"
+  },
+  {
+   "player": "Damian Lillard",
+   "nickname": "Dame Time"
+  },
+  {
+   "player": "Jeremy Lin",
+   "nickname": "Linsanity"
+  },
+  {
+   "player": "Shaun Livingston",
+   "nickname": "Mid-Range Assassin"
+  },
+  {
+   "player": "Jim Loscutoff",
+   "nickname": "Jungle Jim"
+  },
+  {
+   "player": "Brook Lopez",
+   "nickname": "Splash Mountain"
+  },
+  {
+   "player": "Robin Lopez",
+   "nickname": "RoLo"
+  },
+  {
+   "player": "Bob Love",
+   "nickname": "Butterbean"
+  },
+  {
+   "player": "Ed Macauley",
+   "nickname": "Easy"
+  },
+  {
+   "player": "Ed Macauley",
+   "nickname": "Easy Ed"
+  },
+  {
+   "player": "Mark Madsen",
+   "nickname": "Mad Dog"
+  },
+  {
+   "player": "Dan Majerle",
+   "nickname": "Thunder Dan"
+  },
+  {
+   "player": "Karl Malone",
+   "nickname": "The Mailman"
+  },
+  {
+   "player": "Karl Malone",
+   "nickname": "The Nasty Man"
+  },
+  {
+   "player": "Karl Malone",
+   "nickname": "Mr. 13"
+  },
+  {
+   "player": "Moses Malone",
+   "nickname": "Chairman of the Boards"
+  },
+  {
+   "player": "Earl Manigault",
+   "nickname": "The Goat"
+  },
+  {
+   "player": "Pete Maravich",
+   "nickname": "Pistol Pete"
+  },
+  {
+   "player": "Stephon Marbury",
+   "nickname": "Starbury"
+  },
+  {
+   "player": "Boban Marjanović",
+   "nickname": "Bobi & Tobi"
+  },
+  {
+   "player": "Kenyon Martin",
+   "nickname": "K-Mart"
+  },
+  {
+   "player": "Kenyon Martin Jr.",
+   "nickname": "KJ"
+  },
+  {
+   "player": "Patrick Donald Martin",
+   "nickname": "Dino"
+  },
+  {
+   "player": "Shawn Marion",
+   "nickname": "The Matrix"
+  },
+  {
+   "player": "Wesley Matthews",
+   "nickname": "Iron Man"
+  },
+  {
+   "player": "Cedric Maxwell",
+   "nickname": "Cornbread"
+  },
+  {
+   "player": "Miles McBride",
+   "nickname": "Deuce"
+  },
+  {
+   "player": "Xavier McDaniel",
+   "nickname": "The X-Man"
+  },
+  {
+   "player": "Antonio McDyess",
+   "nickname": "Dice"
+  },
+  {
+   "player": "Jon McGlocklin",
+   "nickname": "Jonny Mac"
+  },
+  {
+   "player": "Tracy McGrady",
+   "nickname": "T-Mac"
+  },
+  {
+   "player": "Dick McGuire",
+   "nickname": "Tricky Dick"
+  },
+  {
+   "player": "Kevin McHale",
+   "nickname": "Herman Munster"
+  },
+  {
+   "player": "Kevin McHale",
+   "nickname": "The Black Hole"
+  },
+  {
+   "player": "Dean Meminger",
+   "nickname": "The Dream"
+  },
+  {
+   "player": "Darko Miličić",
+   "nickname": "The Human Victory Cigar"
+  },
+  {
+   "player": "Reggie Miller",
+   "nickname": "The Knick Killer"
+  },
+  {
+   "player": "Malik Milton",
+   "nickname": "Shake"
+  },
+  {
+   "player": "George Mikan",
+   "nickname": "Mr. Basketball"
+  },
+  {
+   "player": "George Mikan",
+   "nickname": "The Big Number"
+  },
+  {
+   "player": "Harold Miner",
+   "nickname": "Baby Jordan"
+  },
+  {
+   "player": "Bill Mlkvy",
+   "nickname": "The Owl without a Vowel"
+  },
+  {
+   "player": "Donovan Mitchell",
+   "nickname": "Spida"
+  },
+  {
+   "player": "Sidney Moncrief",
+   "nickname": "Sid the Squid"
+  },
+  {
+   "player": "Sidney Moncrief",
+   "nickname": "Sir Sid"
+  },
+  {
+   "player": "Sidney Moncrief",
+   "nickname": "El Sid"
+  },
+  {
+   "player": "Earl Monroe",
+   "nickname": "Black Magic"
+  },
+  {
+   "player": "Earl Monroe",
+   "nickname": "Earl the Pearl"
+  },
+  {
+   "player": "Earl Monroe",
+   "nickname": "Black Jesus"
+  },
+  {
+   "player": "Greg Monroe",
+   "nickname": "Moose"
+  },
+  {
+   "player": "E'Twaun Moore",
+   "nickname": "Uncle E"
+  },
+  {
+   "player": "Marcus Morris",
+   "nickname": "Mook"
+  },
+  {
+   "player": "Alonzo Mourning",
+   "nickname": "Zo"
+  },
+  {
+   "player": "Charles Murphy",
+   "nickname": "Stretch"
+  },
+  {
+   "player": "Jamal Murray",
+   "nickname": "The Blue Arrow"
+  },
+  {
+   "player": "Gheorghe Mureșan",
+   "nickname": "The Giant"
+  },
+  {
+   "player": "Dikembe Mutombo",
+   "nickname": "Mt. Mutombo"
+  },
+  {
+   "player": "Steve Nash",
+   "nickname": "Hair Canada"
+  },
+  {
+   "player": "Fred Neal",
+   "nickname": "Curly"
+  },
+  {
+   "player": "Jameer Nelson",
+   "nickname": "Mighty Mouse"
+  },
+  {
+   "player": "Jameer Nelson",
+   "nickname": "Crib Midget"
+  },
+  {
+   "player": "Georges Niang",
+   "nickname": "The Minivan"
+  },
+  {
+   "player": "Georges Niang",
+   "nickname": "G Wagon"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "Tall Baller From The G"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "Dirty"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "The German Racecar"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "Bavarian Bomber"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "Dirk Diggler"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "The Berlin Tall"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "German Wunderkind"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "Dirk Savage"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "The Germinator"
+  },
+  {
+   "player": "Dirk Nowitzki",
+   "nickname": "The Big German"
+  },
+  {
+   "player": "Jusuf Nurkić",
+   "nickname": "The Bosnian Beast"
+  },
+  {
+   "player": "Frank Ntilikina",
+   "nickname": "The French Prince"
+  },
+  {
+   "player": "Jahlil Okafor",
+   "nickname": "Jah"
+  },
+  {
+   "player": "Jahlil Okafor",
+   "nickname": "Big J"
+  },
+  {
+   "player": "Jahlil Okafor",
+   "nickname": "Little Sully"
+  },
+  {
+   "player": "Lamar Odom",
+   "nickname": "The Candy Man"
+  },
+  {
+   "player": "Mehmet Okur",
+   "nickname": "Memo"
+  },
+  {
+   "player": "Mehmet Okur",
+   "nickname": "The Moneyman"
+  },
+  {
+   "player": "Ralph O'Brien",
+   "nickname": "Buckshot"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "Shaq"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "Shaq Daddy"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "Diesel"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "The Big Aristotle"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "Superman"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "MDE"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "The Big Maravich"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "The Big Fella"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "The Big Shaqtus"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "Shaq Attack"
+  },
+  {
+   "player": "Shaquille O'Neal",
+   "nickname": "The Shnaq"
+  },
+  {
+   "player": "Jermaine O'Neal",
+   "nickname": "J.O"
+  },
+  {
+   "player": "Hakeem Olajuwon",
+   "nickname": "The Dream"
+  },
+  {
+   "player": "Michael Olowokandi",
+   "nickname": "Kandi Man"
+  },
+  {
+   "player": "Kelly Oubre Jr.",
+   "nickname": "Wave Papi"
+  },
+  {
+   "player": "Smush Parker",
+   "nickname": "Scrub"
+  },
+  {
+   "player": "Robert Parish",
+   "nickname": "The Chief"
+  },
+  {
+   "player": "Ruben Patterson",
+   "nickname": "The Kobe Stopper"
+  },
+  {
+   "player": "Chris Paul",
+   "nickname": "CP3"
+  },
+  {
+   "player": "Chris Paul",
+   "nickname": "The Point God"
+  },
+  {
+   "player": "Billy Paultz",
+   "nickname": "The Whopper"
+  },
+  {
+   "player": "Gary Payton",
+   "nickname": "GP"
+  },
+  {
+   "player": "Gary Payton",
+   "nickname": "The Glove"
+  },
+  {
+   "player": "Gary Payton II",
+   "nickname": "The Mitten"
+  },
+  {
+   "player": "Sam Perkins",
+   "nickname": "Big Smooth"
+  },
+  {
+   "player": "Sam Perkins",
+   "nickname": "Sleepy Sam"
+  },
+  {
+   "player": "Elliot Perry",
+   "nickname": "Socks"
+  },
+  {
+   "player": "Chuck Person",
+   "nickname": "The Rifleman"
+  },
+  {
+   "player": "Paul Pierce",
+   "nickname": "The Truth"
+  },
+  {
+   "player": "Ricky Pierce",
+   "nickname": "Big Paper Daddy"
+  },
+  {
+   "player": "Mason Plumlee",
+   "nickname": "Plumdog Millionaire"
+  },
+  {
+   "player": "Jim Pollard",
+   "nickname": "Kangaroo Kid"
+  },
+  {
+   "player": "Kevin Porter",
+   "nickname": "Little Drummer Boy"
+  },
+  {
+   "player": "Kristaps Porziņģis",
+   "nickname": "KP"
+  },
+  {
+   "player": "Kristaps Porziņģis",
+   "nickname": "Unicorn"
+  },
+  {
+   "player": "Kristaps Porziņģis",
+   "nickname": "Tingus Pingus"
+  },
+  {
+   "player": "Kristaps Porziņģis",
+   "nickname": "Tingus Pingus"
+  },
+  {
+   "player": "Vitaly Potapenko",
+   "nickname": "Ukraine Train"
+  },
+  {
+   "player": "Joel Przybilla",
+   "nickname": "Vanilla Gorilla"
+  },
+  {
+   "player": "Julius Randle",
+   "nickname": "The Black Panther"
+  },
+  {
+   "player": "Julius Randle",
+   "nickname": "Beyblade"
+  },
+  {
+   "player": "Zach Randolph",
+   "nickname": "Z-Bo"
+  },
+  {
+   "player": "Austin Reaves",
+   "nickname": "Hillbilly Kobe"
+  },
+  {
+   "player": "Austin Reaves",
+   "nickname": "AR-15"
+  },
+  {
+   "player": "Paul Reed",
+   "nickname": "BBall Paul"
+  },
+  {
+   "player": "Bryant Reeves",
+   "nickname": "Big Country"
+  },
+  {
+   "player": "Jerome Richardson",
+   "nickname": "Pooh"
+  },
+  {
+   "player": "Mitch Richmond",
+   "nickname": "The Rock"
+  },
+  {
+   "player": "Mike Riordan",
+   "nickname": "Rags"
+  },
+  {
+   "player": "Rajon Rondo",
+   "nickname": "Johnny"
+  },
+  {
+   "player": "Rajon Rondo",
+   "nickname": "Swag"
+  },
+  {
+   "player": "Rajon Rondo",
+   "nickname": "Fedex"
+  },
+  {
+   "player": "Rajon Rondo",
+   "nickname": "Chris Paul"
+  },
+  {
+   "player": "Glenn Rivers",
+   "nickname": "Doc"
+  },
+  {
+   "player": "David Robinson",
+   "nickname": "The Admiral"
+  },
+  {
+   "player": "Glenn Robinson",
+   "nickname": "Big Dog"
+  },
+  {
+   "player": "Len Robinson",
+   "nickname": "Truck"
+  },
+  {
+   "player": "Nate Robinson",
+   "nickname": "KryptoNate"
+  },
+  {
+   "player": "Oscar Robertson",
+   "nickname": "The Big O"
+  },
+  {
+   "player": "Oscar Robertson",
+   "nickname": "The Disappearing O"
+  },
+  {
+   "player": "Dennis Rodman",
+   "nickname": "The Worm"
+  },
+  {
+   "player": "Wayne Rollins",
+   "nickname": "Tree"
+  },
+  {
+   "player": "Derrick Rose",
+   "nickname": "D-Rose"
+  },
+  {
+   "player": "Derrick Rose",
+   "nickname": "Windy City Assassin"
+  },
+  {
+   "player": "Brandon Roy",
+   "nickname": "The Natural"
+  },
+  {
+   "player": "Terry Rozier",
+   "nickname": "Scary Terry"
+  },
+  {
+   "player": "D'Angelo Russell",
+   "nickname": "DLo"
+  },
+  {
+   "player": "Bill Russell",
+   "nickname": "Russ"
+  },
+  {
+   "player": "Arvydas Sabonis",
+   "nickname": "Sabas"
+  },
+  {
+   "player": "Domantas Sabonis",
+   "nickname": "Sabas Jr."
+  },
+  {
+   "player": "Domantas Sabonis",
+   "nickname": "Domas"
+  },
+  {
+   "player": "John Salley",
+   "nickname": "Spider"
+  },
+  {
+   "player": "Tom Sanders",
+   "nickname": "Satch"
+  },
+  {
+   "player": "Tom Sanders",
+   "nickname": "Satch Sanders"
+  },
+  {
+   "player": "Brian Scalabrine",
+   "nickname": "The White Mamba"
+  },
+  {
+   "player": "Oscar Schmidt",
+   "nickname": "Mão Santa"
+  },
+  {
+   "player": "Oscar Schmidt",
+   "nickname": "Holy Hand"
+  },
+  {
+   "player": "Sofoklis Schortsanitis",
+   "nickname": "Baby Shaq"
+  },
+  {
+   "player": "Sofoklis Schortsanitis",
+   "nickname": "Big Sofo"
+  },
+  {
+   "player": "Luis Scola",
+   "nickname": "Ice Cream Man"
+  },
+  {
+   "player": "Jon Scheyer",
+   "nickname": "The Jewish Jordan"
+  },
+  {
+   "player": "Dennis Scott",
+   "nickname": "3D"
+  },
+  {
+   "player": "Collin Sexton",
+   "nickname": "Young Bull"
+  },
+  {
+   "player": "Iman Shumpert",
+   "nickname": "Shump"
+  },
+  {
+   "player": "Pascal Siakam",
+   "nickname": "Spicy P"
+  },
+  {
+   "player": "Ralph Siewert",
+   "nickname": "Sky"
+  },
+  {
+   "player": "Ralph Siewert",
+   "nickname": "Timber"
+  },
+  {
+   "player": "James Silas",
+   "nickname": "Captain Late"
+  },
+  {
+   "player": "James Silas",
+   "nickname": "The Snake"
+  },
+  {
+   "player": "James Silas",
+   "nickname": "The Late Mr. Silas"
+  },
+  {
+   "player": "Jonathon Simmons",
+   "nickname": "Juice"
+  },
+  {
+   "player": "Henry Sims",
+   "nickname": "Lickface"
+  },
+  {
+   "player": "Ben Simmons",
+   "nickname": "Fresh Prince"
+  },
+  {
+   "player": "Ben Simmons",
+   "nickname": "Big Ben"
+  },
+  {
+   "player": "Ben Simmons",
+   "nickname": "Ben 10"
+  },
+  {
+   "player": "Marcus Smart",
+   "nickname": "The Cobra"
+  },
+  {
+   "player": "Bobby Smith",
+   "nickname": "Bingo"
+  },
+  {
+   "player": "Craig Smith",
+   "nickname": "Rhino"
+  },
+  {
+   "player": "Josh Smith",
+   "nickname": "J-Smoove"
+  },
+  {
+   "player": "Kenny Smith",
+   "nickname": "The Jet"
+  },
+  {
+   "player": "J. R. Smith",
+   "nickname": "JR Swish"
+  },
+  {
+   "player": "Larry Smith",
+   "nickname": "Mr. Mean"
+  },
+  {
+   "player": "Rik Smits",
+   "nickname": "The Flying Dutchman"
+  },
+  {
+   "player": "Rik Smits",
+   "nickname": "The Dunkin' Dutchman"
+  },
+  {
+   "player": "Vassilis Spanoulis",
+   "nickname": "Kill Bill"
+  },
+  {
+   "player": "Vassilis Spanoulis",
+   "nickname": "V-Span"
+  },
+  {
+   "player": "Marreese Speights",
+   "nickname": "Mo' Buckets"
+  },
+  {
+   "player": "Latrell Sprewell",
+   "nickname": "Spree"
+  },
+  {
+   "player": "Jerry Stackhouse",
+   "nickname": "Stack"
+  },
+  {
+   "player": "Jerry Stackhouse",
+   "nickname": "House"
+  },
+  {
+   "player": "Dave Stallworth",
+   "nickname": "The Rave"
+  },
+  {
+   "player": "Nik Stauskas",
+   "nickname": "Sauce Castillo"
+  },
+  {
+   "player": "Lance Stephenson",
+   "nickname": "Born Ready"
+  },
+  {
+   "player": "Isaiah Stewart",
+   "nickname": "Beef Stew"
+  },
+  {
+   "player": "Maurice Stokes",
+   "nickname": "Big Mo"
+  },
+  {
+   "player": "Amar'e Stoudemire",
+   "nickname": "STAT"
+  },
+  {
+   "player": "Predrag Stojakovic",
+   "nickname": "Peja"
+  },
+  {
+   "player": "Paul Sturgess",
+   "nickname": "Tiny"
+  },
+  {
+   "player": "Yuta Tabuse",
+   "nickname": "Michael Jordan Of Japan"
+  },
+  {
+   "player": "Jayson Tatum",
+   "nickname": "The Anomaly"
+  },
+  {
+   "player": "Reece Tatum",
+   "nickname": "Goose"
+  },
+  {
+   "player": "Walter Samuel Tavares da Veiga",
+   "nickname": "Edy"
+  },
+  {
+   "player": "Dalen Terry",
+   "nickname": "Sevens"
+  },
+  {
+   "player": "Jason Terry",
+   "nickname": "JET"
+  },
+  {
+   "player": "Isaiah Thomas",
+   "nickname": "IT"
+  },
+  {
+   "player": "Isiah Thomas (born 1961)",
+   "nickname": "Zeke"
+  },
+  {
+   "player": "Isiah Thomas (born 1961)",
+   "nickname": "Cuts"
+  },
+  {
+   "player": "Isiah Thomas (born 1961)",
+   "nickname": "The Baby-Faced Assassin"
+  },
+  {
+   "player": "Kurt Thomas",
+   "nickname": "Mid Life"
+  },
+  {
+   "player": "Kurt Thomas",
+   "nickname": "Dirty Kurt"
+  },
+  {
+   "player": "Kurt Thomas",
+   "nickname": "Big Sexy"
+  },
+  {
+   "player": "David Thompson",
+   "nickname": "The Skywalker"
+  },
+  {
+   "player": "Klay Thompson",
+   "nickname": "Splash Brothers"
+  },
+  {
+   "player": "Klay Thompson",
+   "nickname": "Game 6 Klay"
+  },
+  {
+   "player": "Nate Thurmond",
+   "nickname": "Nate The Great"
+  },
+  {
+   "player": "Sedale Threatt",
+   "nickname": "The Thief"
+  },
+  {
+   "player": "Andrew Toney",
+   "nickname": "The Boston Strangler"
+  },
+  {
+   "player": "Andrew Toney",
+   "nickname": "killing"
+  },
+  {
+   "player": "Obadiah Richard Toppin Jr.",
+   "nickname": "Obi"
+  },
+  {
+   "player": "Karl-Anthony Towns",
+   "nickname": "KAT"
+  },
+  {
+   "player": "Karl-Anthony Towns",
+   "nickname": "Special-K"
+  },
+  {
+   "player": "Karl-Anthony Towns",
+   "nickname": "The Big Meow"
+  },
+  {
+   "player": "Karl-Anthony Towns",
+   "nickname": "The Big Bodega"
+  },
+  {
+   "player": "Robert Traylor",
+   "nickname": "Tractor Traylor"
+  },
+  {
+   "player": "Anthony Leon Tucker Jr.",
+   "nickname": "PJ"
+  },
+  {
+   "player": "Melvin Turpin",
+   "nickname": "Golden Arches"
+  },
+  {
+   "player": "Jonas Valančiūnas",
+   "nickname": "JV"
+  },
+  {
+   "player": "Jonas Valančiūnas",
+   "nickname": "Lithuanian Lightning"
+  },
+  {
+   "player": "Denzel Valentine",
+   "nickname": "Zel"
+  },
+  {
+   "player": "Nick Van Exel",
+   "nickname": "Nasty Nick"
+  },
+  {
+   "player": "Nick Van Exel",
+   "nickname": "Nick Van Excellent"
+  },
+  {
+   "player": "Nick Van Exel",
+   "nickname": "Nick the Quick"
+  },
+  {
+   "player": "Anderson Varejão",
+   "nickname": "Wild Thing"
+  },
+  {
+   "player": "Stojko Vranković",
+   "nickname": "Human Victory Cigar"
+  },
+  {
+   "player": "Dick Van Arsdale",
+   "nickname": "The Original Sun"
+  },
+  {
+   "player": "Nikola Vučević",
+   "nickname": "Vooch"
+  },
+  {
+   "player": "Aleksandar Vujacic",
+   "nickname": "Sasha"
+  },
+  {
+   "player": "Dwyane Wade",
+   "nickname": "D-Wade"
+  },
+  {
+   "player": "Dwyane Wade",
+   "nickname": "Flash"
+  },
+  {
+   "player": "Kemba Walker",
+   "nickname": "Cardiac Kemba"
+  },
+  {
+   "player": "Ben Wallace",
+   "nickname": "Big Ben"
+  },
+  {
+   "player": "Gerald Wallace",
+   "nickname": "Crash"
+  },
+  {
+   "player": "Gerald Wallace",
+   "nickname": "G-Force"
+  },
+  {
+   "player": "Rasheed Wallace",
+   "nickname": "Sheed"
+  },
+  {
+   "player": "Anthony Jerome Webb",
+   "nickname": "Spud"
+  },
+  {
+   "player": "Chris Webber",
+   "nickname": "C-Webb"
+  },
+  {
+   "player": "Jerry West",
+   "nickname": "Mr. Clutch"
+  },
+  {
+   "player": "Jerry West",
+   "nickname": "The Logo"
+  },
+  {
+   "player": "Russell Westbrook",
+   "nickname": "Russ"
+  },
+  {
+   "player": "Russell Westbrook",
+   "nickname": "Brodie"
+  },
+  {
+   "player": "Russell Westbrook",
+   "nickname": "Beastbrook"
+  },
+  {
+   "player": "Derrick White",
+   "nickname": "The Buffalo"
+  },
+  {
+   "player": "Derrick White",
+   "nickname": "D-White"
+  },
+  {
+   "player": "Aaron Wiggins",
+   "nickname": "Wiggs"
+  },
+  {
+   "player": "Aaron Wiggins",
+   "nickname": "The Man Who Saved Basketball"
+  },
+  {
+   "player": "Dominique Wilkins",
+   "nickname": "The Human Highlight Film"
+  },
+  {
+   "player": "Jamaal Wilkes",
+   "nickname": "Silk"
+  },
+  {
+   "player": "Deron Williams",
+   "nickname": "D-Will"
+  },
+  {
+   "player": "Jalen Williams",
+   "nickname": "J-Dub"
+  },
+  {
+   "player": "Jason Williams",
+   "nickname": "White Chocolate"
+  },
+  {
+   "player": "Jaylin Williams",
+   "nickname": "Jay Will"
+  },
+  {
+   "player": "Jaylin Williams",
+   "nickname": "Boom"
+  },
+  {
+   "player": "John Williams",
+   "nickname": "Hot Rod"
+  },
+  {
+   "player": "Jerome Williams",
+   "nickname": "Junkyard Dog"
+  },
+  {
+   "player": "John Sam Williams",
+   "nickname": "Hot Plate"
+  },
+  {
+   "player": "Kenrich Williams",
+   "nickname": "Kenny Hustle"
+  },
+  {
+   "player": "Lou Williams",
+   "nickname": "Sweet Lou"
+  },
+  {
+   "player": "Robert Williams",
+   "nickname": "Time Lord"
+  },
+  {
+   "player": "Corliss Williamson",
+   "nickname": "Big Nasty"
+  },
+  {
+   "player": "James Worthy",
+   "nickname": "Big Game James"
+  },
+  {
+   "player": "James Worthy",
+   "nickname": "Clever"
+  },
+  {
+   "player": "Guerschon Yabusele",
+   "nickname": "The Dancing Bear"
+  },
+  {
+   "player": "Yao Ming",
+   "nickname": "Ming Dynasty"
+  },
+  {
+   "player": "Yao Ming",
+   "nickname": "Chairman Yao"
+  },
+  {
+   "player": "Yao Ming",
+   "nickname": "Shaquie Chan"
+  },
+  {
+   "player": "Yao Ming",
+   "nickname": "The Great Wall of China"
+  },
+  {
+   "player": "Nick Young",
+   "nickname": "Swaggy P"
+  },
+  {
+   "player": "Nick Young",
+   "nickname": "Uncle P"
+  },
+  {
+   "player": "Nick Young",
+   "nickname": "Bean Burrito"
+  },
+  {
+   "player": "Trae Young",
+   "nickname": "Ice Trae"
+  },
+  {
+   "player": "Max Zaslofsky",
+   "nickname": "Slats"
+  },
+  {
+   "player": "Arnold Auerbach",
+   "nickname": "Red"
+  },
+  {
+   "player": "Forrest Cox",
+   "nickname": "Frosty"
+  },
+  {
+   "player": "Forrest Cox",
+   "nickname": "Forrest Grump"
+  },
+  {
+   "player": "Chuck Daly",
+   "nickname": "Daddy Rich"
+  },
+  {
+   "player": "Clarence Gaines",
+   "nickname": "Big House"
+  },
+  {
+   "player": "Fred Hoiberg",
+   "nickname": "The Mayor"
+  },
+  {
+   "player": "William Holzman",
+   "nickname": "Red"
+  },
+  {
+   "player": "Dan Issel",
+   "nickname": "The Horse"
+  },
+  {
+   "player": "Phil Jackson",
+   "nickname": "Zen Master"
+  },
+  {
+   "player": "Alvin Julian",
+   "nickname": "Doggie"
+  },
+  {
+   "player": "Mike Krzyzewski",
+   "nickname": "Coach K"
+  },
+  {
+   "player": "Ward Lambert",
+   "nickname": "Piggy"
+  },
+  {
+   "player": "Don Nelson",
+   "nickname": "Nellie"
+  },
+  {
+   "player": "Gregg Popovich",
+   "nickname": "Pop"
+  },
+  {
+   "player": "Pat Riley",
+   "nickname": "Riles"
+  },
+  {
+   "player": "Glenn Rivers",
+   "nickname": "Doc"
+  },
+  {
+   "player": "Erik Spoelstra",
+   "nickname": "Spo"
+  },
+  {
+   "player": "John Wooden",
+   "nickname": "The Wizard of Westwood"
+  },
+  {
+   "player": "Rick Carlisle",
+   "nickname": "Flipper"
+  },
+  {
+   "player": "Saint Joseph's Hawks men's basketball, 1934–38",
+   "nickname": "Mighty Mites"
+  },
+  {
+   "player": "Utah Utes men's basketball team, 1943–44",
+   "nickname": "Blitz Kids"
+  },
+  {
+   "player": "Kentucky Wildcats men's basketball in the late 1940s",
+   "nickname": "Fabulous Five"
+  },
+  {
+   "player": "University of Houston men's basketball from 1982 to 1984",
+   "nickname": "Phi Slama Jama"
+  },
+  {
+   "player": "Michigan Wolverines men's basketball team, 1992–93",
+   "nickname": "Fab Five"
+  },
+  {
+   "player": "Kentucky Wildcats men's basketball team, 1995–96",
+   "nickname": "The Untouchables"
+  },
+  {
+   "player": "University of Illinois men's basketball from 1988 to 1989",
+   "nickname": "Flyin' Illini"
+  },
+  {
+   "player": "Detroit Pistons",
+   "nickname": "Bad Boys"
+  },
+  {
+   "player": "Detroit Pistons",
+   "nickname": "The Bad Boys"
+  },
+  {
+   "player": "Los Angeles Lakers, During the 1980s",
+   "nickname": "Showtime"
+  },
+  {
+   "player": "United States men's national basketball team, 1992",
+   "nickname": "The Dream Team"
+  },
+  {
+   "player": "United States men's national basketball team, 2008",
+   "nickname": "The Redeem Team"
+  },
+  {
+   "player": "Canada men's national basketball team",
+   "nickname": "The Road Warriors"
+  },
+  {
+   "player": "Turkey national basketball team",
+   "nickname": "12 Giant Men"
+  },
+  {
+   "player": "Australia men's national basketball team",
+   "nickname": "The Boomers"
+  },
+  {
+   "player": "Australia women's national basketball team",
+   "nickname": "The Opals"
+  },
+  {
+   "player": "Air Canada Centre",
+   "nickname": "The Hangar"
+  },
+  {
+   "player": "Air Canada Centre",
+   "nickname": "Jurassic Park"
+  },
+  {
+   "player": "American Airlines Center",
+   "nickname": "The Hangar"
+  },
+  {
+   "player": "American Airlines Arena",
+   "nickname": "Triple-A"
+  },
+  {
+   "player": "Gainbridge Fieldhouse",
+   "nickname": "The Fieldhouse"
+  },
+  {
+   "player": "Charlotte Coliseum",
+   "nickname": "The Hive"
+  },
+  {
+   "player": "Chase Center",
+   "nickname": "The Gatehouse"
+  },
+  {
+   "player": "Chesapeake Energy Arena",
+   "nickname": "Loud City"
+  },
+  {
+   "player": "Chicago Stadium",
+   "nickname": "The Madhouse on Madison (Street)"
+  },
+  {
+   "player": "Crypto.com Arena",
+   "nickname": "The Crypt"
+  },
+  {
+   "player": "FedExForum",
+   "nickname": "The Grindhouse"
+  },
+  {
+   "player": "Human Performance Center",
+   "nickname": "Chamber of Horrors"
+  },
+  {
+   "player": "Izod Center",
+   "nickname": "The Meadowlands"
+  },
+  {
+   "player": "Izod Center",
+   "nickname": "The Swamp"
+  },
+  {
+   "player": "Key Arena",
+   "nickname": "The Key"
+  },
+  {
+   "player": "Madison Square Garden",
+   "nickname": "MSG"
+  },
+  {
+   "player": "Madison Square Garden",
+   "nickname": "The Mecca"
+  },
+  {
+   "player": "Madison Square Garden",
+   "nickname": "The Garden"
+  },
+  {
+   "player": "Quicken Loans Arena",
+   "nickname": "The Q"
+  },
+  {
+   "player": "Pepsi Center",
+   "nickname": "The Can"
+  },
+  {
+   "player": "Philips Arena",
+   "nickname": "The Highlight Factory"
+  },
+  {
+   "player": "TD Garden, Boston Garden",
+   "nickname": "The Garden"
+  },
+  {
+   "player": "Time Warner Cable Arena",
+   "nickname": "The Cable Box"
+  },
+  {
+   "player": "United Center",
+   "nickname": "The UC"
+  },
+  {
+   "player": "United Center",
+   "nickname": "Madhouse on Madison"
+  },
+  {
+   "player": "United Center",
+   "nickname": "The House that Jordan Built"
+  },
+  {
+   "player": "US Airways Center",
+   "nickname": "The Purple Palace"
+  },
+  {
+   "player": "Verizon Center",
+   "nickname": "The Phone Booth"
+  },
+  {
+   "player": "↑ \"NBA Nicknames: Cedric Maxwell",
+   "nickname": "Cornbread"
+  }
+ ]
+}
