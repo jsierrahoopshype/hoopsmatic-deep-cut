@@ -4,7 +4,7 @@
 //
 // Views, by query string:
 //   (none)            today's Daily (5 rounds)
-//   ?d=YYYY-MM-DD     that exact Daily (today's, or a past one as a replay)
+//   /deep-cut/YYYY-MM-DD/  that exact Daily (its own page; ?d= also works)
 //   &c=<0-500>        a challenge: someone's score on it, shown as a target
 //   ?mode=practice    Unlimited practice (past Dailies + practice-only pool)
 //   ?view=archive     every past Daily
@@ -19,8 +19,13 @@
   const START = '2026-11-11';     // first scheduled day (data/schedule.json start)
   let LAUNCH = '2026-12-01';      // from /deep-cut/config.json (rules/launch.json)
   const MISTAKES = 3;
+  // Headshots (public/players.json row[6], scripts/headshots.mjs): "f:<file>"
+  // Jorge's nba-headshots face-fill set, "n:<id>" NBA.com by player ID; both
+  // transparent, shown on a light-grey circle. Logos: nba-headshots
+  // teams/logos/<path>.svg, current eras and the historical ones it has.
   const HEADS = 'https://jsierrahoopshype.github.io/nba-headshots/players/headshots/face-fill/';
-  const LOGOS = 'https://jsierrahoopshype.github.io/nba-headshots/teams/logos/current/svg/';
+  const NBA_HEADS = 'https://cdn.nba.com/headshots/nba/latest/260x190/';
+  const LOGOS = 'https://jsierrahoopshype.github.io/nba-headshots/teams/logos/';
   const DAY_MS = 86400000;
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -124,8 +129,10 @@
   }
   function headNode(p, size) {
     const box = el('span', 'head' + (size ? ' ' + size : ''));
-    if (p.head) {
-      const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = HEADS + p.head + '.webp';
+    const src = !p.head ? null : p.head.startsWith('n:') ? NBA_HEADS + p.head.slice(2) + '.png' : HEADS + p.head.replace(/^f:/, '') + '.webp';
+    if (src) {
+      const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = src;
+      if (p.head.startsWith('n:')) box.classList.add('nba');
       img.onerror = () => { box.textContent = initials(p.name); };
       box.appendChild(img);
     } else box.textContent = initials(p.name);
@@ -136,7 +143,8 @@
     const box = el('div', 'teams');
     for (const t of teams || []) {
       const b = el('span', 'team');
-      if (t.logo) { const img = new Image(); img.alt = ''; img.src = LOGOS + t.logo + '.svg'; img.className = 'logo'; b.appendChild(img); }
+      // Days built before historical logos carry a bare current-era slug.
+      if (t.logo) { const img = new Image(); img.alt = ''; img.src = LOGOS + (t.logo.includes('/') ? t.logo : 'current/svg/' + t.logo) + '.svg'; img.className = 'logo'; b.appendChild(img); }
       else b.appendChild(el('span', 'logo-txt', t.short.split(' ').map((w) => w[0]).join('').slice(0, 3).toUpperCase()));
       b.appendChild(el('span', 'team-name', t.short));
       b.title = t.name;
@@ -151,8 +159,18 @@
   const params = new URLSearchParams(location.search);
   const today = dailyDate(Date.now());
   const view = params.get('view') === 'archive' ? 'archive' : params.get('mode') === 'practice' ? 'practice' : 'daily';
-  const wantDate = isDate(params.get('d')) && params.get('d') <= today ? params.get('d') : today;
+  // A day's own page (/deep-cut/YYYY-MM-DD/, scripts/build.mjs) sets
+  // window.DC_DATE; ?d= is the older form of the same link.
+  const pageDate = isDate(window.DC_DATE) ? window.DC_DATE : isDate(params.get('d')) ? params.get('d') : null;
+  const notYet = pageDate && pageDate > today ? pageDate : null;
+  const wantDate = pageDate && pageDate <= today ? pageDate : today;
+  const dayUrl = (d) => SITE + d + '/';
   const challenge = /^\d{1,3}$/.test(params.get('c') || '') && +params.get('c') <= 500 ? +params.get('c') : null;
+  // A challenge link is a duplicate of the day's page: never indexed (the
+  // Worker also sends X-Robots-Tag: noindex for it).
+  if (params.has('c') && !document.querySelector('meta[name="robots"][content^="noindex"]')) {
+    const m = document.createElement('meta'); m.name = 'robots'; m.content = 'noindex, follow'; document.head.appendChild(m);
+  }
   let RUN = null, sel = null, list = [], hi = -1, busy = false;
   const runKey = () => (RUN.kind === 'practice' ? 'dc-run-practice' : (RUN.replay ? 'dc-replay-' : 'dc-run-') + RUN.date);
   const save = () => { if (RUN) store.set(runKey(), RUN); };
@@ -326,7 +344,7 @@
   }
 
   const missText = (m) => (m === 0 ? 'No misses.' : m === 1 ? 'One miss.' : m === 2 ? 'Two misses.' : 'Three misses: run over.');
-  function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : SITE + '?d=' + RUN.date + (extra || ''); }
+  function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : dayUrl(RUN.date) + (extra ? '?' + extra.replace(/^&/, '') : ''); }
   function shareText(channel) {
     const s = RUN.state;
     const scores = s.rounds.map((v) => (v && typeof v === 'object' ? v.s : 0)).join(' · ');
@@ -441,8 +459,14 @@
 
   // ---------- start a view ----------
   async function startDaily() {
-    $('game').classList.remove('hide');
     await loadConfig();
+    if (notYet) {
+      // A day's page exists before its day; it shows nothing of the puzzle.
+      $('sub').textContent = `${dayLabel(notYet)} · ${longDate(notYet)} · opens at 9:00 AM ET that day.`;
+      $('go-daily').classList.remove('hide');
+      return;
+    }
+    $('game').classList.remove('hide');
     let day;
     try { day = await api('day/' + wantDate); }
     catch (e) { $('sub').textContent = e.status === 404 ? 'No puzzle for that day.' : 'Couldn’t load the puzzle. Refresh to try again.'; $('game').classList.add('hide'); return; }
@@ -467,7 +491,7 @@
     renderRound();
     if (RUN.state.done && !RUN.replay) {
       const line = $('end-line');
-      const a = el('a', null, 'Play it again (replay, not recorded)'); a.href = SITE + '?d=' + RUN.date + '&replay=1';
+      const a = el('a', null, 'Play it again (replay, not recorded)'); a.href = dayUrl(RUN.date) + '?replay=1';
       line.append(' '); line.appendChild(a);
     }
   }
@@ -503,7 +527,7 @@
     const ul = $('arc-list');
     for (let d = addDays(today, -1); d >= START; d = addDays(d, -1)) {
       const li = el('li');
-      const a = el('a', null, `${dayLabel(d)} · ${longDate(d)}`); a.href = SITE + '?d=' + d;
+      const a = el('a', null, `${dayLabel(d)} · ${longDate(d)}`); a.href = dayUrl(d);
       li.appendChild(a);
       if (R.daily[d]) li.appendChild(el('span', 'muted', `${R.daily[d].score}/${R.daily[d].max}`));
       ul.appendChild(li);
