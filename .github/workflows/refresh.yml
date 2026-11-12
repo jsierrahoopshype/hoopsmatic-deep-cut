@@ -26,8 +26,13 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/pull-data.mjs --latest
-      - run: node scripts/generate-prompts.mjs --keep-samples > /dev/null
+      - run: node scripts/generate-prompts.mjs > /dev/null
+      # Headshot sources for new players (NBA.com and Jorge's sites; cached in data/headshots.json).
+      - run: node scripts/headshots.mjs
       - run: node scripts/build.mjs
+      # Preview cards for days that have none yet (headless Chromium).
+      - run: npm install --no-save --no-package-lock playwright@1.49.1 && npx playwright install --with-deps chromium
+      - run: node scripts/cards.mjs
       - run: node --test test/*.test.mjs
       - name: Commit if anything changed
         run: |

@@ -169,6 +169,44 @@ for (let n = 1; n <= pk.length; n++) {
 writeFileSync(ROOT + 'public/practice/index.json', JSON.stringify({ v: 1, count: pk.length }) + '\n');
 writeFileSync(ROOT + 'data/practice.json', JSON.stringify({ _about: 'Practice-only prompt keys (scripts/build.mjs): never scheduled as a Daily.', keys: pk }, null, 1) + '\n');
 
+// ---------- one page per day (item 10) ----------
+// public/<date>/index.html: the game page with the day's own title,
+// description, canonical, og: tags and preview card. Nothing of the puzzle
+// (no prompt, no answer) is in it, so a day's page can exist before its day.
+// noindex stays on (Jorge, Nov 12): the template's robots meta is kept.
+const TEMPLATE = readFileSync(ROOT + 'public/index.html', 'utf8');
+const DAY_MS_ = 86400000;
+const pad3 = (n) => String(n).padStart(3, '0');
+const longDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+export function dayIdentity(date) {
+  const n = Math.round((Date.parse(date) - Date.parse(LAUNCH)) / DAY_MS_) + 1;
+  return date >= LAUNCH ? { label: `Deep Cut #${pad3(n)}`, n } : { label: 'Deep Cut preview', n: null };
+}
+function dayPage(date) {
+  const { label } = dayIdentity(date);
+  const url = `https://hoopsmatic.com/deep-cut/${date}/`;
+  const title = `${label}: NBA trivia for ${longDate(date)} | HoopsMatic`;
+  const desc = `${label}, ${longDate(date)}: five NBA prompts. Name the least obvious player who fits each one, up to 500 points. No spoilers on this page.`;
+  const card = `https://hoopsmatic.com/deep-cut/og-card/${date}`;
+  const esc = (x) => x.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  let h = TEMPLATE
+    .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${esc(desc)}">`)
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${url}">`)
+    .replace(/<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${esc(label + ' · ' + longDate(date))}">`)
+    .replace(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="Five NBA prompts. Name the least obvious player who fits. Play this puzzle: no spoilers here.">`)
+    .replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${url}">`)
+    .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${card}$2`)
+    .replace(/(<meta name="twitter:image" content=")[^"]*(">)/, `$1${card}$2`)
+    .replace(/(<meta property="og:image:alt" content=")[^"]*(">)/, `$1${esc(label + ', ' + longDate(date) + ': Deep Cut by HoopsMatic')}$2`)
+    .replace('<script src="/deep-cut/app.js" defer></script>', `<script>window.DC_DATE = "${date}";</script>\n<script src="/deep-cut/app.js" defer></script>`);
+  if (!h.includes(`window.DC_DATE = "${date}"`) || !h.includes(`href="${url}"`)) throw new Error('day page template changed: ' + date);
+  mkdirSync(`${ROOT}public/${date}`, { recursive: true });
+  writeFileSync(`${ROOT}public/${date}/index.html`, h);
+}
+for (const d of days) dayPage(d.date);
+for (const f of readdirSync(ROOT + 'public')) if (/^\d{4}-\d{2}-\d{2}$/.test(f) && !scheduled.has(f) && f > frozenThrough) { unlinkSync(`${ROOT}public/${f}/index.html`); }
+
 writeFileSync(ROOT + 'data/schedule.json', JSON.stringify({
   _about: 'Deep Cut days (scripts/build.mjs). v2 days: h = sha256(date:key) per round, a = sha256(rounds). v1 days (before five rounds): one h. The prompts are only in the encrypted public/prompts/<date>.lock files.',
   v: 2, start: START, days,

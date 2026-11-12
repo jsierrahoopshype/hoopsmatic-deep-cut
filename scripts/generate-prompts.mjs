@@ -40,6 +40,18 @@ const factsUnits = units.map((u) => {
     code: u.code, from: u.from, to: u.to };
 });
 const teamSlug = new Map(src('teams').map((t) => [t.abbrev, t.slug]));
+// Team logo paths under nba-headshots' teams/logos/: today's logo for a
+// current era, the era's own logo where Jorge's set has one, else none (the
+// page shows a text badge, never a later era's logo).
+const HISTORICAL_LOGOS = {
+  'Seattle SuperSonics': 'seattle-supersonics', 'New Jersey Nets': 'new-jersey-nets', 'Vancouver Grizzlies': 'vancouver-grizzlies',
+  'Washington Bullets': 'washington-bullets', 'San Diego Clippers': 'san-diego-clippers', 'Charlotte Bobcats': 'charlotte-bobcats',
+  'New Orleans Hornets': 'new-orleans-hornets', 'Charlotte Hornets (1988-2002)': 'charlotte-hornets-original',
+};
+function logoOf(u) {
+  if (u.to === null) { const slug = teamSlug.get(u.code); return slug ? 'current/svg/' + slug : null; }
+  return HISTORICAL_LOGOS[u.name] ? 'historical/' + HISTORICAL_LOGOS[u.name] : null;
+}
 const asOf = new Date().toISOString().slice(0, 10);
 const facts = {
   _about: 'Deep Cut player facts (scripts/generate-prompts.mjs), from the pinned sources in data/sources.lock.json. The Deep Cut server checks picks against these with scripts/lib/cond.mjs.',
@@ -120,7 +132,7 @@ for (const c of cands) {
   ans.sort((x, y) => y.s - x.s || x.i.localeCompare(y.i));
   const us = c.cond.u === undefined ? [] : Array.isArray(c.cond.u) ? c.cond.u : [c.cond.u];
   passed.push({ ...c, units: us.map((u) => factsUnits[u].id), rule: ruleText(c.cond, F), scoring: VERSION,
-    teams: us.map((u) => ({ name: factsUnits[u].name, short: factsUnits[u].short, logo: factsUnits[u].to === null ? teamSlug.get(factsUnits[u].code) || null : null })),
+    teams: us.map((u) => ({ name: factsUnits[u].name, short: factsUnits[u].short, logo: logoOf(factsUnits[u]) })),
     answers: ans.map((a) => ({ i: a.i, s: a.s })) });
 }
 mkdirSync(ROOT + '.cache', { recursive: true });

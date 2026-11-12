@@ -72,3 +72,15 @@ test('scores: fixed, 10 to 100, ties equal', () => {
   assert.equal(a, rawScore({ fame: 3, careerGames: 300, connGames: 4 }));
   assert.ok(rawScore({ fame: 1, careerGames: 2, connGames: 2 }) < rawScore({ fame: 1, careerGames: 200, connGames: 2 }), 'a 2-game career is damped');
 });
+
+test('day pages: own canonical and card, nothing of the puzzle in them', () => {
+  for (const d of schedule.days) {
+    const h = readFileSync(new URL(`../public/${d.date}/index.html`, import.meta.url), 'utf8');
+    assert.ok(h.includes(`<link rel="canonical" href="https://hoopsmatic.com/deep-cut/${d.date}/">`), d.date);
+    assert.ok(h.includes(`window.DC_DATE = "${d.date}"`));
+    assert.ok(h.includes(`https://hoopsmatic.com/deep-cut/og-card/${d.date}`));
+    assert.ok(h.includes('<meta name="robots" content="noindex, follow">'), 'noindex stays on');
+    assert.ok(!/Name a player who/.test(h), 'no prompt text');
+    assert.ok(existsSync(new URL(`../public/og/${d.date}.jpg`, import.meta.url)), 'card ' + d.date);
+  }
+});
