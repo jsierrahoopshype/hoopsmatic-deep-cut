@@ -27,7 +27,8 @@ test('practice pool and published samples never overlap', () => {
 test('no prompt twice in the schedule', () => {
   // Same key on two days would give different hashes, so check per key via the candidate-free rule:
   // every v2 day has 5 distinct round hashes, and the schedule is one year at most.
-  for (const d of schedule.days) if (d.v === 2) assert.equal(new Set(d.h).size, 5);
+  for (const d of schedule.days) if (d.v === 2) assert.equal(new Set(d.h).size, d.h.length);
+  for (const d of schedule.days) if (d.v === 2 && d.date >= '2026-11-13') assert.equal(d.h.length, 10, d.date + ' has 10 questions');
   assert.ok(schedule.days.length <= 365);
 });
 test('every scheduled day has its lock and the practice pool its locks', () => {
@@ -65,9 +66,9 @@ test('birthplace, not nationality', () => {
   assert.equal(r.ok, false);   // born in Melbourne, but never a Laker
   assert.match(r.fail, /Born in Melbourne, Australia/);
 });
-test('scores: fixed, 10 to 100, ties equal', () => {
+test('scores: fixed, 1 to 100, ties equal', () => {
   const s = normalize([0.1, 0.5, 0.5, 0.9]);
-  assert.deepEqual(s, [10, 55, 55, 100]);
+  assert.deepEqual(s, [1, 51, 51, 100]);
   const a = rawScore({ fame: 3, careerGames: 300, connGames: 4 });
   assert.equal(a, rawScore({ fame: 3, careerGames: 300, connGames: 4 }));
   assert.ok(rawScore({ fame: 1, careerGames: 2, connGames: 2 }) < rawScore({ fame: 1, careerGames: 200, connGames: 2 }), 'a 2-game career is damped');
@@ -91,4 +92,18 @@ test('headshots are tagged in the suggestion list (scripts/headshots.mjs ran las
   const untagged = rows.filter((r) => r[6] && !/^(f|n):/.test(String(r[6])));
   assert.equal(untagged.length, 0, 'every headshot carries its source tag');
   assert.ok(tagged.filter((r) => r[6].startsWith('n:')).length >= 1000, 'NBA.com headshots present');
+});
+
+test('the timer is a setting the page and the server read', () => {
+  const l = rd('rules/launch.json');
+  assert.ok(Number.isInteger(l.seconds) && l.seconds >= 5);
+  assert.equal(rd('public/config.json').seconds, l.seconds);
+});
+test('the one-line reason reads as plain words', async () => {
+  const { whyText, evaluate } = await import('../scripts/lib/cond.mjs');
+  const c = { t: 'ring', u: unit('San Antonio Spurs') };
+  const p = P('glenn-robinson');
+  const t = whyText(c, p, F, 96, evaluate(c, p, F).link);
+  assert.match(t, /^A two-time All-Star, but only 9 games for the Spurs, an easy one to forget\.$/);
+  assert.ok(!/of the other/.test(t));
 });

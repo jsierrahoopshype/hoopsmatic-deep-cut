@@ -1,4 +1,5 @@
 {
- "_about": "Deep Cut's public launch day (Jorge, Nov 12, 2026: game numbers count from it; #1 is the first public day, earlier days are previews). Placeholder until Jorge sets the date. scripts/build.mjs copies it to public/config.json, which the page reads. The day locks keep their own n (days since data/schedule.json start); the page does not show it.",
- "launch": "2026-12-01"
+ "_about": "Deep Cut's public launch day (Jorge, Nov 12, 2026: game numbers count from it; #1 is the first public day, earlier days are previews). Placeholder until Jorge sets the date. scripts/build.mjs copies it to public/config.json, which the page reads. The day locks keep their own n (days since data/schedule.json start); the page does not show it. seconds: the time per question in the Daily and practice (Jorge, Nov 12: 20, may become 25 or 30); scripts/build.mjs copies it to public/config.json, which the page and the Deep Cut server read, so changing it needs no rebuild of the prompts.",
+ "launch": "2026-12-01",
+ "seconds": 20
 }

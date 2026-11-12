@@ -21,11 +21,13 @@
 // games keep all of it.
 //
 // Normalized per prompt: answers are ranked by raw (rounded to 4 decimals,
-// so equal raws are a tie). score = 10 + 90 * (L + (T - 1) / 2) / (N - 1),
+// so equal raws are a tie). score = 1 + 99 * (L + (T - 1) / 2) / (N - 1),
 // rounded, where N = valid answers, L = answers with a lower raw, T = answers
-// sharing this raw (itself included). The most obvious answer gets 10, the
-// least obvious 100, ties get the same score. Fixed once a day is published.
-export const VERSION = 2;
+// sharing this raw (itself included). The most obvious answer gets 1, the
+// least obvious 100, ties get the same score; 0 is only for a wrong name or
+// a timeout (Jorge, Nov 12, 2026). Fixed once a day is published.
+// Version 3 (1-100); version 2 days (10-100) keep their scores.
+export const VERSION = 3;
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 export function rawScore({ fame, careerGames, connGames }) {
   const rN = clamp01(Math.log1p(Math.max(0, fame)) / Math.log1p(150));
@@ -41,6 +43,6 @@ export function normalize(raws) {
   return raws.map((r) => {
     let L = 0, T = 0;
     for (const x of raws) { if (x < r) L++; else if (x === r) T++; }
-    return Math.round(10 + 90 * (L + (T - 1) / 2) / (n - 1));
+    return Math.round(1 + 99 * (L + (T - 1) / 2) / (n - 1));
   });
 }

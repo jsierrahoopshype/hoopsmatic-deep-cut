@@ -1,24 +1,30 @@
 // Deep Cut page. Talks only to the Deep Cut server (/deep-cut/api/*). The
-// valid answers never reach this page before a round is played; the full
-// lists come only after a finished run, behind an inline warning.
+// valid answers never reach this page before a question is played; the
+// full lists come only after a finished run, behind an inline warning.
 //
-// Views, by query string:
-//   (none)            today's Daily (5 rounds)
-//   /deep-cut/YYYY-MM-DD/  that exact Daily (its own page; ?d= also works)
-//   &c=<0-500>        a challenge: someone's score on it, shown as a target
-//   ?mode=practice    Unlimited practice (past Dailies + practice-only pool)
-//   ?view=archive     every past Daily
+// THE GAME (Jorge, Nov 12, 2026): 10 questions, all answered, one pick and a
+// timer each (seconds from /deep-cut/config.json). A right answer scores
+// 1-100, a wrong name or a timeout 0; the final score is the average. The
+// clock runs on the server: refreshing or leaving during a question counts
+// it as timed out. After each answer a short reveal: the pick, its score and
+// why, then the most and least obvious valid answers.
 //
-// Everything about you stays in this browser (localStorage): run progress
-// (the server's signed run token), first Daily attempts, replays, practice
-// results, streaks. Nothing is sent but the picks.
+// Views:
+//   /deep-cut/                 today's Daily
+//   /deep-cut/YYYY-MM-DD/      that exact Daily (its own page; ?d= also works)
+//   ?c=<0-100>                 a challenge: someone's score on it, as a target
+//   ?mode=practice             Unlimited practice (past Dailies + practice-only pool)
+//   ?view=archive              every past Daily
+//
+// Everything about you stays in this browser (localStorage): the run (the
+// server's signed token), first Daily attempts, replays, practice, streaks.
 (function () {
   'use strict';
   const API = '/deep-cut/api/';
   const SITE = 'https://hoopsmatic.com/deep-cut/';
   const START = '2026-11-11';     // first scheduled day (data/schedule.json start)
   let LAUNCH = '2026-12-01';      // from /deep-cut/config.json (rules/launch.json)
-  const MISTAKES = 3;
+  let SECONDS = 20;               // likewise
   // Headshots (public/players.json row[6], scripts/headshots.mjs): "f:<file>"
   // Jorge's nba-headshots face-fill set, "n:<id>" NBA.com by player ID; both
   // transparent, shown on a light-grey circle. Logos: nba-headshots
@@ -45,18 +51,21 @@
   }
   const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * DAY_MS).toISOString().slice(0, 10);
   const longDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-  const shortDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
   const isDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '') && s >= START;
   const dayNumber = (d) => Math.round((Date.parse(d) - Date.parse(LAUNCH)) / DAY_MS) + 1;
-  const dayLabel = (d) => (d >= LAUNCH ? '#' + String(dayNumber(d)).padStart(3, '0') : 'Preview');
-  const shareName = (d) => (d >= LAUNCH ? 'Deep Cut #' + String(dayNumber(d)).padStart(3, '0') : 'Deep Cut preview (' + shortDate(d) + ')');
+  const dayLabel = (d) => (d >= LAUNCH ? '#' + dayNumber(d) : 'Preview');
+  const shareName = (d) => (d >= LAUNCH ? 'Deep Cut #' + dayNumber(d) : 'Deep Cut preview');
   let configLoaded = null;
   function loadConfig() {
-    return configLoaded || (configLoaded = fetch('/deep-cut/config.json').then((r) => r.json())
-      .then((c) => { if (/^\d{4}-\d{2}-\d{2}$/.test(c.launch || '')) LAUNCH = c.launch; }).catch(() => {}));
+    return configLoaded || (configLoaded = fetch('/deep-cut/config.json', { cache: 'no-store' }).then((r) => r.json())
+      .then((c) => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(c.launch || '')) LAUNCH = c.launch;
+        if (Number.isInteger(c.seconds) && c.seconds >= 5) SECONDS = c.seconds;
+        for (const e of document.querySelectorAll('.secs')) e.textContent = String(SECONDS);
+      }).catch(() => {}));
   }
 
-  // ---------- network: one request at a time, failures never cost a mistake ----------
+  // ---------- network ----------
   async function api(path, body) {
     const opt = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
     let r;
@@ -127,24 +136,28 @@
     if (!url) return el('span', cls, p.name);
     const a = el('a', cls, p.name); a.href = url; return a;
   }
+  // Initials sit under every photo, so a slow or missing image still shows
+  // something; the photo covers them once it loads.
   function headNode(p, size) {
     const box = el('span', 'head' + (size ? ' ' + size : ''));
+    box.appendChild(el('span', 'ini', initials(p.name)));
     const src = !p.head ? null : p.head.startsWith('n:') ? NBA_HEADS + p.head.slice(2) + '.png' : HEADS + p.head.replace(/^f:/, '') + '.webp';
     if (src) {
       const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = src;
       if (p.head.startsWith('n:')) box.classList.add('nba');
-      img.onerror = () => { box.textContent = initials(p.name); };
+      img.onerror = () => img.remove();
       box.appendChild(img);
-    } else box.textContent = initials(p.name);
+    }
     return box;
   }
+
   const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   function teamsNode(teams) {
     const box = el('div', 'teams');
     for (const t of teams || []) {
       const b = el('span', 'team');
       // Days built before historical logos carry a bare current-era slug.
-      if (t.logo) { const img = new Image(); img.alt = ''; img.src = LOGOS + (t.logo.includes('/') ? t.logo : 'current/svg/' + t.logo) + '.svg'; img.className = 'logo'; b.appendChild(img); }
+      if (t.logo) { const img = new Image(); img.alt = ''; img.src = LOGOS + (t.logo.includes('/') ? t.logo : 'current/svg/' + t.logo) + '.svg'; img.className = 'logo-img'; b.appendChild(img); }
       else b.appendChild(el('span', 'logo-txt', t.short.split(' ').map((w) => w[0]).join('').slice(0, 3).toUpperCase()));
       b.appendChild(el('span', 'team-name', t.short));
       b.title = t.name;
@@ -154,96 +167,85 @@
   }
 
   // ---------- state ----------
-  // A run: { kind:'daily'|'practice', date?, replay?, rounds:[public round], token,
-  //          state:{rounds, mistakes, tried, done, score, max}, log:[{round, ok, id, score, ev, fail, skip}], cur }
+  // RUN: { kind:'daily'|'practice', date?, replay?, rounds:[public question],
+  //        token, state, out:{[i]: server outcome}, cur }
   const params = new URLSearchParams(location.search);
   const today = dailyDate(Date.now());
   const view = params.get('view') === 'archive' ? 'archive' : params.get('mode') === 'practice' ? 'practice' : 'daily';
-  // A day's own page (/deep-cut/YYYY-MM-DD/, scripts/build.mjs) sets
-  // window.DC_DATE; ?d= is the older form of the same link.
   const pageDate = isDate(window.DC_DATE) ? window.DC_DATE : isDate(params.get('d')) ? params.get('d') : null;
   const notYet = pageDate && pageDate > today ? pageDate : null;
   const wantDate = pageDate && pageDate <= today ? pageDate : today;
   const dayUrl = (d) => SITE + d + '/';
-  const challenge = /^\d{1,3}$/.test(params.get('c') || '') && +params.get('c') <= 500 ? +params.get('c') : null;
-  // A challenge link is a duplicate of the day's page: never indexed (the
-  // Worker also sends X-Robots-Tag: noindex for it).
+  const challenge = /^\d{1,3}$/.test(params.get('c') || '') && +params.get('c') <= 100 ? +params.get('c') : null;
+  // A challenge link duplicates the day's page: never indexed.
   if (params.has('c') && !document.querySelector('meta[name="robots"][content^="noindex"]')) {
     const m = document.createElement('meta'); m.name = 'robots'; m.content = 'noindex, follow'; document.head.appendChild(m);
   }
-  let RUN = null, sel = null, list = [], hi = -1, busy = false;
+  let RUN = null, sel = null, list = [], hi = -1, busy = false, tick = null, endsAt = 0;
   const runKey = () => (RUN.kind === 'practice' ? 'dc-run-practice' : (RUN.replay ? 'dc-replay-' : 'dc-run-') + RUN.date);
   const save = () => { if (RUN) store.set(runKey(), RUN); };
+  const scoreOf = (v) => (v && typeof v === 'object' ? v.s : v === null ? null : 0);
+  const show = (id) => { for (const s of ['intro', 'card', 'reveal', 'result']) $(s).classList.toggle('hide', s !== id); };
 
-  // ---------- render ----------
   function renderStatus() {
-    const s = RUN.state;
-    const ol = $('rounds'); ol.textContent = '';
-    RUN.rounds.forEach((r, i) => {
-      const v = s.rounds[i];
-      const li = el('li', 'rd' + (i === RUN.cur && !s.done ? ' cur' : '') + (v && typeof v === 'object' ? ' ok' : v === 's' ? ' skip' : v === 'x' ? ' miss' : ''));
-      li.textContent = v && typeof v === 'object' ? String(v.s) : v === 's' ? 'skip' : v === 'x' ? '0' : String(i + 1);
-      li.setAttribute('aria-label', `Round ${i + 1}: ` + (v && typeof v === 'object' ? v.s + ' points' : v === 's' ? 'skipped' : v === 'x' ? '0, run ended' : i === RUN.cur ? 'current' : 'to play'));
+    const s = RUN.state, n = s.n;
+    const answered = s.rounds.filter((v) => v !== null).length;
+    $('qcount').textContent = `${answered} of ${n} answered`;
+    $('avg').textContent = answered ? `${Math.round(s.rounds.reduce((a, v) => a + (scoreOf(v) || 0), 0) / answered)}/100 so far` : '';
+    const ol = $('chips'); ol.textContent = '';
+    ol.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+    s.rounds.forEach((v, i) => {
+      const sc = scoreOf(v);
+      const li = el('li', 'chip' + (sc === null ? (i === RUN.cur && !s.done ? ' cur' : '') : sc > 0 ? ' ok' : ' zero'), sc === null ? String(i + 1) : String(sc));
+      li.setAttribute('aria-label', `Question ${i + 1}: ` + (sc === null ? 'not played yet' : sc + ' points'));
       ol.appendChild(li);
     });
-    $('total').textContent = `${s.score}/${s.max}`;
-    const left = MISTAKES - s.mistakes;
-    $('lives').textContent = '';
-    for (let i = 0; i < MISTAKES; i++) $('lives').appendChild(el('span', 'life' + (i < left ? '' : ' used'), i < left ? '●' : '×'));
-    $('lives').appendChild(el('span', 'lives-txt', ` ${left} mistake${left === 1 ? '' : 's'} left`));
   }
 
-  function renderRound() {
-    const s = RUN.state, i = RUN.cur, r = RUN.rounds[i];
+  // ---------- one question ----------
+  async function openQuestion() {
+    const i = RUN.cur, r = RUN.rounds[i];
     renderStatus();
-    $('round-label').textContent = `Round ${i + 1} of ${RUN.rounds.length}` + (RUN.kind === 'practice' ? ' · practice' : RUN.replay ? ' · replay' : '');
+    $('q-label').textContent = `Question ${i + 1} of ${RUN.rounds.length}` + (RUN.kind === 'practice' ? ' · practice' : RUN.replay ? ' · replay' : '');
     $('teams').replaceWith(Object.assign(teamsNode(r.teams), { id: 'teams' }));
     $('prompt').textContent = r.text;
     $('rule').textContent = r.rule || '';
-    $('count').textContent = `${r.count} players fit.`;
-    const resolved = s.rounds[i] !== null;
-    $('ask').classList.toggle('hide', resolved || s.done);
-    $('next').classList.toggle('hide', !resolved || s.done);
-    if (!resolved) { $('feedback').classList.add('hide'); $('feedback').textContent = ''; }
-    // The last feedback for this round (after a refresh too).
-    const last = [...RUN.log].reverse().find((e) => e.round === i);
-    if (last) showFeedback(last, r); else { $('feedback').classList.add('hide'); }
-    if (s.done) showEnd();
+    $('q').value = ''; sel = null; list = []; drawSugg(); $('submit').disabled = true; $('msg').textContent = ''; $('msg').className = 'msg';
+    $('timer').textContent = String(SECONDS); $('timefill').style.width = '100%';
+    show('card');
+    let o;
+    try { o = await api('open', { token: RUN.token, round: i }); }
+    catch (e) { $('msg').textContent = 'Couldn’t reach the server. Check your connection and refresh; the question’s clock hasn’t started.'; $('msg').className = 'msg err'; return; }
+    RUN.token = o.token; RUN.state = o.state; save();
+    if (o.already) { RUN.out[i] = o; save(); return showReveal(i); }
+    endsAt = Date.now() + o.endsIn;
+    startClock(i);
+    $('q').focus();
+  }
+  function startClock(i) {
+    clearInterval(tick);
+    const total = SECONDS * 1000;
+    const paint = () => {
+      const left = Math.max(0, endsAt - Date.now());
+      $('timer').textContent = String(Math.ceil(left / 1000));
+      $('timer').classList.toggle('low', left <= 5000);
+      $('timefill').style.width = (100 * left / total) + '%';
+      if (left <= 0) { clearInterval(tick); if (!busy) timeUp(i); }
+    };
+    paint();
+    tick = setInterval(paint, 250);
+  }
+  async function timeUp(i) {
+    busy = true;
+    try {
+      const r = await api('timeout', { token: RUN.token, round: i });
+      RUN.token = r.token; RUN.state = r.state; RUN.out[i] = r; save();
+      showReveal(i);
+    } catch (e) { $('msg').textContent = 'Time’s up, but the server couldn’t be reached. Refresh to continue.'; $('msg').className = 'msg err'; }
+    finally { busy = false; }
   }
 
-  function showFeedback(e, r) {
-    const fb = $('feedback'); fb.textContent = ''; fb.classList.remove('hide');
-    fb.className = 'feedback ' + (e.ok ? 'good' : e.skip ? 'skipped' : 'bad');
-    if (e.skip) { fb.appendChild(el('p', 'fb-title', '↷ Round skipped: 0 points.')); return; }
-    const p = playerOf(e.id);
-    if (e.ok) {
-      const top = el('div', 'fb-top');
-      top.appendChild(headNode(p));
-      const t = el('div', 'fb-name');
-      const line = el('p', 'fb-title'); line.append('✓ '); line.appendChild(nameNode(p)); line.append(' fits.');
-      t.appendChild(line);
-      t.appendChild(el('p', 'fb-score', `${e.score}/100`));
-      top.appendChild(t);
-      fb.appendChild(top);
-      if (r.teams && r.teams.length) fb.appendChild(teamsNode(r.teams));
-      const ul = el('ul', 'ev');
-      for (const x of e.ev || []) ul.appendChild(el('li', null, x));
-      if (ul.children.length) fb.appendChild(ul);
-      // Factual: where the score sits among this prompt's valid answers.
-      const n = r.count, deeper = Math.round(((e.score - 10) / 90) * (n - 1));
-      fb.appendChild(el('p', 'why small', n > 1
-        ? `${e.score}/100: a less obvious pick than ${deeper} of the other ${n - 1} players who fit, judged by his career fame and how memorable this link is. 10 is the most obvious answer, 100 the least.`
-        : `${e.score}/100: the only player who fits.`));
-    } else {
-      const line = el('p', 'fb-title'); line.append('✗ '); line.appendChild(nameNode(p)); line.append(' doesn’t fit.');
-      fb.appendChild(line);
-      if (e.fail) fb.appendChild(el('p', 'why', e.fail));
-      const left = MISTAKES - RUN.state.mistakes;
-      fb.appendChild(el('p', 'small muted', RUN.state.done ? 'That was your third mistake: the run is over.' : `${left} mistake${left === 1 ? '' : 's'} left. Try another player.`));
-    }
-  }
-
-  // ---------- picking ----------
+  // Suggestions, inline under the box. Choosing fills it; "Submit pick" commits.
   function drawSugg() {
     const ul = $('sugg'); ul.textContent = '';
     if ($('q').value.trim().length >= 2 && !list.length && !sel) { const li = el('li'); li.appendChild(el('div', 'none', 'No player by that name in the data.')); ul.appendChild(li); return; }
@@ -259,16 +261,8 @@
     });
     $('q').setAttribute('aria-activedescendant', hi >= 0 ? 'opt-' + hi : '');
   }
-  // Choosing fills the box; "Submit pick" commits (spec 8).
-  function choose(p) {
-    sel = p; $('q').value = p.name; list = []; hi = -1; drawSugg();
-    $('submit').disabled = false; $('submit').focus();
-  }
-  $('q').addEventListener('input', () => {
-    sel = null; $('submit').disabled = true;
-    const tried = new Set((RUN ? RUN.state.tried : []));
-    list = search($('q').value, tried); hi = list.length ? 0 : -1; drawSugg();
-  });
+  function choose(p) { sel = p; $('q').value = p.name; list = []; hi = -1; drawSugg(); $('submit').disabled = false; $('submit').focus(); }
+  $('q').addEventListener('input', () => { sel = null; $('submit').disabled = true; list = search($('q').value, new Set()); hi = list.length ? 0 : -1; drawSugg(); });
   $('q').addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown' && list.length) { hi = (hi + 1) % list.length; drawSugg(); e.preventDefault(); }
     else if (e.key === 'ArrowUp' && list.length) { hi = (hi - 1 + list.length) % list.length; drawSugg(); e.preventDefault(); }
@@ -276,82 +270,102 @@
     else if (e.key === 'Escape') { list = []; hi = -1; drawSugg(); }
   });
   $('submit').addEventListener('click', submit);
-
   async function submit() {
     if (!sel || busy || !RUN || RUN.state.done) return;
     const i = RUN.cur, p = sel;
-    busy = true; $('submit').disabled = true; $('submit').textContent = 'Checking…'; $('msg').textContent = ''; $('msg').className = 'msg';
+    busy = true; $('submit').disabled = true; $('submit').textContent = 'Checking…'; $('msg').textContent = '';
     try {
       const r = await api('pick', { token: RUN.token, round: i, id: p.id });
-      if (r.repeat) { $('msg').textContent = 'You already tried him. Pick someone else.'; $('msg').className = 'msg err'; return; }
-      RUN.token = r.token; RUN.state = r.state;
-      if (r.already) { save(); renderRound(); return; }
-      RUN.log.push(r.ok ? { round: i, ok: true, id: p.id, score: r.answer.score, ev: r.answer.ev } : { round: i, ok: false, id: p.id, fail: r.fail });
-      save();
-      $('q').value = ''; sel = null;
-      renderRound();
-      if (RUN.state.done) finish();
-      else if (!r.ok) $('q').focus(); else $('next').focus();
+      clearInterval(tick);
+      RUN.token = r.token; RUN.state = r.state; RUN.out[i] = r; save();
+      showReveal(i);
     } catch (e) {
-      // Network or server trouble: nothing changed, nothing counted. Try again.
-      $('msg').textContent = e.network ? 'Couldn’t reach the server. Your pick wasn’t counted; press Submit pick to try again.' : 'Something went wrong with that pick. Try again.';
-      $('msg').className = 'msg err';
-    } finally { busy = false; $('submit').textContent = 'Submit pick'; $('submit').disabled = !sel; }
+      // Nothing changed on the server; the clock keeps running. Try again.
+      $('msg').textContent = e.network ? 'Couldn’t reach the server. Your pick wasn’t sent; press Submit pick again.' : 'Something went wrong. Press Submit pick again.';
+      $('msg').className = 'msg err'; $('submit').disabled = false;
+    } finally { busy = false; $('submit').textContent = 'Submit pick'; }
   }
 
-  $('skip').addEventListener('click', () => { $('skip-confirm').classList.remove('hide'); $('skip-no').focus(); });
-  $('skip-no').addEventListener('click', () => { $('skip-confirm').classList.add('hide'); $('q').focus(); });
-  $('skip-yes').addEventListener('click', async () => {
-    if (busy) return;
-    busy = true;
-    try {
-      const r = await api('skip', { token: RUN.token, round: RUN.cur });
-      RUN.token = r.token; RUN.state = r.state;
-      if (!r.already) RUN.log.push({ round: RUN.cur, skip: true });
-      save();
-      $('skip-confirm').classList.add('hide');
-      renderRound();
-      if (RUN.state.done) finish(); else $('next').focus();
-    } catch (e) { $('msg').textContent = 'Couldn’t reach the server. The round wasn’t skipped; try again.'; $('msg').className = 'msg err'; }
-    finally { busy = false; }
+  // ---------- the reveal after each question ----------
+  function playerLine(p, score, cls) {
+    const line = el('p', 'rv-line' + (cls ? ' ' + cls : ''));
+    line.appendChild(nameNode(p)); line.append(': '); line.appendChild(el('span', 'pts', `${score}/100`)); line.append('.');
+    return line;
+  }
+  function showReveal(i) {
+    renderStatus();
+    const o = RUN.out[i] || {}, r = RUN.rounds[i];
+    $('rv-label').textContent = `Question ${i + 1}: ${r.text.replace(/^Name a player who /, '… ')}`;
+    const box = $('rv-body'); box.textContent = '';
+    if (o.timeout || !o.pick) {
+      box.appendChild(el('p', 'rv-line zero', '⏱ Time’s up: 0/100.'));
+    } else {
+      const p = { ...playerOf(o.pick.id), name: o.pick.name };
+      const main = el('div', 'rv-main');
+      main.appendChild(headNode(p));
+      const t = el('div');
+      if (o.pick.ok) {
+        t.appendChild(playerLine(p, o.pick.score));
+        if (o.pick.why) t.appendChild(el('p', 'rv-why', o.pick.why));
+      } else {
+        const line = el('p', 'rv-line zero'); line.append('✗ '); line.appendChild(nameNode(p)); line.append(': '); line.appendChild(el('span', 'pts', '0/100')); line.append('.');
+        t.appendChild(line);
+        t.appendChild(el('p', 'rv-why', o.pick.fail || 'He doesn’t fit this question.'));
+      }
+      main.appendChild(t); box.appendChild(main);
+      if (o.pick.ok && o.pick.ev && o.pick.ev.length) { const ul = el('ul', 'ev'); for (const x of o.pick.ev) ul.appendChild(el('li', null, x)); box.appendChild(ul); }
+    }
+    if (o.extremes) {
+      const e = el('div', 'ends');
+      for (const [k, x] of [['Most obvious', o.extremes.low], ['Least obvious', o.extremes.high]]) {
+        const row = el('p'); row.appendChild(el('span', 'k', k)); const pl = { ...playerOf(x.id), name: x.name };
+        row.appendChild(headNode(pl, 'sm')); row.appendChild(nameNode(pl)); row.append(` ${x.score}/100`);
+        e.appendChild(row);
+      }
+      e.appendChild(el('p', 'muted', `${o.extremes.count} players fit this question.`));
+      box.appendChild(e);
+    }
+    const last = RUN.state.done;
+    $('next').textContent = last ? 'See your final score' : 'Next question';
+    show('reveal');
+    $('next').focus();
+  }
+  $('next').addEventListener('click', () => {
+    if (RUN.state.done) return showEnd(true);
+    RUN.cur = RUN.state.rounds.findIndex((v) => v === null); save();
+    openQuestion();
   });
-  $('next').addEventListener('click', () => { RUN.cur = nextOpen(); save(); renderRound(); $('q').focus(); });
-  const nextOpen = () => { const k = RUN.state.rounds.findIndex((v) => v === null); return k < 0 ? RUN.cur : k; };
 
   // ---------- end of run ----------
-  function finish() { record(); showEnd(); }
-  function showEnd() {
+  function showEnd(fresh) {
+    clearInterval(tick);
     const s = RUN.state;
-    $('result').classList.remove('hide');
-    $('card').classList.add('hide');
+    if (fresh && !RUN.recorded) { record(); RUN.recorded = true; save(); }
     renderStatus();
-    $('end-title').textContent = RUN.kind === 'practice' ? 'Practice set complete' : s.mistakes >= MISTAKES ? 'Run over: three mistakes' : 'Run complete';
-    $('end-score').textContent = `${s.score}/${s.max}`;
-    const ol = $('end-rounds'); ol.textContent = '';
+    $('end-title').textContent = RUN.kind === 'practice' ? 'Practice score' : 'Final score';
+    $('end-score').textContent = `${s.score}/100`;
+    const ol = $('end-list'); ol.textContent = '';
     RUN.rounds.forEach((r, i) => {
-      const v = s.rounds[i];
+      const v = s.rounds[i], o = RUN.out[i] || {};
+      const sc = scoreOf(v) || 0;
       const li = el('li');
-      li.appendChild(el('span', 'er-score', v && typeof v === 'object' ? String(v.s) : '0'));
-      const txt = el('span', 'er-text', r.text.replace(/^Name a player who /, ''));
-      li.appendChild(txt);
-      if (v && typeof v === 'object') { const pl = el('span', 'er-pick'); pl.append(' · '); pl.appendChild(nameNode(playerOf(v.i))); li.appendChild(pl); }
-      else li.appendChild(el('span', 'er-pick muted', v === 's' ? ' · skipped' : ' · no answer'));
+      li.appendChild(el('span', 'es' + (sc ? '' : ' zero'), String(sc)));
+      li.appendChild(el('span', 'eq', `${i + 1}. ${r.text.replace(/^Name a player who /, '')}`));
+      const pk = el('span', 'ep');
+      if (v === 't') pk.textContent = '⏱ Time ran out';
+      else if (v && typeof v === 'object') { const p = { ...playerOf(v.i), name: (o.pick && o.pick.name) || playerOf(v.i).name }; pk.append(v.w ? '✗ ' : '✓ '); pk.appendChild(nameNode(p)); if (v.w) pk.append(' (doesn’t fit)'); }
+      li.appendChild(pk);
       ol.appendChild(li);
     });
-    $('end-line').textContent = (RUN.kind === 'practice' ? 'Practice: kept apart from your Daily records.' : RUN.replay ? 'Replay: your first attempt is the one in your records.' : '') ;
     drawShare();
-    $('reveal').classList.remove('hide');
+    show('result');
   }
-
-  const missText = (m) => (m === 0 ? 'No misses.' : m === 1 ? 'One miss.' : m === 2 ? 'Two misses.' : 'Three misses: run over.');
-  function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : dayUrl(RUN.date) + (extra ? '?' + extra.replace(/^&/, '') : ''); }
+  function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : dayUrl(RUN.date) + (extra ? '?' + extra : ''); }
   function shareText(channel) {
     const s = RUN.state;
-    const scores = s.rounds.map((v) => (v && typeof v === 'object' ? v.s : 0)).join(' · ');
     const head = RUN.kind === 'practice' ? 'Deep Cut practice' : shareName(RUN.date);
-    return `${head} · ${s.score}/${s.max}\n${scores}\n${missText(s.mistakes)}\n${puzzleUrl(channel ? '&ref=share-deepcut-' + channel : '')}`;
+    return `${head} · ${s.score}/100\n${s.rounds.map((v) => scoreOf(v) || 0).join(' ')}\n${puzzleUrl(channel ? 'ref=share-deepcut-' + channel : '')}`;
   }
-  function challengeUrl() { return puzzleUrl('&c=' + RUN.state.score); }
   function drawShare() {
     $('share-text').textContent = shareText('');
     const box = $('shares'); box.textContent = '';
@@ -370,7 +384,7 @@
       box.appendChild(b);
     };
     copy('Copy result', () => shareText('copy'));
-    if (RUN.kind !== 'practice') { copy('Copy puzzle link', () => puzzleUrl('')); copy('Copy challenge link', challengeUrl); }
+    if (RUN.kind !== 'practice') { copy('Copy puzzle link', () => puzzleUrl('')); copy('Copy challenge link', () => puzzleUrl('c=' + RUN.state.score)); }
     const targets = [
       ['X', 'x', (t) => 'https://x.com/intent/post?text=' + enc(t)],
       ['Bluesky', 'bluesky', (t) => 'https://bsky.app/intent/compose?text=' + enc(t)],
@@ -380,88 +394,103 @@
       ['Telegram', 'telegram', (t, u) => 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t.split('\n').slice(0, -1).join('\n'))],
     ];
     for (const [name, ch, url] of targets) {
-      const a = el('a', null, name); a.href = url(shareText(ch), puzzleUrl('&ref=share-deepcut-' + ch)); a.target = '_blank'; a.rel = 'noopener';
+      const a = el('a', null, name); a.href = url(shareText(ch), puzzleUrl('ref=share-deepcut-' + ch)); a.target = '_blank'; a.rel = 'noopener';
       box.appendChild(a);
     }
   }
-
-  // Answer browser: only after a finished run, behind an inline warning.
-  $('reveal').addEventListener('click', () => { $('reveal').classList.add('hide'); $('reveal-confirm').classList.remove('hide'); $('reveal-no').focus(); });
-  $('reveal-no').addEventListener('click', () => { $('reveal-confirm').classList.add('hide'); $('reveal').classList.remove('hide'); });
-  $('reveal-yes').addEventListener('click', async () => {
-    $('reveal-confirm').classList.add('hide');
+  // Every answer: only after a finished run, behind an inline warning.
+  $('show-all').addEventListener('click', () => { $('show-all').classList.add('hide'); $('show-confirm').classList.remove('hide'); $('show-no').focus(); });
+  $('show-no').addEventListener('click', () => { $('show-confirm').classList.add('hide'); $('show-all').classList.remove('hide'); });
+  $('show-yes').addEventListener('click', async () => {
+    $('show-confirm').classList.add('hide');
     const box = $('answers'); box.textContent = 'Loading answers…';
     try {
       const r = await api('reveal', { token: RUN.token });
       box.textContent = '';
       r.rounds.forEach((rd, i) => {
-        const det = el('details', 'ans-round'); if (i === 0) det.open = true;
-        det.appendChild(el('summary', null, `Round ${i + 1}: ${rd.text.replace(/^Name a player who /, '')} (${rd.answers.length})`));
+        const det = el('details', 'ans-round');
+        det.appendChild(el('summary', null, `${i + 1}. ${rd.text.replace(/^Name a player who /, '')} (${rd.answers.length})`));
         const total = rd.answers.reduce((a, x) => a + (x.picked || 0), 0);
         const ol = el('ol', 'ans-list');
-        const mine = RUN.state.rounds[i] && typeof RUN.state.rounds[i] === 'object' ? RUN.state.rounds[i].i : null;
+        const v = RUN.state.rounds[i], mine = v && typeof v === 'object' ? v.i : null;
         for (const a of rd.answers) {
           const li = el('li', a.id === mine ? 'me' : '');
-          const p = playerOf(a.id);
-          li.appendChild(headNode(p, 'sm'));
-          li.appendChild(nameNode({ ...p, name: a.name }, 'an'));
-          li.appendChild(el('span', 'as', `${a.s}/100`));
-          if (a.picked !== undefined && total) li.appendChild(el('span', 'ap muted', `${Math.round((100 * a.picked) / total)}% picked`));
+          const p = { ...playerOf(a.id), name: a.name };
+          li.appendChild(headNode(p, 'sm')); li.appendChild(nameNode(p, 'an')); li.appendChild(el('span', 'as', `${a.s}/100`));
+          if (a.picked !== undefined && total) li.appendChild(el('span', 'muted', `${Math.round((100 * a.picked) / total)}% picked`));
           ol.appendChild(li);
         }
-        det.appendChild(ol);
-        box.appendChild(det);
+        det.appendChild(ol); box.appendChild(det);
       });
-    } catch (e) { box.textContent = 'Couldn’t load the answers. Try again.'; $('reveal').classList.remove('hide'); }
+    } catch (e) { box.textContent = 'Couldn’t load the answers. Try again.'; $('show-all').classList.remove('hide'); }
   });
 
   // ---------- personal records (this browser only) ----------
-  // A completed Daily = a finished run, ended by mistakes or not. Only the
-  // first attempt at a date counts; replays and practice are kept apart.
+  // A completed Daily = all its questions answered. Only the first attempt at
+  // a date counts; replays and practice are kept apart.
   function record() {
-    const R = store.get('dc-records') || { daily: {}, practice: { played: 0, best: 0, total: 0 } };
+    const R = store.get('dc-records-v3') || { daily: {}, practice: { played: 0, best: 0, total: 0 } };
     if (RUN.kind === 'practice') { R.practice.played++; R.practice.total += RUN.state.score; R.practice.best = Math.max(R.practice.best, RUN.state.score); }
-    else if (!RUN.replay && !R.daily[RUN.date]) R.daily[RUN.date] = { score: RUN.state.score, max: RUN.state.max, mistakes: RUN.state.mistakes };
-    store.set('dc-records', R);
+    else if (!RUN.replay && !R.daily[RUN.date]) R.daily[RUN.date] = { score: RUN.state.score, n: RUN.state.n };
+    store.set('dc-records-v3', R);
     drawRecords();
   }
   function drawRecords() {
-    const R = store.get('dc-records');
+    const R = store.get('dc-records-v3');
     const box = $('records'); box.textContent = '';
     if (!R) return;
     const days = Object.keys(R.daily).sort();
-    const five = days.filter((d) => R.daily[d].max === 500);
     let streak = 0;
     for (let d = R.daily[today] ? today : addDays(today, -1); R.daily[d]; d = addDays(d, -1)) streak++;
     const rows = [];
     if (days.length) {
-      rows.push(['Dailies completed', String(days.length)], ['Streak', `${streak} day${streak === 1 ? '' : 's'}`]);
-      if (five.length) {
-        rows.push(['Best Daily', `${Math.max(...five.map((d) => R.daily[d].score))}/500`]);
-        rows.push(['Average Daily', `${Math.round(five.reduce((a, d) => a + R.daily[d].score, 0) / five.length)}/500`]);
-      }
+      const sc = days.map((d) => R.daily[d].score);
+      rows.push(['Dailies completed', String(days.length)], ['Streak', `${streak} day${streak === 1 ? '' : 's'}`],
+        ['Best Daily', `${Math.max(...sc)}/100`], ['Average Daily', `${Math.round(sc.reduce((a, x) => a + x, 0) / sc.length)}/100`]);
     }
-    if (R.practice.played) rows.push(['Practice sets', String(R.practice.played)], ['Best practice', `${R.practice.best}/500`], ['Average practice', `${Math.round(R.practice.total / R.practice.played)}/500`]);
+    if (R.practice.played) rows.push(['Practice runs', String(R.practice.played)], ['Best practice', `${R.practice.best}/100`], ['Average practice', `${Math.round(R.practice.total / R.practice.played)}/100`]);
     if (!rows.length) return;
     const dl = el('dl', 'rec');
     for (const [k, v] of rows) { dl.appendChild(el('dt', null, k)); dl.appendChild(el('dd', null, v)); }
-    box.appendChild(el('h3', null, 'Your record (this browser)'));
+    box.appendChild(el('h3', 'panel-sub', 'Your record (this browser)'));
     box.appendChild(dl);
   }
 
-  // ---------- next reset, in the player's own time ----------
-  function resetLine(endsAt) {
-    const t = new Date(endsAt);
+  function resetLine(endsAtIso) {
+    const t = new Date(endsAtIso);
     const local = t.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
     const mins = Math.max(0, Math.round((t - Date.now()) / 60000));
     return `Next puzzle in ${Math.floor(mins / 60)}h ${mins % 60}m (${local} your time, 9:00 AM ET).`;
   }
 
-  // ---------- start a view ----------
+  // Where a run stands: a question left open (refresh, another tab) is timed
+  // out on the server first; then the next unanswered question, or the end.
+  async function resume() {
+    const s = RUN.state;
+    if (s.done) { RUN.cur = s.n - 1; return showEnd(false); }
+    const left = s.rounds.findIndex((v, k) => v === null && s.opened[k]);
+    if (left >= 0) {
+      RUN.cur = left;
+      try {
+        const r = await api('timeout', { token: RUN.token, round: left });
+        RUN.token = r.token; RUN.state = r.state; RUN.out[left] = r; save();
+        return showReveal(left);
+      } catch (e) { $('sub').textContent = 'Couldn’t reach the server. Refresh to try again.'; return; }
+    }
+    // Never start a clock on page load: the player presses the button.
+    RUN.cur = s.rounds.findIndex((v) => v === null);
+    renderStatus();
+    $('intro-text').textContent = RUN.cur === 0
+      ? `${s.n} questions, ${SECONDS} seconds each, one pick per question. The clock starts when you press the button.`
+      : `Welcome back. ${RUN.cur} of ${s.n} answered. The clock for question ${RUN.cur + 1} starts when you press the button.`;
+    $('begin').textContent = `Start question ${RUN.cur + 1}`;
+    show('intro');
+  }
+  $('begin').addEventListener('click', () => { $('begin').disabled = true; openQuestion().finally(() => { $('begin').disabled = false; }); });
+
   async function startDaily() {
     await loadConfig();
     if (notYet) {
-      // A day's page exists before its day; it shows nothing of the puzzle.
       $('sub').textContent = `${dayLabel(notYet)} · ${longDate(notYet)} · opens at 9:00 AM ET that day.`;
       $('go-daily').classList.remove('hide');
       return;
@@ -473,49 +502,45 @@
     const isToday = wantDate === today;
     $('sub').textContent = `${dayLabel(wantDate)} · ${longDate(wantDate)}` + (isToday ? ' · ' + resetLine(day.endsAt) : ' · past puzzle');
     if (!isToday) $('go-daily').classList.remove('hide');
-    if (challenge !== null) { $('challenge').textContent = `Challenge: a friend scored ${challenge}/${day.rounds.length * 100} on this puzzle. That’s their shared score, not a verified record.`; $('challenge').classList.remove('hide'); }
+    if (challenge !== null) { $('challenge').textContent = `Challenge: a friend scored ${challenge}/100 on this puzzle. That’s their shared score, not a verified record.`; $('challenge').classList.remove('hide'); }
     await loadPlayers();
-    // First attempt saved? Resume it. Finished and opening again? Show it,
-    // with a replay option for past days.
-    const first = store.get('dc-run-' + wantDate);
-    const replay = params.get('replay') === '1';
-    if (first && !replay) RUN = first;
-    else if (replay && store.get('dc-replay-' + wantDate) && !store.get('dc-replay-' + wantDate).state.done) RUN = store.get('dc-replay-' + wantDate);
+    const key = 'dc-run-' + wantDate;
+    const first = store.get(key);
+    const replay = params.get('replay') === '1' && first && first.state && first.state.done;
+    const saved = replay ? store.get('dc-replay-' + wantDate) : first;
+    if (saved && saved.v === 3 && !(replay && saved.state.done)) RUN = saved;
     else {
       let st;
       try { st = await api('start', { date: wantDate }); } catch (e) { $('sub').textContent = 'Couldn’t start the puzzle. Refresh to try again.'; return; }
-      RUN = { kind: 'daily', date: wantDate, replay: !!(first && replay), rounds: day.rounds, token: st.token, state: st.state, log: [], cur: 0 };
+      RUN = { v: 3, kind: 'daily', date: wantDate, replay: !!replay, rounds: day.rounds, token: st.token, state: st.state, out: {}, cur: 0 };
       save();
     }
-    RUN.cur = RUN.state.done ? RUN.cur : nextOpen();
-    renderRound();
+    await resume();
     if (RUN.state.done && !RUN.replay) {
-      const line = $('end-line');
       const a = el('a', null, 'Play it again (replay, not recorded)'); a.href = dayUrl(RUN.date) + '?replay=1';
-      line.append(' '); line.appendChild(a);
+      const p = el('p', 'note'); p.appendChild(a); $('end-list').after(p);
     }
   }
 
   async function startPractice() {
+    await loadConfig();
     $('game').classList.remove('hide');
     $('go-daily').classList.remove('hide');
-    $('go-practice').textContent = 'New practice set';
-    await loadConfig();
-    $('sub').textContent = 'Unlimited practice: five prompts from past days and a practice-only set. Not part of your Daily record.';
+    $('go-practice').textContent = 'New practice run';
+    $('go-practice').href = SITE + '?mode=practice&new=1';
+    $('sub').textContent = 'Unlimited practice: ten questions from past days and a practice-only set. Not part of your Daily record.';
     await loadPlayers();
     const cur = store.get('dc-run-practice');
-    if (cur && !cur.state.done && params.get('new') !== '1') { RUN = cur; }
+    if (cur && cur.v === 3 && !cur.state.done && params.get('new') !== '1') RUN = cur;
     else {
       const seen = store.get('dc-seen') || [];
       let r;
-      try { r = await api('practice/new', { seen: seen.slice(-500) }); } catch (e) { $('sub').textContent = 'Couldn’t start a practice set. Refresh to try again.'; return; }
-      store.set('dc-seen', seen.concat(r.refs).slice(-500));
-      RUN = { kind: 'practice', refs: r.refs, rounds: r.rounds, token: r.token, state: r.state, log: [], cur: 0 };
+      try { r = await api('practice/new', { seen: seen.slice(-1000) }); } catch (e) { $('sub').textContent = 'Couldn’t start a practice run. Refresh to try again.'; return; }
+      store.set('dc-seen', seen.concat(r.refs).slice(-1000));
+      RUN = { v: 3, kind: 'practice', refs: r.refs, rounds: r.rounds, token: r.token, state: r.state, out: {}, cur: 0 };
       save();
     }
-    $('go-practice').href = SITE + '?mode=practice&new=1';
-    RUN.cur = RUN.state.done ? RUN.cur : nextOpen();
-    renderRound();
+    await resume();
   }
 
   async function showArchive() {
@@ -523,13 +548,13 @@
     $('archive').classList.remove('hide');
     $('go-daily').classList.remove('hide');
     $('sub').textContent = 'Every past Deep Cut puzzle.';
-    const R = store.get('dc-records') || { daily: {} };
+    const R = store.get('dc-records-v3') || { daily: {} };
     const ul = $('arc-list');
     for (let d = addDays(today, -1); d >= START; d = addDays(d, -1)) {
       const li = el('li');
       const a = el('a', null, `${dayLabel(d)} · ${longDate(d)}`); a.href = dayUrl(d);
       li.appendChild(a);
-      if (R.daily[d]) li.appendChild(el('span', 'muted', `${R.daily[d].score}/${R.daily[d].max}`));
+      if (R.daily[d]) li.appendChild(el('span', 'muted', `${R.daily[d].score}/100`));
       ul.appendChild(li);
     }
     if (!ul.children.length) ul.appendChild(el('li', 'muted', 'Past puzzles show up here from tomorrow.'));

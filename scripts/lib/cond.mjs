@@ -203,3 +203,49 @@ export function ruleText(c, F) {
   if (c.t === 'top10') parts.push('Picks 1 to 10 in the 1990 to 2025 drafts.');
   return parts.join(' ');
 }
+
+// ---------- the one-line reason after a valid pick ----------
+// Plain words on why a score is high or low, from the same two things the
+// score uses: how well known the player is (MVPs, Hall of Fame, All-Star
+// selections, titles, career games) and how memorable his link to the
+// prompt is (the games behind it). Never rank math. The page prefixes
+// "<Name>: <score>/100."
+//   whyText(cond, player, F, score, link) -> "A two-time All-Star, so one of
+//   the better-known answers here."
+const NUM = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const times = (n) => (n < NUM.length ? NUM[n] : String(n)) + '-time';
+export function fameText(p) {
+  const [mvp, fmvp, hof] = p.h || [0, 0, 0];
+  const as = (p.a.allStar || []).length, rings = p.r.length;
+  if (mvp) return mvp > 1 ? `A ${times(mvp)} MVP` : 'An MVP';
+  if (hof) return 'A Hall of Famer';
+  if (fmvp) return 'A Finals MVP';
+  if (as) return as > 1 ? `A ${times(as)} All-Star` : 'An All-Star';
+  if (rings) return rings > 1 ? `A ${times(rings)} champion` : 'A champion';
+  return null;
+}
+export function whyText(c, p, F, score, link) {
+  const fame = fameText(p);
+  const us = c.u === undefined ? [] : Array.isArray(c.u) ? c.u : [c.u];
+  const team = us.length ? F.units[us[us.length === 2 ? (stint(p, us[0]).games <= stint(p, us[1]).games ? 0 : 1) : 0]] : null;
+  const g = (n) => `${n} game${n === 1 ? '' : 's'}`;
+  let linkText = null;
+  if (c.t === 'stat') { const n = evaluate(c, p, F).ev.length; linkText = `${n === 1 ? 'one season' : (NUM[n] || n) + ' seasons'} like that for the ${team.short}`; }
+  else if (c.t === 'mate') linkText = `${g(link)} alongside ${F.byId.get(c.p).n}`;
+  else if (team && c.t !== 'colstart' && c.t !== 'colstar') linkText = `${g(link)} for the ${team.short}`;
+  const career = p.g < 100 ? `Only ${g(p.g)} in his whole NBA career` : null;
+  if (score >= 70) {
+    if (fame && linkText && link <= 82 && c.t !== 'stat') return `${fame}, but only ${linkText}, an easy one to forget.`;
+    if (linkText && link <= 40 && c.t !== 'stat') return `Only ${linkText}, an easy one to forget.`;
+    if (career) return `${career}, one of the least obvious answers here.`;
+    return `${fame || 'Never an All-Star'}${linkText ? `, with ${linkText}` : ''}: one of the least obvious answers here.`;
+  }
+  if (score <= 30) {
+    if (fame) return `${fame}, so one of the better-known answers here.`;
+    if (linkText) return `${linkText[0].toUpperCase() + linkText.slice(1)}, one of the more familiar links here.`;
+    return `${g(p.g)} in his NBA career, one of the better-known answers here.`;
+  }
+  if (fame && linkText) return `${fame}, with ${linkText}: a middle-of-the-pack answer.`;
+  if (linkText) return `${linkText[0].toUpperCase() + linkText.slice(1)}: a middle-of-the-pack answer.`;
+  return `${fame || g(p.g) + ' in his career'}: a middle-of-the-pack answer.`;
+}

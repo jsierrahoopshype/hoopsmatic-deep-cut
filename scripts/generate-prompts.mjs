@@ -14,7 +14,7 @@
 // A prompt is a condition (scripts/lib/cond.mjs). It passes when it has 15
 // to 150 valid answers and a useful spread of scores: the raw obscurity of
 // its answers (score2.mjs) spans at least MIN_SPREAD, so a deep pick really
-// beats an obvious one. Scores: score2.mjs (fixed, 10-100, ties equal).
+// beats an obvious one. Scores: score2.mjs (fixed, 1-100, ties equal).
 // Team names are as they were in those seasons (players.mjs units).
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { buildPlayers, unitName, collegeName, allUnits } from './lib/players.mjs';
@@ -62,7 +62,9 @@ const facts = {
     for (const k of ['allStar', 'allRookie', 'allDefense', 'allNba']) if (p[k].length) a[k] = p[k].filter((x) => x.units[0]).map((x) => [x.y, u(x.units[0])]);
     return { i: p.id, n: p.name.replace(/ \(\d{4}\)$/, ''), c: p.college || null, cn: p.college ? collegeName(p.college) : null,
       b: p.bornIn || null, bp: p.birthplace || null, f: p.firstYear, l: p.lastYear, d: p.draftYear || null, k: p.pick || null, g: p.gp,
-      s: p.seasons.map((s) => [s.y, u(s.unit), s.gp, s.pts, s.reb, s.ast, s.stl, s.blk, s.tpm]), r: p.rings.map((r) => [r.y, u(r.unit)]), a };
+      s: p.seasons.map((s) => [s.y, u(s.unit), s.gp, s.pts, s.reb, s.ast, s.stl, s.blk, s.tpm]), r: p.rings.map((r) => [r.y, u(r.unit)]), a,
+      // MVPs, Finals MVPs, Hall of Fame (for the one-line reason after a pick)
+      h: [p.aw['Most Valuable Player'] || 0, p.aw['Finals MVP'] || 0, p.aw['Hall of Fame'] ? 1 : 0] };
   }),
 };
 mkdirSync(ROOT + 'data', { recursive: true });
