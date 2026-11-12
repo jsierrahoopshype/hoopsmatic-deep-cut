@@ -324,7 +324,7 @@
   function showReveal(i) {
     renderStatus();
     const o = RUN.out[i] || {}, r = RUN.rounds[i];
-    $('rv-label').textContent = `Question ${i + 1} · Name a player who… ${shortQ(r.text)}`;
+    $('rv-label').textContent = `Question ${i + 1} · Name a player who… ${shortQ(r.text).replace(/^[A-Z](?=[a-z])/, (x) => x.toLowerCase())}`;
     const box = $('rv-body'); box.textContent = '';
     if (o.timeout || !o.pick) {
       box.appendChild(el('p', 'rv-line zero', '⏱ Time’s up: 0/100.'));
