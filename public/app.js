@@ -1,42 +1,35 @@
-// Deep Cut page. Talks only to the Deep Cut server (/deep-cut/api/*); the
-// valid answers never reach this page before a day is over.
+// Deep Cut page. Talks only to the Deep Cut server (/deep-cut/api/*). The
+// valid answers never reach this page before a round is played; the full
+// lists come only after a finished run, behind an inline warning.
 //
 // Views, by query string:
-//   (none)          today's prompt (ranked; one play per device)
-//   ?d=YYYY-MM-DD   a past day, played unranked (tries kept in this browser)
-//   ?r=YYYY-MM-DD   a past day's answers, % picked, your final score and rank
-//   ?view=archive   every past day
+//   (none)            today's Daily (5 rounds)
+//   ?d=YYYY-MM-DD     that exact Daily (today's, or a past one as a replay)
+//   &c=<0-500>        a challenge: someone's score on it, shown as a target
+//   ?mode=practice    Unlimited practice (past Dailies + practice-only pool)
+//   ?view=archive     every past Daily
+//
+// Everything about you stays in this browser (localStorage): run progress
+// (the server's signed run token), first Daily attempts, replays, practice
+// results, streaks. Nothing is sent but the picks.
 (function () {
   'use strict';
   const API = '/deep-cut/api/';
   const SITE = 'https://hoopsmatic.com/deep-cut/';
   const START = '2026-11-11';     // first scheduled day (data/schedule.json start)
-  // Game numbers count from the public launch day (Jorge, Nov 12): #1 is the
-  // first public day; days before it are previews with no number. The date
-  // comes from /deep-cut/config.json (rules/launch.json, written by
-  // scripts/build.mjs); this is only the fallback.
-  let LAUNCH = '2026-12-01';
-  const TRIES = 3;
+  let LAUNCH = '2026-12-01';      // from /deep-cut/config.json (rules/launch.json)
+  const MISTAKES = 3;
+  const HEADS = 'https://jsierrahoopshype.github.io/nba-headshots/players/headshots/face-fill/';
+  const LOGOS = 'https://jsierrahoopshype.github.io/nba-headshots/teams/logos/current/svg/';
   const DAY_MS = 86400000;
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode: fine */ } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode: progress lives for this visit only */ } },
   };
 
-  // A random id for this browser; the server keeps only a keyed hash of it.
-  function device() {
-    let d = store.get('dc-device');
-    if (typeof d !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(d)) {
-      const b = crypto.getRandomValues(new Uint8Array(16));
-      d = btoa(String.fromCharCode.apply(null, b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-      store.set('dc-device', d);
-    }
-    return d;
-  }
-
-  // The 9:00 AM ET day, as the server's.
+  // ---------- dates (the 9:00 AM ET day, daylight saving included) ----------
   const etFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
   function dailyDate(ms) {
     const p = {};
@@ -46,48 +39,36 @@
     return new Date(d).toISOString().slice(0, 10);
   }
   const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * DAY_MS).toISOString().slice(0, 10);
-  const dayNumber = (d) => Math.round((Date.parse(d) - Date.parse(LAUNCH)) / DAY_MS) + 1;
-  // "#12", or "Preview" before launch.
-  const dayLabel = (d) => (d >= LAUNCH ? '#' + dayNumber(d) : 'Preview');
-  const shareName = (d) => (d >= LAUNCH ? 'Deep Cut #' + dayNumber(d) : 'Deep Cut preview');
   const longDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-  const validDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '') && s >= START;
-
-  async function api(path, body) {
-    const opt = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
-    const r = await fetch(API + path, opt);
-    let j = null;
-    try { j = await r.json(); } catch (e) { /* not JSON */ }
-    if (!r.ok && r.status !== 409) { const e = new Error((j && j.error) || 'http_' + r.status); e.status = r.status; throw e; }
-    return j;
-  }
-
-  // ---------- players (the suggestion list) ----------
-  // public/players.json: [id, name, career years, birth year or 0, nicknames?].
-  // The birth year shows only here, to tell two players of the same name
-  // apart. The box also matches nicknames (Penny, The Answer, Earvin Johnson)
-  // and first-name short forms (Mo Williams for Maurice Williams); the list
-  // and the game always show the real name.
-  let PLAYERS = null, BY_ID = new Map();
-  const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
-  async function loadPlayers() {
-    if (PLAYERS) return PLAYERS;
-    const r = await fetch('/deep-cut/players.json');
-    const j = await r.json();
-    PLAYERS = j.players.map((p) => {
-      const keys = [p[1], ...(p[4] || []), ...shortForms(p[1])].map(norm).filter((k, i, a) => k && a.indexOf(k) === i);
-      return { id: p[0], name: p[1], years: p[2], born: p[3], nicks: p[4] || [], keys: keys.map((k) => ({ k, words: k.split(' ') })) };
-    });
-    for (const p of PLAYERS) BY_ID.set(p.id, p);
-    return PLAYERS;
-  }
+  const shortDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  const isDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '') && s >= START;
+  const dayNumber = (d) => Math.round((Date.parse(d) - Date.parse(LAUNCH)) / DAY_MS) + 1;
+  const dayLabel = (d) => (d >= LAUNCH ? '#' + String(dayNumber(d)).padStart(3, '0') : 'Preview');
+  const shareName = (d) => (d >= LAUNCH ? 'Deep Cut #' + String(dayNumber(d)).padStart(3, '0') : 'Deep Cut preview (' + shortDate(d) + ')');
   let configLoaded = null;
   function loadConfig() {
     return configLoaded || (configLoaded = fetch('/deep-cut/config.json').then((r) => r.json())
       .then((c) => { if (/^\d{4}-\d{2}-\d{2}$/.test(c.launch || '')) LAUNCH = c.launch; }).catch(() => {}));
   }
-  const nameOf = (id) => (BY_ID.get(id) || {}).name || id;
-  // Common short forms of first names, both ways (Maurice <-> Mo).
+
+  // ---------- network: one request at a time, failures never cost a mistake ----------
+  async function api(path, body) {
+    const opt = body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {};
+    let r;
+    try { r = await fetch(API + path, opt); } catch (e) { const x = new Error('network'); x.network = true; throw x; }
+    let j = null;
+    try { j = await r.json(); } catch (e) { /* not JSON */ }
+    if (!r.ok && r.status !== 409) { const x = new Error((j && j.error) || 'http_' + r.status); x.status = r.status; x.network = r.status >= 500; throw x; }
+    return j;
+  }
+
+  // ---------- players (suggestions) ----------
+  // public/players.json rows: [id, name, career years, birth-year tag or 0,
+  // nicknames or 0, page ("s:"/"c:" slug) or 0, headshot file or 0]. Every
+  // player is listed: the list never shows which ones fit a prompt.
+  let PLAYERS = null;
+  const BY_ID = new Map();
+  const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
   const SHORT = {
     maurice: ['mo'], mohamed: ['mo'], mohammed: ['mo'], morris: ['mo'],
     robert: ['bob', 'bobby', 'rob'], william: ['bill', 'billy', 'will'], michael: ['mike'], christopher: ['chris'],
@@ -109,11 +90,18 @@
     const rest = w.slice(1).join(' ');
     return [...(SHORT[w[0]] || []), ...(LONG[w[0]] || [])].map((f) => f + ' ' + rest);
   }
-  // Every typed word must start a word of the name or of one of its keys
-  // ("lebron", "le ja", "mo will", "penny", "the answer"). Ranked: a key equal
-  // to what was typed, then the real name starting with it, then any key
-  // starting with it, then alphabetical. Each suggestion says which nickname
-  // matched when it was not the name.
+  async function loadPlayers() {
+    if (PLAYERS) return PLAYERS;
+    const j = await (await fetch('/deep-cut/players.json')).json();
+    PLAYERS = j.players.map((p) => {
+      const keys = [p[1], ...(p[4] || []), ...shortForms(p[1])].map(norm).filter((k, i, a) => k && a.indexOf(k) === i);
+      return { id: p[0], name: p[1], years: p[2], born: p[3], nicks: p[4] || [], page: p[5] || null, head: p[6] || null, keys: keys.map((k) => ({ k, words: k.split(' ') })) };
+    });
+    for (const p of PLAYERS) BY_ID.set(p.id, p);
+    return PLAYERS;
+  }
+  const playerOf = (id) => BY_ID.get(id) || { id, name: id, page: null, head: null };
+  const pageUrl = (p) => (!p.page ? null : p.page.startsWith('s:') ? 'https://hoopsmatic.com/salary-season-finder/player/' + p.page.slice(2) + '/' : 'https://hoopsmatic.com/nba-career-map/player/' + p.page.slice(2) + '.html');
   function search(q, skip) {
     const qs = norm(q);
     if (qs.length < 2 || !PLAYERS) return [];
@@ -124,210 +112,407 @@
       const hit = p.keys.find((k) => parts.every((w) => k.words.some((x) => x.startsWith(w))));
       if (!hit) continue;
       const rank = p.keys.some((k) => k.k === qs) ? 0 : p.keys[0].k.startsWith(qs) ? 1 : p.keys.some((k) => k.k.startsWith(qs)) ? 2 : 3;
-      const nick = hit === p.keys[0] ? null : p.nicks.find((n) => norm(n) === hit.k) || null;
-      out.push({ p, rank, nick });
+      out.push({ p, rank, nick: hit === p.keys[0] ? null : p.nicks.find((n) => norm(n) === hit.k) || null });
     }
     out.sort((a, b) => a.rank - b.rank || a.p.name.localeCompare(b.p.name));
     return out.slice(0, 6).map((x) => ({ ...x.p, matched: x.nick }));
   }
+  function nameNode(p, cls) {
+    const url = pageUrl(p);
+    if (!url) return el('span', cls, p.name);
+    const a = el('a', cls, p.name); a.href = url; return a;
+  }
+  function headNode(p, size) {
+    const box = el('span', 'head' + (size ? ' ' + size : ''));
+    if (p.head) {
+      const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = HEADS + p.head + '.webp';
+      img.onerror = () => { box.textContent = initials(p.name); };
+      box.appendChild(img);
+    } else box.textContent = initials(p.name);
+    return box;
+  }
+  const initials = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+  function teamsNode(teams) {
+    const box = el('div', 'teams');
+    for (const t of teams || []) {
+      const b = el('span', 'team');
+      if (t.logo) { const img = new Image(); img.alt = ''; img.src = LOGOS + t.logo + '.svg'; img.className = 'logo'; b.appendChild(img); }
+      else b.appendChild(el('span', 'logo-txt', t.short.split(' ').map((w) => w[0]).join('').slice(0, 3).toUpperCase()));
+      b.appendChild(el('span', 'team-name', t.short));
+      b.title = t.name;
+      box.appendChild(b);
+    }
+    return box;
+  }
 
   // ---------- state ----------
+  // A run: { kind:'daily'|'practice', date?, replay?, rounds:[public round], token,
+  //          state:{rounds, mistakes, tried, done, score, max}, log:[{round, ok, id, score, ev, fail, skip}], cur }
   const params = new URLSearchParams(location.search);
   const today = dailyDate(Date.now());
-  const yday = addDays(today, -1);
-  const view = params.get('view') === 'archive' ? 'archive'
-    : validDate(params.get('r')) && params.get('r') < today ? 'results'
-    : validDate(params.get('d')) && params.get('d') < today ? 'past' : 'today';
-  const S = { date: view === 'past' ? params.get('d') : today, day: null, play: null, busy: false, sel: -1, list: [] };
+  const view = params.get('view') === 'archive' ? 'archive' : params.get('mode') === 'practice' ? 'practice' : 'daily';
+  const wantDate = isDate(params.get('d')) && params.get('d') <= today ? params.get('d') : today;
+  const challenge = /^\d{1,3}$/.test(params.get('c') || '') && +params.get('c') <= 500 ? +params.get('c') : null;
+  let RUN = null, sel = null, list = [], hi = -1, busy = false;
+  const runKey = () => (RUN.kind === 'practice' ? 'dc-run-practice' : (RUN.replay ? 'dc-replay-' : 'dc-run-') + RUN.date);
+  const save = () => { if (RUN) store.set(runKey(), RUN); };
 
-  if (yday >= START) $('link-yday').href = '/deep-cut/?r=' + yday; else $('yday-wrap').classList.add('hide');
+  // ---------- render ----------
+  function renderStatus() {
+    const s = RUN.state;
+    const ol = $('rounds'); ol.textContent = '';
+    RUN.rounds.forEach((r, i) => {
+      const v = s.rounds[i];
+      const li = el('li', 'rd' + (i === RUN.cur && !s.done ? ' cur' : '') + (v && typeof v === 'object' ? ' ok' : v === 's' ? ' skip' : v === 'x' ? ' miss' : ''));
+      li.textContent = v && typeof v === 'object' ? String(v.s) : v === 's' ? 'skip' : v === 'x' ? '0' : String(i + 1);
+      li.setAttribute('aria-label', `Round ${i + 1}: ` + (v && typeof v === 'object' ? v.s + ' points' : v === 's' ? 'skipped' : v === 'x' ? '0, run ended' : i === RUN.cur ? 'current' : 'to play'));
+      ol.appendChild(li);
+    });
+    $('total').textContent = `${s.score}/${s.max}`;
+    const left = MISTAKES - s.mistakes;
+    $('lives').textContent = '';
+    for (let i = 0; i < MISTAKES; i++) $('lives').appendChild(el('span', 'life' + (i < left ? '' : ' used'), i < left ? '●' : '×'));
+    $('lives').appendChild(el('span', 'lives-txt', ` ${left} mistake${left === 1 ? '' : 's'} left`));
+  }
 
-  // ---------- today / past ----------
-  async function startGame() {
-    await loadConfig();
-    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + dayLabel(S.date) + ' · ' + longDate(S.date);
-    try {
-      S.day = await api((view === 'past' ? 'day/' + S.date : 'today') + '?device=' + encodeURIComponent(device()));
-    } catch (e) {
-      $('prompt').textContent = e.status === 404 ? 'No prompt today. Check back at 9:00 AM ET.' : 'Could not load today’s prompt. Try again in a minute.';
-      return;
+  function renderRound() {
+    const s = RUN.state, i = RUN.cur, r = RUN.rounds[i];
+    renderStatus();
+    $('round-label').textContent = `Round ${i + 1} of ${RUN.rounds.length}` + (RUN.kind === 'practice' ? ' · practice' : RUN.replay ? ' · replay' : '');
+    $('teams').replaceWith(Object.assign(teamsNode(r.teams), { id: 'teams' }));
+    $('prompt').textContent = r.text;
+    $('rule').textContent = r.rule || '';
+    $('count').textContent = `${r.count} players fit.`;
+    const resolved = s.rounds[i] !== null;
+    $('ask').classList.toggle('hide', resolved || s.done);
+    $('next').classList.toggle('hide', !resolved || s.done);
+    if (!resolved) { $('feedback').classList.add('hide'); $('feedback').textContent = ''; }
+    // The last feedback for this round (after a refresh too).
+    const last = [...RUN.log].reverse().find((e) => e.round === i);
+    if (last) showFeedback(last, r); else { $('feedback').classList.add('hide'); }
+    if (s.done) showEnd();
+  }
+
+  function showFeedback(e, r) {
+    const fb = $('feedback'); fb.textContent = ''; fb.classList.remove('hide');
+    fb.className = 'feedback ' + (e.ok ? 'good' : e.skip ? 'skipped' : 'bad');
+    if (e.skip) { fb.appendChild(el('p', 'fb-title', '↷ Round skipped: 0 points.')); return; }
+    const p = playerOf(e.id);
+    if (e.ok) {
+      const top = el('div', 'fb-top');
+      top.appendChild(headNode(p));
+      const t = el('div', 'fb-name');
+      const line = el('p', 'fb-title'); line.append('✓ '); line.appendChild(nameNode(p)); line.append(' fits.');
+      t.appendChild(line);
+      t.appendChild(el('p', 'fb-score', `${e.score}/100`));
+      top.appendChild(t);
+      fb.appendChild(top);
+      if (r.teams && r.teams.length) fb.appendChild(teamsNode(r.teams));
+      const ul = el('ul', 'ev');
+      for (const x of e.ev || []) ul.appendChild(el('li', null, x));
+      if (ul.children.length) fb.appendChild(ul);
+      // Factual: where the score sits among this prompt's valid answers.
+      const n = r.count, deeper = Math.round(((e.score - 10) / 90) * (n - 1));
+      fb.appendChild(el('p', 'why small', n > 1
+        ? `${e.score}/100: a less obvious pick than ${deeper} of the other ${n - 1} players who fit, judged by his career fame and how memorable this link is. 10 is the most obvious answer, 100 the least.`
+        : `${e.score}/100: the only player who fits.`));
+    } else {
+      const line = el('p', 'fb-title'); line.append('✗ '); line.appendChild(nameNode(p)); line.append(' doesn’t fit.');
+      fb.appendChild(line);
+      if (e.fail) fb.appendChild(el('p', 'why', e.fail));
+      const left = MISTAKES - RUN.state.mistakes;
+      fb.appendChild(el('p', 'small muted', RUN.state.done ? 'That was your third mistake: the run is over.' : `${left} mistake${left === 1 ? '' : 's'} left. Try another player.`));
     }
-    if (view === 'today') S.date = S.day.date;
-    $('sub').textContent = (view === 'past' ? 'Past day, unranked · ' : '') + dayLabel(S.date) + ' · ' + longDate(S.date);
-    $('prompt').textContent = S.day.text;
-    $('meta').textContent = S.day.count + ' players fit. You get ' + TRIES + ' tries.';
-    S.play = view === 'past' ? (store.get('dc-past-' + S.date) || { picks: [], triesLeft: TRIES, done: false }) : (S.day.play || { picks: [], triesLeft: TRIES, done: false });
-    await loadPlayers();
-    render();
   }
 
-  function render() {
-    const p = S.play;
-    const misses = p.picks.filter((x) => !x.ok);
-    $('misses').textContent = '';
-    for (const m of misses) { const li = el('li', null, nameOf(m.id)); li.appendChild(el('span', 'why', ' doesn’t fit')); $('misses').appendChild(li); }
-    $('dots').textContent = '';
-    for (let i = 0; i < TRIES; i++) { const d = el('i', i < TRIES - p.triesLeft ? 'used' : ''); $('dots').appendChild(d); }
-    $('tries-text').textContent = p.done ? '' : p.triesLeft + (p.triesLeft === 1 ? ' try left' : ' tries left');
-    if (p.done) { $('ask').classList.add('hide'); showResult(); }
-    else { $('ask').classList.remove('hide'); $('result').classList.add('hide'); }
-  }
-
-  async function pick(player) {
-    if (S.busy || S.play.done) return;
-    S.busy = true;
-    $('msg').textContent = 'Checking…'; $('msg').className = 'msg';
-    try {
-      const body = { id: player.id };
-      if (view === 'past') body.date = S.date; else body.device = device();
-      const r = await api('pick', body);
-      if (view === 'past') {
-        const p = S.play;
-        if (!p.picks.some((x) => x.id === player.id)) {
-          p.picks.push({ id: player.id, ok: r.ok });
-          if (r.ok) { p.done = true; p.score = r.answer.score; p.answer = r.answer; }
-          else { p.triesLeft--; if (p.triesLeft <= 0) { p.done = true; p.score = 0; } }
-        }
-        store.set('dc-past-' + S.date, p);
-      } else {
-        S.play = r.play;
-        if (r.ranked === false) S.unranked = true;
-      }
-      $('msg').textContent = r.ok ? '' : r.repeat ? 'Already tried. Pick someone else.' : S.play.done ? '' : player.name + ' doesn’t fit. Try again.';
-      $('msg').className = r.ok ? 'msg' : 'msg err';
-      $('q').value = ''; S.list = []; drawSugg();
-      render();
-      if (!S.play.done) $('q').focus();
-    } catch (e) {
-      $('msg').textContent = 'Could not check that pick. Try again.'; $('msg').className = 'msg err';
-    } finally { S.busy = false; }
-  }
-
-  // Suggestions, inline under the box. Tap or Enter picks.
+  // ---------- picking ----------
   function drawSugg() {
-    const ul = $('sugg');
-    ul.textContent = '';
-    if ($('q').value.trim().length >= 2 && !S.list.length) { const li = el('li'); li.appendChild(el('div', 'none', 'No player by that name in the data.')); ul.appendChild(li); return; }
-    S.list.forEach((p, i) => {
+    const ul = $('sugg'); ul.textContent = '';
+    if ($('q').value.trim().length >= 2 && !list.length && !sel) { const li = el('li'); li.appendChild(el('div', 'none', 'No player by that name in the data.')); ul.appendChild(li); return; }
+    list.forEach((p, i) => {
       const li = el('li');
-      const b = el('button');
-      b.type = 'button'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(i === S.sel));
+      const b = el('button'); b.type = 'button'; b.id = 'opt-' + i;
+      b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(i === hi));
       const nm = el('span', 'nm', p.name + (p.born ? ' (b. ' + p.born + ')' : ''));
       if (p.matched) nm.appendChild(el('span', 'aka', ' “' + p.matched + '”'));
-      b.appendChild(nm);
-      b.appendChild(el('span', 'yr', p.years));
-      b.addEventListener('click', () => pick(p));
+      b.appendChild(nm); b.appendChild(el('span', 'yr', p.years));
+      b.addEventListener('click', () => choose(p));
       li.appendChild(b); ul.appendChild(li);
     });
+    $('q').setAttribute('aria-activedescendant', hi >= 0 ? 'opt-' + hi : '');
+  }
+  // Choosing fills the box; "Submit pick" commits (spec 8).
+  function choose(p) {
+    sel = p; $('q').value = p.name; list = []; hi = -1; drawSugg();
+    $('submit').disabled = false; $('submit').focus();
   }
   $('q').addEventListener('input', () => {
-    const skip = new Set((S.play ? S.play.picks : []).map((x) => x.id));
-    S.list = search($('q').value, skip); S.sel = S.list.length ? 0 : -1; drawSugg();
+    sel = null; $('submit').disabled = true;
+    const tried = new Set((RUN ? RUN.state.tried : []));
+    list = search($('q').value, tried); hi = list.length ? 0 : -1; drawSugg();
   });
   $('q').addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown' && S.list.length) { S.sel = (S.sel + 1) % S.list.length; drawSugg(); e.preventDefault(); }
-    else if (e.key === 'ArrowUp' && S.list.length) { S.sel = (S.sel - 1 + S.list.length) % S.list.length; drawSugg(); e.preventDefault(); }
-    else if (e.key === 'Enter' && S.sel >= 0 && S.list[S.sel]) { pick(S.list[S.sel]); e.preventDefault(); }
+    if (e.key === 'ArrowDown' && list.length) { hi = (hi + 1) % list.length; drawSugg(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp' && list.length) { hi = (hi - 1 + list.length) % list.length; drawSugg(); e.preventDefault(); }
+    else if (e.key === 'Enter') { if (list.length && hi >= 0) choose(list[hi]); else if (sel) submit(); e.preventDefault(); }
+    else if (e.key === 'Escape') { list = []; hi = -1; drawSugg(); }
   });
+  $('submit').addEventListener('click', submit);
 
-  // ---------- result + share ----------
-  function showResult() {
-    const p = S.play;
-    $('result').classList.remove('hide');
-    const ok = !!p.answer;
-    $('r-pick').textContent = ok ? p.answer.name + ' fits.' : 'Three misses. Score 0.';
-    $('r-pick').className = 'r-pick' + (ok ? ' ok' : '');
-    $('r-score').textContent = String(p.score || 0);
-    $('r-line').textContent = ok ? 'Instant score: how deep a cut ' + p.answer.name + ' is in the data.' : '';
-    const next = $('r-next');
-    next.textContent = '';
-    if (view === 'past') {
-      next.append('Unranked. ');
-      const a = el('a', null, 'See this day’s answers'); a.href = '/deep-cut/?r=' + S.date; next.appendChild(a);
-    } else {
-      next.append(S.unranked ? 'Unranked (too many plays from your network today). ' : 'Your final score, the full answer list and your rank: tomorrow at 9:00 AM ET, once everyone’s picks are in.');
-    }
-    drawShare();
+  async function submit() {
+    if (!sel || busy || !RUN || RUN.state.done) return;
+    const i = RUN.cur, p = sel;
+    busy = true; $('submit').disabled = true; $('submit').textContent = 'Checking…'; $('msg').textContent = ''; $('msg').className = 'msg';
+    try {
+      const r = await api('pick', { token: RUN.token, round: i, id: p.id });
+      if (r.repeat) { $('msg').textContent = 'You already tried him. Pick someone else.'; $('msg').className = 'msg err'; return; }
+      RUN.token = r.token; RUN.state = r.state;
+      if (r.already) { save(); renderRound(); return; }
+      RUN.log.push(r.ok ? { round: i, ok: true, id: p.id, score: r.answer.score, ev: r.answer.ev } : { round: i, ok: false, id: p.id, fail: r.fail });
+      save();
+      $('q').value = ''; sel = null;
+      renderRound();
+      if (RUN.state.done) finish();
+      else if (!r.ok) $('q').focus(); else $('next').focus();
+    } catch (e) {
+      // Network or server trouble: nothing changed, nothing counted. Try again.
+      $('msg').textContent = e.network ? 'Couldn’t reach the server. Your pick wasn’t counted; press Submit pick to try again.' : 'Something went wrong with that pick. Try again.';
+      $('msg').className = 'msg err';
+    } finally { busy = false; $('submit').textContent = 'Submit pick'; $('submit').disabled = !sel; }
   }
-  function shareUrl(channel) { return SITE + (channel ? '?ref=share-deepcut-' + channel : ''); }
-  function shareText(channel) { return shareName(S.date) + ' · ' + (S.play.score || 0) + '\n' + shareUrl(channel); }
+
+  $('skip').addEventListener('click', () => { $('skip-confirm').classList.remove('hide'); $('skip-no').focus(); });
+  $('skip-no').addEventListener('click', () => { $('skip-confirm').classList.add('hide'); $('q').focus(); });
+  $('skip-yes').addEventListener('click', async () => {
+    if (busy) return;
+    busy = true;
+    try {
+      const r = await api('skip', { token: RUN.token, round: RUN.cur });
+      RUN.token = r.token; RUN.state = r.state;
+      if (!r.already) RUN.log.push({ round: RUN.cur, skip: true });
+      save();
+      $('skip-confirm').classList.add('hide');
+      renderRound();
+      if (RUN.state.done) finish(); else $('next').focus();
+    } catch (e) { $('msg').textContent = 'Couldn’t reach the server. The round wasn’t skipped; try again.'; $('msg').className = 'msg err'; }
+    finally { busy = false; }
+  });
+  $('next').addEventListener('click', () => { RUN.cur = nextOpen(); save(); renderRound(); $('q').focus(); });
+  const nextOpen = () => { const k = RUN.state.rounds.findIndex((v) => v === null); return k < 0 ? RUN.cur : k; };
+
+  // ---------- end of run ----------
+  function finish() { record(); showEnd(); }
+  function showEnd() {
+    const s = RUN.state;
+    $('result').classList.remove('hide');
+    $('card').classList.add('hide');
+    renderStatus();
+    $('end-title').textContent = RUN.kind === 'practice' ? 'Practice set complete' : s.mistakes >= MISTAKES ? 'Run over: three mistakes' : 'Run complete';
+    $('end-score').textContent = `${s.score}/${s.max}`;
+    const ol = $('end-rounds'); ol.textContent = '';
+    RUN.rounds.forEach((r, i) => {
+      const v = s.rounds[i];
+      const li = el('li');
+      li.appendChild(el('span', 'er-score', v && typeof v === 'object' ? String(v.s) : '0'));
+      const txt = el('span', 'er-text', r.text.replace(/^Name a player who /, ''));
+      li.appendChild(txt);
+      if (v && typeof v === 'object') { const pl = el('span', 'er-pick'); pl.append(' · '); pl.appendChild(nameNode(playerOf(v.i))); li.appendChild(pl); }
+      else li.appendChild(el('span', 'er-pick muted', v === 's' ? ' · skipped' : ' · no answer'));
+      ol.appendChild(li);
+    });
+    $('end-line').textContent = (RUN.kind === 'practice' ? 'Practice: kept apart from your Daily records.' : RUN.replay ? 'Replay: your first attempt is the one in your records.' : '') ;
+    drawShare();
+    $('reveal').classList.remove('hide');
+  }
+
+  const missText = (m) => (m === 0 ? 'No misses.' : m === 1 ? 'One miss.' : m === 2 ? 'Two misses.' : 'Three misses: run over.');
+  function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : SITE + '?d=' + RUN.date + (extra || ''); }
+  function shareText(channel) {
+    const s = RUN.state;
+    const scores = s.rounds.map((v) => (v && typeof v === 'object' ? v.s : 0)).join(' · ');
+    const head = RUN.kind === 'practice' ? 'Deep Cut practice' : shareName(RUN.date);
+    return `${head} · ${s.score}/${s.max}\n${scores}\n${missText(s.mistakes)}\n${puzzleUrl(channel ? '&ref=share-deepcut-' + channel : '')}`;
+  }
+  function challengeUrl() { return puzzleUrl('&c=' + RUN.state.score); }
   function drawShare() {
-    $('r-sharetext').textContent = shareText('');
-    const box = $('r-shares');
-    box.textContent = '';
+    $('share-text').textContent = shareText('');
+    const box = $('shares'); box.textContent = '';
     const enc = encodeURIComponent;
+    if (navigator.share) {
+      const b = el('button', 'primary', 'Share'); b.type = 'button';
+      b.addEventListener('click', () => navigator.share({ text: shareText('native') }).catch(() => {}));
+      box.appendChild(b);
+    }
+    const copy = (label, get) => {
+      const b = el('button', null, label); b.type = 'button';
+      b.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(get()); b.textContent = 'Copied'; } catch (e) { b.textContent = 'Copy failed'; }
+        setTimeout(() => { b.textContent = label; }, 2000);
+      });
+      box.appendChild(b);
+    };
+    copy('Copy result', () => shareText('copy'));
+    if (RUN.kind !== 'practice') { copy('Copy puzzle link', () => puzzleUrl('')); copy('Copy challenge link', challengeUrl); }
     const targets = [
       ['X', 'x', (t) => 'https://x.com/intent/post?text=' + enc(t)],
       ['Bluesky', 'bluesky', (t) => 'https://bsky.app/intent/compose?text=' + enc(t)],
       ['Facebook', 'facebook', (t, u) => 'https://www.facebook.com/sharer/sharer.php?u=' + enc(u)],
       ['WhatsApp', 'whatsapp', (t) => 'https://wa.me/?text=' + enc(t)],
       ['Reddit', 'reddit', (t, u) => 'https://www.reddit.com/submit?url=' + enc(u) + '&title=' + enc(t.split('\n')[0])],
-      ['Telegram', 'telegram', (t, u) => 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t.split('\n')[0])],
+      ['Telegram', 'telegram', (t, u) => 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t.split('\n').slice(0, -1).join('\n'))],
     ];
     for (const [name, ch, url] of targets) {
-      const a = el('a', null, name); a.href = url(shareText(ch), shareUrl(ch)); a.target = '_blank'; a.rel = 'noopener';
+      const a = el('a', null, name); a.href = url(shareText(ch), puzzleUrl('&ref=share-deepcut-' + ch)); a.target = '_blank'; a.rel = 'noopener';
       box.appendChild(a);
     }
-    const copy = el('button', null, 'Copy'); copy.type = 'button';
-    copy.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(shareText('copy')); copy.textContent = 'Copied'; } catch (e) { copy.textContent = 'Copy failed'; }
-      setTimeout(() => { copy.textContent = 'Copy'; }, 2000);
-    });
-    box.appendChild(copy);
   }
 
-  // ---------- results ----------
-  async function showResults(date) {
-    $('game').classList.add('hide');
-    $('results').classList.remove('hide');
+  // Answer browser: only after a finished run, behind an inline warning.
+  $('reveal').addEventListener('click', () => { $('reveal').classList.add('hide'); $('reveal-confirm').classList.remove('hide'); $('reveal-no').focus(); });
+  $('reveal-no').addEventListener('click', () => { $('reveal-confirm').classList.add('hide'); $('reveal').classList.remove('hide'); });
+  $('reveal-yes').addEventListener('click', async () => {
+    $('reveal-confirm').classList.add('hide');
+    const box = $('answers'); box.textContent = 'Loading answers…';
+    try {
+      const r = await api('reveal', { token: RUN.token });
+      box.textContent = '';
+      r.rounds.forEach((rd, i) => {
+        const det = el('details', 'ans-round'); if (i === 0) det.open = true;
+        det.appendChild(el('summary', null, `Round ${i + 1}: ${rd.text.replace(/^Name a player who /, '')} (${rd.answers.length})`));
+        const total = rd.answers.reduce((a, x) => a + (x.picked || 0), 0);
+        const ol = el('ol', 'ans-list');
+        const mine = RUN.state.rounds[i] && typeof RUN.state.rounds[i] === 'object' ? RUN.state.rounds[i].i : null;
+        for (const a of rd.answers) {
+          const li = el('li', a.id === mine ? 'me' : '');
+          const p = playerOf(a.id);
+          li.appendChild(headNode(p, 'sm'));
+          li.appendChild(nameNode({ ...p, name: a.name }, 'an'));
+          li.appendChild(el('span', 'as', `${a.s}/100`));
+          if (a.picked !== undefined && total) li.appendChild(el('span', 'ap muted', `${Math.round((100 * a.picked) / total)}% picked`));
+          ol.appendChild(li);
+        }
+        det.appendChild(ol);
+        box.appendChild(det);
+      });
+    } catch (e) { box.textContent = 'Couldn’t load the answers. Try again.'; $('reveal').classList.remove('hide'); }
+  });
+
+  // ---------- personal records (this browser only) ----------
+  // A completed Daily = a finished run, ended by mistakes or not. Only the
+  // first attempt at a date counts; replays and practice are kept apart.
+  function record() {
+    const R = store.get('dc-records') || { daily: {}, practice: { played: 0, best: 0, total: 0 } };
+    if (RUN.kind === 'practice') { R.practice.played++; R.practice.total += RUN.state.score; R.practice.best = Math.max(R.practice.best, RUN.state.score); }
+    else if (!RUN.replay && !R.daily[RUN.date]) R.daily[RUN.date] = { score: RUN.state.score, max: RUN.state.max, mistakes: RUN.state.mistakes };
+    store.set('dc-records', R);
+    drawRecords();
+  }
+  function drawRecords() {
+    const R = store.get('dc-records');
+    const box = $('records'); box.textContent = '';
+    if (!R) return;
+    const days = Object.keys(R.daily).sort();
+    const five = days.filter((d) => R.daily[d].max === 500);
+    let streak = 0;
+    for (let d = R.daily[today] ? today : addDays(today, -1); R.daily[d]; d = addDays(d, -1)) streak++;
+    const rows = [];
+    if (days.length) {
+      rows.push(['Dailies completed', String(days.length)], ['Streak', `${streak} day${streak === 1 ? '' : 's'}`]);
+      if (five.length) {
+        rows.push(['Best Daily', `${Math.max(...five.map((d) => R.daily[d].score))}/500`]);
+        rows.push(['Average Daily', `${Math.round(five.reduce((a, d) => a + R.daily[d].score, 0) / five.length)}/500`]);
+      }
+    }
+    if (R.practice.played) rows.push(['Practice sets', String(R.practice.played)], ['Best practice', `${R.practice.best}/500`], ['Average practice', `${Math.round(R.practice.total / R.practice.played)}/500`]);
+    if (!rows.length) return;
+    const dl = el('dl', 'rec');
+    for (const [k, v] of rows) { dl.appendChild(el('dt', null, k)); dl.appendChild(el('dd', null, v)); }
+    box.appendChild(el('h3', null, 'Your record (this browser)'));
+    box.appendChild(dl);
+  }
+
+  // ---------- next reset, in the player's own time ----------
+  function resetLine(endsAt) {
+    const t = new Date(endsAt);
+    const local = t.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    const mins = Math.max(0, Math.round((t - Date.now()) / 60000));
+    return `Next puzzle in ${Math.floor(mins / 60)}h ${mins % 60}m (${local} your time, 9:00 AM ET).`;
+  }
+
+  // ---------- start a view ----------
+  async function startDaily() {
+    $('game').classList.remove('hide');
     await loadConfig();
-    $('sub').textContent = dayLabel(date) + ' · ' + longDate(date);
-    $('res-title').textContent = 'Answers';
-    let r;
-    try { r = await api('results/' + date + '?device=' + encodeURIComponent(device())); }
-    catch (e) { $('res-prompt').textContent = e.status === 404 ? 'No prompt that day.' : 'Could not load the answers.'; return; }
-    $('res-prompt').textContent = r.text;
-    const you = r.you;
-    $('res-you').textContent = you ? (you.id ? 'Your final score: ' + you.final + (you.rank ? ', #' + you.rank + ' of ' + you.of : ' (unranked)') + ' · instant ' + you.instant
-      : 'Three misses: 0' + (you.rank ? ', #' + you.rank + ' of ' + you.of : '')) : 'You didn’t play this day. ';
-    if (!you) { const a = el('a', null, 'Play it now (unranked)'); a.href = '/deep-cut/?d=' + date; $('res-you').appendChild(a); }
-    $('res-meta').textContent = r.answers.length + ' players fit · ' + r.plays + (r.plays === 1 ? ' player' : ' players') + ' played';
-    const max = Math.max(1, ...r.answers.map((a) => a.pct));
-    const ol = $('res-list');
-    ol.textContent = '';
-    for (const a of r.answers) {
-      const li = el('li', you && you.id === a.id ? 'me' : '');
-      const nm = el('span');
-      if (a.link) { const l = el('a', null, a.name); l.href = a.link; nm.appendChild(l); } else nm.textContent = a.name;
-      nm.appendChild(el('span', 'sc', ' · instant ' + a.score));
-      li.appendChild(nm);
-      li.appendChild(el('span', 'pct', a.pct + '%'));
-      const bar = el('span', 'bar'); const i = el('i'); i.style.width = (100 * a.pct / max) + '%'; bar.appendChild(i); li.appendChild(bar);
-      ol.appendChild(li);
+    let day;
+    try { day = await api('day/' + wantDate); }
+    catch (e) { $('sub').textContent = e.status === 404 ? 'No puzzle for that day.' : 'Couldn’t load the puzzle. Refresh to try again.'; $('game').classList.add('hide'); return; }
+    const isToday = wantDate === today;
+    $('sub').textContent = `${dayLabel(wantDate)} · ${longDate(wantDate)}` + (isToday ? ' · ' + resetLine(day.endsAt) : ' · past puzzle');
+    if (!isToday) $('go-daily').classList.remove('hide');
+    if (challenge !== null) { $('challenge').textContent = `Challenge: a friend scored ${challenge}/${day.rounds.length * 100} on this puzzle. That’s their shared score, not a verified record.`; $('challenge').classList.remove('hide'); }
+    await loadPlayers();
+    // First attempt saved? Resume it. Finished and opening again? Show it,
+    // with a replay option for past days.
+    const first = store.get('dc-run-' + wantDate);
+    const replay = params.get('replay') === '1';
+    if (first && !replay) RUN = first;
+    else if (replay && store.get('dc-replay-' + wantDate) && !store.get('dc-replay-' + wantDate).state.done) RUN = store.get('dc-replay-' + wantDate);
+    else {
+      let st;
+      try { st = await api('start', { date: wantDate }); } catch (e) { $('sub').textContent = 'Couldn’t start the puzzle. Refresh to try again.'; return; }
+      RUN = { kind: 'daily', date: wantDate, replay: !!(first && replay), rounds: day.rounds, token: st.token, state: st.state, log: [], cur: 0 };
+      save();
+    }
+    RUN.cur = RUN.state.done ? RUN.cur : nextOpen();
+    renderRound();
+    if (RUN.state.done && !RUN.replay) {
+      const line = $('end-line');
+      const a = el('a', null, 'Play it again (replay, not recorded)'); a.href = SITE + '?d=' + RUN.date + '&replay=1';
+      line.append(' '); line.appendChild(a);
     }
   }
 
-  // ---------- archive ----------
+  async function startPractice() {
+    $('game').classList.remove('hide');
+    $('go-daily').classList.remove('hide');
+    $('go-practice').textContent = 'New practice set';
+    await loadConfig();
+    $('sub').textContent = 'Unlimited practice: five prompts from past days and a practice-only set. Not part of your Daily record.';
+    await loadPlayers();
+    const cur = store.get('dc-run-practice');
+    if (cur && !cur.state.done && params.get('new') !== '1') { RUN = cur; }
+    else {
+      const seen = store.get('dc-seen') || [];
+      let r;
+      try { r = await api('practice/new', { seen: seen.slice(-500) }); } catch (e) { $('sub').textContent = 'Couldn’t start a practice set. Refresh to try again.'; return; }
+      store.set('dc-seen', seen.concat(r.refs).slice(-500));
+      RUN = { kind: 'practice', refs: r.refs, rounds: r.rounds, token: r.token, state: r.state, log: [], cur: 0 };
+      save();
+    }
+    $('go-practice').href = SITE + '?mode=practice&new=1';
+    RUN.cur = RUN.state.done ? RUN.cur : nextOpen();
+    renderRound();
+  }
+
   async function showArchive() {
     await loadConfig();
-    $('game').classList.add('hide');
     $('archive').classList.remove('hide');
-    $('sub').textContent = 'Every past Deep Cut';
+    $('go-daily').classList.remove('hide');
+    $('sub').textContent = 'Every past Deep Cut puzzle.';
+    const R = store.get('dc-records') || { daily: {} };
     const ul = $('arc-list');
-    for (let d = yday; d >= START; d = addDays(d, -1)) {
+    for (let d = addDays(today, -1); d >= START; d = addDays(d, -1)) {
       const li = el('li');
-      li.appendChild(el('span', null, dayLabel(d) + ' · ' + longDate(d)));
-      const links = el('span');
-      const play = el('a', null, 'Play'); play.href = '/deep-cut/?d=' + d;
-      const ans = el('a', null, 'Answers'); ans.href = '/deep-cut/?r=' + d;
-      links.append(play, ' · ', ans);
-      li.appendChild(links);
+      const a = el('a', null, `${dayLabel(d)} · ${longDate(d)}`); a.href = SITE + '?d=' + d;
+      li.appendChild(a);
+      if (R.daily[d]) li.appendChild(el('span', 'muted', `${R.daily[d].score}/${R.daily[d].max}`));
       ul.appendChild(li);
     }
-    if (!ul.children.length) ul.appendChild(el('li', 'muted', 'Past days show up here from tomorrow.'));
+    if (!ul.children.length) ul.appendChild(el('li', 'muted', 'Past puzzles show up here from tomorrow.'));
   }
 
-  if (view === 'results') showResults(params.get('r'));
-  else if (view === 'archive') showArchive();
-  else startGame();
+  drawRecords();
+  if (view === 'archive') showArchive();
+  else if (view === 'practice') startPractice();
+  else startDaily();
 })();
