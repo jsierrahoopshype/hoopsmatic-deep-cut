@@ -69,7 +69,12 @@ const facts = {
       // salaries in $ millions by season; single-winner awards by season;
       // Player of the Week [season, unit#]; clubs outside the NBA
       $: Object.entries(p.salary).map(([y, v]) => [+y, Math.floor(v / 1e5) / 10]),
-      w: p.solo, pw: p.potw.map((x) => [x.y, u(x.unit)]), x: p.clubs };
+      w: p.solo, pw: p.potw.map((x) => [x.y, u(x.unit)]), x: p.clubs,
+      // listed height; draft combine; award votes; medals; highest-paid seasons;
+      // career earnings ($M); single-game highs per team-season
+      ht: p.ht, cb: p.combine, vt: p.votes.map((v) => [v.y, v.award, v.rank, v.unit ? u(v.unit) : -1]), md: p.medals,
+      pt: p.payTop.map((x) => [x.y, u(x.unit)]), ce: Math.floor(p.earnings / 1e5) / 10,
+      gh: p.highs.map((x) => [x.y, u(x.unit), x.h[0], x.h[1], x.h[2], x.h[3], x.h[4]]) };
   }),
 };
 mkdirSync(ROOT + 'data', { recursive: true });
@@ -78,110 +83,143 @@ const F = index(facts);
 const fameOf = new Map(players.map((p) => [p.id, p.fame]));
 
 // ---------- candidates ----------
-// group: A two teams, B teammate, C title/award, D team plus another fact
-// (birthplace, college, career start, draft), E stat season or career
-// points, F one team's roster in one season, G salary, H clubs outside the
-// NBA (abroad before the NBA, G League).
+// Every question reads plainly, and every player who fits the plain wording
+// counts, whatever the season (Jorge, Nov 13, 2026: no era clauses and no
+// hidden conditions). Which questions get scheduled leans recent: see era
+// below and scripts/build.mjs.
 //
-// ERAS (Jorge, Nov 12, 2026): no question depends on anything before
-// 1980-81. Every condition carries m = 1981 (only 1980-81 and later counts),
-// and conditions that name their own seasons (a roster season, a decade, a
-// draft range) start at 1980-81 or later. Most questions also come in a
-// "since 2010-11" version (m = 2011). era: 'modern' (about 2010-11 or later),
-// '80s' (about the 1980s), else 'open'; build.mjs puts 5+ modern and at most
-// 2 '80s' questions in a day.
-const OPEN = 1981, MODERN = 2011;
+// group (for the day's mix): A two teams, B teammate, F one team's roster in
+// one season, C accolades, D origin and other team facts, E records and game
+// stats, G money, P physical and draft, H clubs outside the NBA.
+// category (one of each a day): money, accolade, record, physical, origin.
 const cands = [];
 const the = (u) => 'the ' + factsUnits[u].name;
-const add = (key, group, type, cond, text, extra = {}) => cands.push({ key, group, type, cond, text, era: 'open', ...extra });
-// A question in both versions: from 1980-81, and since 2010-11.
-const both = (key, group, type, cond, text, extra = {}) => {
-  add(key, group, type, { ...cond, m: OPEN }, text, extra);
-  add(key + ':m2011', group, type, { ...cond, m: MODERN }, text.replace(/\.$/, ' since 2010-11.'), { ...extra, era: 'modern' });
-};
+const add = (key, group, type, cond, text, extra = {}) => cands.push({ key, group, type, cond, text, ...extra });
 const unitCount = new Map();
-for (const p of facts.players) for (const u of new Set(p.s.filter((s) => s[0] >= OPEN).map((s) => s[1]))) unitCount.set(u, (unitCount.get(u) || 0) + 1);
+for (const p of facts.players) for (const u of new Set(p.s.map((s) => s[1]))) unitCount.set(u, (unitCount.get(u) || 0) + 1);
 const U = [...unitCount.keys()].filter((u) => unitCount.get(u) >= 40);
+// Units every one of whose players has a draft pick on record if drafted
+// (Salary Season Finder picks start with 1990-91 players): teams born in
+// 1990-91 or later.
+const U_PICKS = U.filter((u) => factsUnits[u].from >= 1991);
+// Box-score coverage: a unit gets game questions only if every player-season
+// it has through 2025-26 is in the box-score archive (rebounds and
+// triple-doubles also need 1950-51 on).
+const gap = new Set();
+for (const p of facts.players) for (const s of p.s) if (s[0] <= 2026 && !p.gh.some((g) => g[0] === s[0] && g[1] === s[1])) gap.add(s[1]);
+const U_GAMES = U.filter((u) => !gap.has(u));
 
 for (let i = 0; i < U.length; i++) for (let j = i + 1; j < U.length; j++) {
   const [a, b] = [U[i], U[j]].sort((x, y) => factsUnits[x].name.localeCompare(factsUnits[y].name));
   if (factsUnits[a].code === factsUnits[b].code) continue;
-  both(`teams:${factsUnits[a].id}:${factsUnits[b].id}`, 'A', 'two-teams', { t: 'teams', u: [a, b] }, `Name a player who played for ${the(a)} and ${the(b)}.`);
+  add(`teams:${factsUnits[a].id}:${factsUnits[b].id}`, 'A', 'two-teams', { t: 'teams', u: [a, b] }, `Name a player who played for ${the(a)} and ${the(b)}.`);
 }
-// Teammate prompts: stars of fame 45+.
-const stars = facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 45);
-for (const st of stars) for (const u of new Set(st.s.filter((s) => s[0] >= OPEN).map((s) => s[1]))) {
-  both(`mate:${st.i}:${factsUnits[u].id}`, 'B', 'teammate', { t: 'mate', p: st.i, u }, `Name a player who was a teammate of ${st.n} on ${the(u)}.`, { star: st.i });
+const stars = facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 30);
+for (const st of stars) for (const u of new Set(st.s.map((s) => s[1]))) {
+  if (!U.includes(u)) continue;
+  add(`mate:${st.i}:${factsUnits[u].id}`, 'B', 'teammate', { t: 'mate', p: st.i, u }, `Name a player who was a teammate of ${st.n} on ${the(u)}.`, { star: st.i });
 }
-// Since 2010-11 only: teammates of the next tier of stars (fame 30 to 45).
-for (const st of facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 30 && (fameOf.get(p.i) || 0) < 45))
-  for (const u of new Set(st.s.filter((s) => s[0] >= MODERN).map((s) => s[1])))
-    add(`mate:${st.i}:${factsUnits[u].id}:m2011`, 'B', 'teammate', { t: 'mate', p: st.i, u, m: MODERN }, `Name a player who was a teammate of ${st.n} on ${the(u)} since 2010-11.`, { star: st.i, era: 'modern' });
-// Team-season rosters, 1980-81 on.
 const seasonsOf = new Map();
 for (const p of facts.players) for (const s of p.s) { const k = s[1] + '|' + s[0]; seasonsOf.set(k, (seasonsOf.get(k) || 0) + 1); }
 for (const [k, n] of seasonsOf) {
   if (n < 15) continue;
   const [u, y] = k.split('|').map(Number);
-  if (y < OPEN) continue;
-  add(`roster:${factsUnits[u].id}:${y}`, 'F', 'roster', { t: 'roster', u, y }, `Name a player who played for the ${seasonLabel(y)} ${factsUnits[u].name.replace(/ \(\d{4}-(\d{4}|present)\)$/, '')}.`,
-    { era: y >= MODERN ? 'modern' : y <= 1990 ? '80s' : 'open' });
+  add(`roster:${factsUnits[u].id}:${y}`, 'F', 'roster', { t: 'roster', u, y }, `Name a player who played for the ${seasonLabel(y)} ${factsUnits[u].name.replace(/ \(\d{4}-(\d{4}|present)\)$/, '')}.`);
 }
-for (const u of U) {
-  both(`award:rings:${factsUnits[u].id}`, 'C', 'title', { t: 'ring', u }, `Name a player who won an NBA title with ${the(u)}.`);
-  for (const [k, w] of [['allStar', 'an All-Star team'], ['allRookie', 'an All-Rookie team'], ['allDefense', 'an All-Defensive team'], ['allNba', 'an All-NBA team']])
-    both(`award:${k}:${factsUnits[u].id}`, 'C', 'award', { t: 'award', a: k, u }, `Name a player who made ${w} as a member of ${the(u)}.`);
-  both(`potw:${factsUnits[u].id}`, 'C', 'player-of-week', { t: 'potw', u }, `Name a player who won a Player of the Week award with ${the(u)}.`);
-}
-for (const a of Object.keys(SOLO_NAMES)) both(`solo:${a}`, 'C', 'solo-award', { t: 'solo', a }, `Name a player who won ${SOLO_NAMES[a]}.`);
 const count = (f) => { const m = new Map(); for (const p of facts.players) { const k = f(p); if (k) m.set(k, (m.get(k) || 0) + 1); } return m; };
 const born = count((p) => (p.b && p.b !== 'United States' ? p.b : null));
 const colleges = count((p) => p.c);
 const COLS = [...colleges.keys()].filter((c) => colleges.get(c) >= 15);
-// Birth cities (20+ NBA players born there) and U.S. states (40+). Georgia
-// is left out (the country shares its name), and the data's bare "New York"
-// isn't a city with a state, so it never matches.
 const CITY_NAME = { 'Washington, D.C.': 'Washington, D.C.', 'Brooklyn, New York': 'Brooklyn', 'The Bronx, New York': 'the Bronx', 'Queens, New York': 'Queens' };
 const STATE_NAME = { Washington: 'Washington State', 'New York': 'New York State' };
-// A city goes by its name alone unless another birthplace shares it (Portland, Oregon and Portland, Maine).
 const cityStates = new Map();
 for (const p of facts.players) if (p.bp && p.bp.includes(', ')) { const [ci, ...rest] = p.bp.split(', '); (cityStates.get(ci) || cityStates.set(ci, new Set()).get(ci)).add(rest.join(', ')); }
 const cities = [...count((p) => (p.bp && p.bp.includes(', ') ? p.bp : null))].filter(([, n]) => n >= 20)
   .map(([pl]) => [pl, CITY_NAME[pl] || (cityStates.get(pl.split(', ')[0]).size > 1 ? pl : pl.split(', ')[0])]);
 const states = [...count((p) => (p.bp && p.b === 'United States' && p.bp.includes(', ') ? p.bp.split(', ').pop() : null))]
   .filter(([st, n]) => n >= 40 && st !== 'Georgia' && st !== 'D.C.').map(([st]) => [st, STATE_NAME[st] || st]);
-for (const [pl, pn] of cities) {
-  add(`bornin:${pl}`, 'D', 'birth-city', { t: 'bornin', pl, pn, m: OPEN }, `Name an NBA player born in ${pn}.`);
-  add(`bornin:${pl}:m2011`, 'D', 'birth-city', { t: 'bornin', pl, pn, m: MODERN }, `Name a player born in ${pn} who played in the NBA in 2010-11 or later.`, { era: 'modern' });
-}
-// Countries with 15+ players whose pro clubs there ended before their NBA debut.
-const abroadC = count((p) => { const x = p.f >= OPEN && (p.x || []).find((x) => x[0] === 'O' && x[3] <= p.f - 1); return x ? x[4] : null; });
-for (const [c, n] of abroadC) if (n >= 15) {
-  add(`abroad:${c}`, 'H', 'abroad', { t: 'abroad', c, m: OPEN }, `Name a player who played for a pro club in ${c} before his NBA debut.`);
-  add(`abroad:${c}:m2011`, 'H', 'abroad', { t: 'abroad', c, m: MODERN }, `Name a player who played for a pro club in ${c} before making his NBA debut in 2010-11 or later.`, { era: 'modern' });
-}
+for (const [pl, pn] of cities) add(`bornin:${pl}`, 'D', 'birth-city', { t: 'bornin', pl, pn }, `Name an NBA player born in ${pn}.`);
+const abroadC = count((p) => { const x = (p.x || []).find((x) => x[0] === 'O' && x[3] <= p.f - 1); return x ? x[4] : null; });
+for (const [c, n] of abroadC) if (n >= 15) add(`abroad:${c}`, 'H', 'abroad', { t: 'abroad', c }, `Name a player who played for a pro club in ${c} before his NBA debut.`);
+add('combine:vert40', 'P', 'combine', { t: 'combine', k: 'vert', v: 40 }, 'Name an NBA player who had a max vertical of 40 inches or more at the draft combine.');
+add('combine:hgt84', 'P', 'combine', { t: 'combine', k: 'hgt', v: 84 }, 'Name an NBA player who measured 7 feet or taller without shoes at the draft combine.');
+add('combine:ws88', 'P', 'combine', { t: 'combine', k: 'ws', v: 88 }, 'Name an NBA player who measured a wingspan of 7-4 or longer at the draft combine.');
+
 for (const u of U) {
-  both(`bornout:${factsUnits[u].id}`, 'D', 'birthplace', { t: 'bornout', u }, `Name a player born outside the United States who played for ${the(u)}.`);
-  for (const [c, n] of born) if (n >= 15) both(`born:${factsUnits[u].id}:${c}`, 'D', 'birthplace', { t: 'born', c, u }, `Name a player born in ${c} who played for ${the(u)}.`);
-  for (const [st, pn] of states) both(`bornin:${factsUnits[u].id}:${st}`, 'D', 'birth-city', { t: 'bornin', pl: st, pn, u }, `Name a player born in ${pn} who played for ${the(u)}.`);
-  for (const [pl, pn] of cities) add(`bornin:${factsUnits[u].id}:${pl}`, 'D', 'birth-city', { t: 'bornin', pl, pn, u, m: OPEN }, `Name a player born in ${pn} who played for ${the(u)}.`);
-  for (let d = 1980; d <= 2020; d += 10) add(`start:${factsUnits[u].id}:${d}`, 'D', 'career-start', { t: 'start', d, u, m: OPEN }, `Name a player who started his NBA career in the ${d}s and played for ${the(u)}.`,
-    { era: d >= 2010 ? 'modern' : d === 1980 ? '80s' : 'open' });
-  add(`top10:${factsUnits[u].id}`, 'D', 'draft', { t: 'top10', u, m: OPEN }, `Name a player who was a top-10 draft pick (1990 to 2025 drafts) and played for ${the(u)}.`);
-  for (const c of COLS) both(`college:${factsUnits[u].id}:${c}`, 'D', 'college', { t: 'college', c, cn: collegeName(c), u }, `Name a player who played for ${the(u)} and went to college at ${collegeName(c)}.`);
+  const T = factsUnits[u].id;
+  // accolades
+  add(`award:rings:${T}`, 'C', 'title', { t: 'ring', u }, `Name a player who won an NBA title with ${the(u)}.`);
+  for (const [k, w] of [['allStar', 'an All-Star team'], ['allRookie', 'an All-Rookie team'], ['allDefense', 'an All-Defensive team'], ['allNba', 'an All-NBA team']])
+    add(`award:${k}:${T}`, 'C', 'award', { t: 'award', a: k, u }, `Name a player who made ${w} as a member of ${the(u)}.`);
+  add(`ringany:${T}`, 'C', 'title', { t: 'ringany', u }, `Name a player who won an NBA title at some point and played for ${the(u)}.`);
+  add(`votes:ROY:${T}`, 'C', 'award-votes', { t: 'votes', a: 'ROY', u }, `Name a player who received Rookie of the Year votes as a member of ${the(u)}.`);
+  for (const [k, w] of [['allStar', 'an All-Star team'], ['allNba', 'an All-NBA team'], ['allDefense', 'an All-Defensive team'], ['allRookie', 'an All-Rookie team']])
+    add(`allany:${k}:${T}`, 'C', 'all-team', { t: 'allany', a: k, u }, `Name a player who made ${w} at some point and played for ${the(u)}.`);
+  for (const [a, w] of [['MVP', 'MVP votes'], ['DPOY', 'Defensive Player of the Year votes'], ['Sixth Man', 'Sixth Man of the Year votes'], ['MIP', 'Most Improved Player votes']])
+    add(`votes:${a}:${T}`, 'C', 'award-votes', { t: 'votes', a, u }, `Name a player who received ${w} as a member of ${the(u)}.`);
+  add(`votes:ROY5:${T}`, 'C', 'award-votes', { t: 'votes', a: 'ROY', top: 5, u }, `Name a player who finished top 5 in Rookie of the Year voting as a member of ${the(u)}.`);
+  add(`medal:${T}`, 'C', 'medal', { t: 'medal', u }, `Name a player who won an Olympic or World Cup medal and played for ${the(u)}.`);
+  // origin
+  add(`bornout:${T}`, 'D', 'birthplace', { t: 'bornout', u }, `Name a player born outside the United States who played for ${the(u)}.`);
+  for (const [c, n] of born) if (n >= 15) add(`born:${T}:${c}`, 'D', 'birthplace', { t: 'born', c, u }, `Name a player born in ${c} who played for ${the(u)}.`);
+  for (const [st, pn] of states) add(`bornin:${T}:${st}`, 'D', 'birth-city', { t: 'bornin', pl: st, pn, u }, `Name a player born in ${pn} who played for ${the(u)}.`);
+  for (const [pl, pn] of cities) add(`bornin:${T}:${pl}`, 'D', 'birth-city', { t: 'bornin', pl, pn, u }, `Name a player born in ${pn} who played for ${the(u)}.`);
+  for (const c of COLS) add(`college:${T}:${c}`, 'D', 'college', { t: 'college', c, cn: collegeName(c), u }, `Name a player who played for ${the(u)} and went to college at ${collegeName(c)}.`);
+  add(`abroad:any:${T}`, 'H', 'abroad', { t: 'abroad', u }, `Name a player who played for a pro club outside the U.S. before his NBA debut and then for ${the(u)}.`);
+  add(`gleague:${T}`, 'H', 'g-league', { t: 'gleague', u }, `Name a player who played in the G League (or D-League) and for ${the(u)}.`);
+  for (let d = 1950; d <= 2020; d += 10) add(`start:${T}:${d}`, 'D', 'career-start', { t: 'start', d, u }, `Name a player who started his NBA career in the ${d}s and played for ${the(u)}.`);
+  // records and game stats
   for (const [k, v, w] of [['ppg', 25, 'points'], ['ppg', 20, 'points'], ['ppg', 15, 'points'], ['rpg', 12, 'rebounds'], ['rpg', 10, 'rebounds'], ['rpg', 8, 'rebounds'],
     ['apg', 9, 'assists'], ['apg', 7, 'assists'], ['apg', 5, 'assists'], ['spg', 1.5, 'steals'], ['spg', 2, 'steals'], ['bpg', 1.5, 'blocks'], ['bpg', 2, 'blocks'], ['tpg', 2, 'three-pointers'], ['tpg', 3, 'three-pointers']])
-    both(`stat:${k}${v}:${factsUnits[u].id}`, 'E', 'stat', { t: 'stat', k, v, u }, `Name a player who averaged ${v}+ ${w} a game in a season for ${the(u)}.`);
-  for (const v of [10, 20, 30]) both(`salary:${v}:${factsUnits[u].id}`, 'G', 'salary', { t: 'salary', v, u }, `Name a player who earned $${v}M+ in a season with ${the(u)}.`);
-  add(`abroad:any:${factsUnits[u].id}`, 'H', 'abroad', { t: 'abroad', u, m: OPEN }, `Name a player who played for a pro club outside the U.S. before his NBA debut and then for ${the(u)}.`);
-  add(`abroad:any:${factsUnits[u].id}:m2011`, 'H', 'abroad', { t: 'abroad', u, m: MODERN }, `Name a player who played for a pro club outside the U.S. before making his NBA debut in 2010-11 or later, and then played for ${the(u)}.`, { era: 'modern' });
-  both(`gleague:${factsUnits[u].id}`, 'H', 'g-league', { t: 'gleague', u }, `Name a player who played in the G League (or D-League) and for ${the(u)}.`);
-  for (const v of [10000, 15000]) add(`points:${v}:${factsUnits[u].id}`, 'E', 'points', { t: 'points', v, u, m: OPEN }, `Name a player who scored ${v.toLocaleString('en-US')}+ career points and played for ${the(u)}.`);
+    add(`stat:${k}${v}:${T}`, 'E', 'stat', { t: 'stat', k, v, u }, `Name a player who averaged ${v}+ ${w} a game in a season for ${the(u)}.`);
+  for (const v of [10000, 15000, 20000]) add(`points:${v}:${T}`, 'E', 'points', { t: 'points', v, u }, `Name a player who scored ${v.toLocaleString('en-US')}+ career points and played for ${the(u)}.`);
+  if (U_GAMES.includes(u)) {
+    const early = factsUnits[u].from < 1951;
+    for (const [k, v, txt] of [['pts', 40, 'scored 40+ points in a game'], ['pts', 50, 'scored 50+ points in a game'], ['pts', 30, 'scored 30+ points in a game'],
+      ['reb', 20, 'had a 20-rebound game'], ['ast', 15, 'had a 15-assist game'], ['tpm', 8, 'made 8+ threes in a game'], ['td', 1, 'had a triple-double']]) {
+      if (early && (k === 'reb' || k === 'td')) continue;
+      add(`game:${k}${v}:${T}`, 'E', 'game-high', { t: 'game', k, v, u }, `Name a player who ${txt} for ${the(u)}.`);
+    }
+  }
+  // money
+  for (const v of [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]) add(`salary:${v}:${T}`, 'G', 'salary', { t: 'salary', v, u }, `Name a player who earned $${v}M+ in a season with ${the(u)}.`);
+  for (const v of [50, 75, 100, 150, 200]) add(`earn:${v}:${T}`, 'G', 'earnings', { t: 'earn', v, u }, `Name a player who earned $${v}M+ in his career and played for ${the(u)}.`);
+  // physical and draft
+  for (const [k, op, v, txt] of [['ge84', 'ge', 84, 'listed at 7-0 or taller'], ['ge83', 'ge', 83, 'listed at 6-11 or taller'], ['le73', 'le', 73, 'listed at 6-1 or shorter'], ['le74', 'le', 74, 'listed at 6-2 or shorter']])
+    add(`height:${k}:${T}`, 'P', 'height', { t: 'height', [op]: v, u }, `Name a player ${txt} who played for ${the(u)}.`);
+  add(`combine:ws84:${T}`, 'P', 'combine', { t: 'combine', k: 'ws', v: 84, u }, `Name a player who measured a wingspan of 7-0 or longer at the draft combine and played for ${the(u)}.`);
+  add(`combine:vert36:${T}`, 'P', 'combine', { t: 'combine', k: 'vert', v: 36, u }, `Name a player who had a max vertical of 36 inches or more at the draft combine and played for ${the(u)}.`);
+  if (U_PICKS.includes(u)) {
+    add(`pick:1-10:${T}`, 'P', 'draft', { t: 'pick', lo: 1, hi: 10, u }, `Name a player who was a top-10 draft pick and played for ${the(u)}.`);
+    add(`pick:1-5:${T}`, 'P', 'draft', { t: 'pick', lo: 1, hi: 5, u }, `Name a player who was a top-5 draft pick and played for ${the(u)}.`);
+    add(`pick:31-60:${T}`, 'P', 'draft', { t: 'pick', lo: 31, hi: 60, u }, `Name a player who was drafted 31st or later and played for ${the(u)}.`);
+    add(`paytop:${T}`, 'G', 'pay-top', { t: 'paytop', u }, `Name a player who was the highest-paid player on ${the(u)} in a season.`);
+  }
 }
 for (const c of COLS) {
-  for (let d = 1980; d <= 2020; d += 10) add(`colstart:${c}:${d}`, 'D', 'college', { t: 'colstart', c, cn: collegeName(c), d, m: OPEN }, `Name a player who went to college at ${collegeName(c)} and started his NBA career in the ${d}s.`,
-    { era: d >= 2010 ? 'modern' : d === 1980 ? '80s' : 'open' });
-  both(`colstar:${c}`, 'D', 'college', { t: 'colstar', c, cn: collegeName(c) }, `Name a player who went to college at ${collegeName(c)} and made at least one All-Star team.`);
+  for (let d = 1950; d <= 2020; d += 10) add(`colstart:${c}:${d}`, 'D', 'college', { t: 'colstart', c, cn: collegeName(c), d }, `Name a player who went to college at ${collegeName(c)} and started his NBA career in the ${d}s.`);
+  add(`colstar:${c}`, 'D', 'college', { t: 'colstar', c, cn: collegeName(c) }, `Name a player who went to college at ${collegeName(c)} and made at least one All-Star team.`);
+}
+const CATEGORY = { salary: 'money', earnings: 'money', 'pay-top': 'money', title: 'accolade', award: 'accolade', 'all-team': 'accolade', 'award-votes': 'accolade', medal: 'accolade',
+  stat: 'record', points: 'record', 'game-high': 'record', height: 'physical', combine: 'physical', draft: 'physical',
+  birthplace: 'origin', 'birth-city': 'origin', college: 'origin', abroad: 'origin' };
+for (const c of cands) c.cat = CATEGORY[c.type] || null;
+
+// ---------- era: how recent a question's answers are ----------
+// Only for picking questions (scripts/build.mjs), never a condition. A
+// player's year is the middle of his career. modern: half or more of the
+// answers from 2010-11 on; 80s: half or more from 1980-81 to 1989-90; old:
+// more than a quarter before 1980-81 (never scheduled); else open. Roster
+// questions go by their season.
+const midOf = new Map(facts.players.map((p) => [p.i, (p.f + p.l) / 2]));
+function eraOf(c, ans) {
+  if (c.cond.t === 'roster') return c.cond.y >= 2011 ? 'modern' : c.cond.y < 1981 ? 'old' : c.cond.y <= 1990 ? '80s' : 'open';
+  const m = ans.map((a) => midOf.get(a.i));
+  const share = (f) => m.filter(f).length / m.length;
+  if (share((y) => y < 1981) > 0.25) return 'old';
+  if (share((y) => y >= 2011) >= 0.5) return 'modern';
+  if (share((y) => y >= 1981 && y < 1991) >= 0.5) return '80s';
+  return 'open';
 }
 
 // ---------- check and score every candidate ----------
@@ -202,7 +240,7 @@ for (const c of cands) {
   ans.forEach((a, k) => { a.s = sc[k]; });
   ans.sort((x, y) => y.s - x.s || x.i.localeCompare(y.i));
   const us = c.cond.u === undefined ? [] : Array.isArray(c.cond.u) ? c.cond.u : [c.cond.u];
-  passed.push({ ...c, units: us.map((u) => factsUnits[u].id), rule: ruleText(c.cond, F), scoring: VERSION,
+  passed.push({ ...c, era: eraOf(c, ans), units: us.map((u) => factsUnits[u].id), rule: ruleText(c.cond, F), scoring: VERSION,
     teams: us.map((u) => ({ name: factsUnits[u].name, short: factsUnits[u].short, logo: logoOf(factsUnits[u]) })),
     answers: ans.map((a) => ({ i: a.i, s: a.s })) });
 }
