@@ -174,7 +174,7 @@ export function buildPlayers() {
     if (!unit || gp < 1) continue;
     // Early seasons have MIN 0 (not kept then): count 20 a game.
     const min = +r.MIN > 0 ? +r.MIN : gp * 20;
-    p.seasons.push({ y, code: r.TEAM, unit, gp, min });
+    p.seasons.push({ y, code: r.TEAM, unit, gp, min, pts: +r.PTS || 0 });
     p.units.add(unit);
     p.gp += gp; p.min += min;
     p.firstYear = p.firstYear ? Math.min(p.firstYear, y) : y;
