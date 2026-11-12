@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Cut #83: NBA trivia for February 21, 2027 | HoopsMatic</title>
+<meta name="description" content="Deep Cut #83, February 21, 2027: ten NBA questions. Name the least obvious player who fits each one; your score is out of 100. No spoilers on this page.">
+<!-- noindex until Jorge approves the launch (Nov 11, 2026). -->
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://hoopsmatic.com/deep-cut/2027-02-21/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HoopsMatic">
+<meta property="og:title" content="Deep Cut #83 · February 21, 2027">
+<meta property="og:description" content="Ten NBA questions. Name the least obvious player who fits. Play this puzzle: no spoilers here.">
+<meta property="og:url" content="https://hoopsmatic.com/deep-cut/2027-02-21/">
+<meta property="og:image" content="https://hoopsmatic.com/deep-cut/og-card/2027-02-21">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Deep Cut #83, February 21, 2027: Deep Cut by HoopsMatic">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hoopsmatic.com/deep-cut/og-card/2027-02-21">
+<meta name="theme-color" content="#0b0b1c">
+<link rel="preload" href="/deep-cut/fonts/oswald-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/deep-cut/style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1 class="logo">Deep Cut</h1>
+  <p class="tag">Name the least obvious NBA player who fits.</p>
+  <p id="sub" class="sub"></p>
+</header>
+
+<p id="challenge" class="note-box hide" role="note"></p>
+
+<main id="game" class="hide">
+  <div class="bar" id="status">
+    <div class="bar-row"><span class="bar-label" id="qcount"></span><span class="bar-score" id="avg"></span></div>
+    <ol class="chips" id="chips" aria-label="Questions"></ol>
+  </div>
+
+  <section id="intro" class="panel hide">
+    <h2 class="panel-title">Today’s ten</h2>
+    <p id="intro-text" class="intro-text"></p>
+    <button id="begin" class="cta" type="button">Start question 1</button>
+  </section>
+
+  <section id="card" class="panel hide" aria-live="polite">
+    <div class="q-head"><span class="q-label" id="q-label"></span><span class="timer" id="timer" role="timer" aria-live="off"></span></div>
+    <div class="timebar" aria-hidden="true"><i id="timefill"></i></div>
+    <div class="teams" id="teams"></div>
+    <h2 class="prompt" id="prompt"></h2>
+    <p class="rule" id="rule"></p>
+    <div id="ask">
+      <label for="q" class="vh">Player name</label>
+      <input id="q" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Type a player’s name" enterkeyhint="search" aria-controls="sugg" aria-autocomplete="list">
+      <ul id="sugg" class="sugg" role="listbox" aria-label="Players"></ul>
+      <button id="submit" class="cta" type="button" disabled>Submit pick</button>
+      <p id="msg" class="msg" aria-live="assertive"></p>
+    </div>
+  </section>
+
+  <section id="reveal" class="panel hide" aria-live="polite">
+    <p class="q-label" id="rv-label"></p>
+    <div id="rv-body"></div>
+    <button id="next" class="cta" type="button">Next question</button>
+  </section>
+
+  <section id="result" class="panel hide">
+    <h2 class="panel-title" id="end-title">Final score</h2>
+    <p class="big" id="end-score"></p>
+    <ol class="end-list" id="end-list"></ol>
+    <div class="sharebox">
+      <h3 class="panel-sub">Share</h3>
+      <pre id="share-text"></pre>
+      <div id="shares" class="shares"></div>
+      <p class="note">Links open this exact puzzle. A challenge link shows your score as a target; it is not a verified record.</p>
+    </div>
+    <div class="answers-box">
+      <button id="show-all" class="ghost" type="button">Show every answer</button>
+      <div id="show-confirm" class="confirm hide" role="group" aria-label="Show answers?">
+        <span>This shows every valid answer for all questions, sorted by score.</span>
+        <button id="show-yes" class="ghost small" type="button">Show answers</button>
+        <button id="show-no" class="ghost small" type="button">Not now</button>
+      </div>
+      <div id="answers"></div>
+    </div>
+  </section>
+</main>
+
+<section id="keep" class="panel">
+  <h2 class="panel-title">Keep playing</h2>
+  <div class="row">
+    <a id="go-daily" class="ghost hide" href="/deep-cut/">Today’s puzzle</a>
+    <a id="go-practice" class="ghost" href="/deep-cut/?mode=practice">Unlimited practice</a>
+    <a class="ghost" href="/deep-cut/?view=archive">Past days</a>
+  </div>
+  <div id="records" class="records"></div>
+</section>
+
+<section id="archive" class="panel hide">
+  <h2 class="panel-title">Past days</h2>
+  <p class="muted small">Every past puzzle, with its original questions and scores. Replays don’t change your records.</p>
+  <ul id="arc-list" class="arc-list"></ul>
+</section>
+
+<section id="how" class="how">
+  <h2 class="panel-title">How it works</h2>
+  <p>Ten questions a day, the same for everyone, new at 9:00 AM Eastern. For each one, name an NBA player who fits. You get one pick and <span class="secs">20</span> seconds per question, and every question counts: there’s no skipping.</p>
+  <p>A right answer scores 1 to 100. Among all the players who fit, the most obvious scores 1 and the least obvious 100. How obvious a player is comes from his career (awards, games, longevity) and from how memorable his link to the question is: a star’s short, forgotten stint can score well. A wrong name or running out of time scores 0. Leaving or refreshing during a question counts as running out of time.</p>
+  <p>Your final score is the average of the ten, out of 100. Team names are as they were that season: the Seattle SuperSonics are not the Thunder.</p>
+</section>
+
+<div id="games-promo"></div>
+<footer class="app-footer">
+<p>Anything wrong with the game? Email us at <a href="mailto:hoopsmatic@hoopsmatic.com">hoopsmatic@hoopsmatic.com</a></p>
+<p>For any other inquiry, contact us at <a href="mailto:ads@hoopsmatic.com">ads@hoopsmatic.com</a></p>
+</footer>
+</div>
+<script>window.DC_DATE = "2027-02-21";</script>
+<script src="/deep-cut/app.js" defer></script>
+<script src="https://hoopsmatic.com/hoopsmatic-games.js" data-hm-game="deepcut" defer></script>
+<script src="https://hoopsmatic.com/hoopsmatic-more.js" data-hm-more="deepcut" defer></script>
+</body>
+</html>

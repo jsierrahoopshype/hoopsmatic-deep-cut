@@ -52,9 +52,12 @@ export function dailyDate(ms) {
 }
 
 const today = dailyDate(Date.now());
-// Normally tomorrow is frozen too. --freeze-through-today (Jorge, Nov 12,
-// 2026: the first 10-question Daily is the next unplayed day) frees it once.
-const frozenThrough = process.argv.includes('--freeze-through-today') ? today : addDays(today, 1);
+// Frozen: today and tomorrow, but only from the public launch day on (Jorge,
+// Nov 12, 2026: nobody else plays before launch, so preview days are rebuilt
+// freely). Before launch nothing is frozen.
+const LAUNCH_DAY = JSON.parse(readFileSync(ROOT + 'rules/launch.json', 'utf8')).launch;
+const frozenThrough = addDays(today, 1) < LAUNCH_DAY ? '0000-00-00' : addDays(today, 1);
+const isFrozen = (date) => date >= LAUNCH_DAY && date <= frozenThrough;
 const cand = rd('.cache/candidates.json');
 const excluded = new Set(rd('data/excluded.json').keys);
 const old = existsSync(ROOT + 'data/schedule.json') ? rd('data/schedule.json') : null;
@@ -91,14 +94,24 @@ const days = [];
 const recent = [];   // units of the last days
 let kept = 0, wrote = 0, replaced = 0;
 
+// Every question: its most obvious answer scores exactly 1 and its least
+// obvious exactly 100 (Jorge, Nov 12). The build stops if not; the pairs go
+// to data/extremes.json for the tests.
+const extremes = { days: {}, practice: [] };
+function checkExtremes(c, where) {
+  const sc = c.answers.map((a) => a.s);
+  const lo = Math.min(...sc), hi = Math.max(...sc);
+  if (lo !== 1 || hi !== 100) throw new Error(`${where} ${c.key}: scores run ${lo}-${hi}, not 1-100`);
+  return [lo, hi];
+}
 const roundOf = (c) => ({ key: c.key, type: c.type, group: c.group, text: c.text, rule: c.rule, teams: c.teams, cond: c.cond, answers: c.answers.map((a) => [a.i, a.s]) });
-const GROUP_ORDER = { A: 0, D: 1, E: 2, B: 3, C: 4 };
+const GROUP_ORDER = { A: 0, F: 1, D: 2, E: 3, B: 4, C: 5 };
 
 for (let i = 0; i < MAX_DAYS; i++) {
   const date = addDays(START, i);
   const prev = old && old.days[i] && old.days[i].date === date ? old.days[i] : null;
   const lockPath = `${ROOT}public/prompts/${date}.lock`;
-  if (prev && date <= frozenThrough && existsSync(lockPath)) {
+  if (prev && isFrozen(date) && existsSync(lockPath)) {
     for (const h of [].concat(prev.h)) { const k = keyFor(date, h); if (k) used.add(k); }
     recent.push([]);
     days.push(prev);
@@ -120,6 +133,7 @@ for (let i = 0; i < MAX_DAYS; i++) {
   for (const c of picks) used.add(c.key);
   recent.push(picks.flatMap((c) => c.units));
   const rounds = picks.map(roundOf);
+  extremes.days[date] = picks.map((c) => checkExtremes(c, date));
   const entry = { date, v: 2, h: picks.map((c) => hashOf(date, c.key)), a: sha(JSON.stringify(rounds)) };
   if (!prev || prev.a !== entry.a || !existsSync(lockPath)) {
     const plain = { v: 2, game: 'deep-cut', date, scoring: cand.prompts[0].scoring, asOf: cand.asOf, rounds };
@@ -139,12 +153,13 @@ for (const f of readdirSync(ROOT + 'public/prompts')) if (f.endsWith('.lock') &&
 // one type and never more than 2 two-team rounds.
 function fillDay(picks, recentUnits) {
   const per = {}, perType = {};
-  const dayUnits = new Set();
-  for (const c of picks) { per[c.group] = (per[c.group] || 0) + 1; perType[c.type] = (perType[c.type] || 0) + 1; c.units.forEach((u) => dayUnits.add(u)); }
+  const dayUnits = new Set(), dayCodes = new Set();
+  for (const c of picks) { if (c.group === 'F') c.units.forEach((u) => dayCodes.add(u.split('|')[0])); per[c.group] = (per[c.group] || 0) + 1; perType[c.type] = (perType[c.type] || 0) + 1; c.units.forEach((u) => dayUnits.add(u)); }
   // 10 rounds: A two teams (one type) up to 3, then 4; others 2, then 3.
   // The last pass only matters once the scarce groups run out (the tail of
   // the schedule): up to 5 two-team and 5 group-D rounds, 3 of one D type.
-  const CAPS = { A: [3, 4, 4, 5], B: [2, 2, 3, 3], C: [1, 2, 2, 2], D: [2, 3, 4, 5], E: [2, 2, 3, 3] };
+  // F (team-season rosters): at most 3 a day, never two of one franchise.
+  const CAPS = { A: [2, 3, 4, 5], B: [2, 2, 3, 3], C: [1, 2, 2, 2], D: [2, 3, 4, 5], E: [2, 2, 3, 3], F: [2, 3, 3, 3] };
   const cap = (pass, g) => CAPS[g][pass];
   const typeCap = (pass, c) => (c.group === 'A' ? CAPS.A[pass] : [2, 2, 3, 3][pass]);
   const free = (c) => !used.has(c.key) && !picks.includes(c);
@@ -157,7 +172,9 @@ function fillDay(picks, recentUnits) {
         .sort((a, b) => (per[a] || 0) - (per[b] || 0) || remaining[b] - remaining[a]);
       let got = null;
       for (const g of groups) {
-        got = order.find((c) => c.group === g && free(c) && (perType[c.type] || 0) < typeCap(pass, c) && !c.units.some((u) => dayUnits.has(u)) && (!strict || !c.units.some((u) => recentUnits.includes(u))));
+        got = order.find((c) => c.group === g && free(c) && (perType[c.type] || 0) < typeCap(pass, c) && !c.units.some((u) => dayUnits.has(u))
+          && (c.group !== 'F' || !c.units.some((u) => dayCodes.has(u.split('|')[0])))
+          && (!strict || !c.units.some((u) => recentUnits.includes(u))));
         if (got) break;
       }
       if (!got) break;
@@ -166,6 +183,7 @@ function fillDay(picks, recentUnits) {
       perType[got.type] = (perType[got.type] || 0) + 1;
       remaining[got.group]--;
       got.units.forEach((u) => dayUnits.add(u));
+      if (got.group === 'F') got.units.forEach((u) => dayCodes.add(u.split('|')[0]));
     }
   }
   return picks;
@@ -176,6 +194,7 @@ for (const f of readdirSync(ROOT + 'public/practice')) if (f.endsWith('.lock')) 
 const pk = [...practice].sort();
 for (let n = 1; n <= pk.length; n++) {
   const c = all.get(pk[n - 1]);
+  extremes.practice.push(checkExtremes(c, 'practice ' + n));
   writeFileSync(`${ROOT}public/practice/${n}.lock`, JSON.stringify(await lock({ v: 2, game: 'deep-cut', practice: n, scoring: c.scoring, asOf: cand.asOf, round: roundOf(c) }, pub)) + '\n');
 }
 writeFileSync(ROOT + 'public/practice/index.json', JSON.stringify({ v: 1, count: pk.length }) + '\n');
@@ -218,6 +237,7 @@ function dayPage(date) {
 for (const d of days) dayPage(d.date);
 for (const f of readdirSync(ROOT + 'public')) if (/^\d{4}-\d{2}-\d{2}$/.test(f) && !scheduled.has(f) && f > frozenThrough) rmSync(`${ROOT}public/${f}`, { recursive: true, force: true });
 
+writeFileSync(ROOT + 'data/extremes.json', JSON.stringify({ _about: 'Lowest and highest score of every scheduled and practice question (scripts/build.mjs): always [1, 100].', ...extremes }) + '\n');
 writeFileSync(ROOT + 'data/schedule.json', JSON.stringify({
   _about: 'Deep Cut days (scripts/build.mjs). v2 days: h = sha256(date:key) per round, a = sha256(rounds). v1 days (before five rounds): one h. The prompts are only in the encrypted public/prompts/<date>.lock files.',
   v: 2, start: START, days,

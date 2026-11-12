@@ -25,6 +25,7 @@
 //
 // CONDITIONS
 //   { t: 'teams', u: [a, b] }        played for both
+//   { t: 'roster', u, y }            played for u in season y (1+ regular-season game)
 //   { t: 'mate', p: id, u }          played for u in a season the star p did
 //   { t: 'ring', u }                 won a title with u
 //   { t: 'award', a, u }             a in allStar | allRookie | allDefense | allNba, with u
@@ -106,6 +107,15 @@ export function evaluate(c, p, F) {
       if (!ha) return no(`Played for the ${F.units[b].short}. ${teamFail(F, p, a)}`);
       if (!hb) return no(`Played for the ${F.units[a].short}. ${teamFail(F, p, b)}`);
       return { ok: true, link: Math.min(stint(p, a).games, stint(p, b).games), ev: [stintText(F, p, a), stintText(F, p, b)], fail: null };
+    }
+    case 'roster': {
+      const rows = p.s.filter((s) => s[1] === c.u && s[0] === c.y);
+      if (!rows.length) {
+        if (!has(c.u)) return no(teamFail(F, p, c.u));
+        return no(`Played for the ${F.units[c.u].short} (${seasonsText(stint(p, c.u).years)}), but not in ${seasonLabel(c.y)}.`);
+      }
+      const g = rows.reduce((a, s) => a + s[2], 0);
+      return { ok: true, link: g, ev: [`${F.units[c.u].short} ${seasonLabel(c.y)} (${plural(g, 'game')})`], fail: null };
     }
     case 'mate': {
       const star = F.byId.get(c.p);
@@ -196,6 +206,7 @@ export function ruleText(c, F) {
   }
   if (c.t === 'ring') parts[0] = 'On the title team and played at least 1 playoff game for them that season.';
   if (c.t === 'mate') parts.push('Same team in the same season.');
+  if (c.t === 'roster') parts.push(`At least 1 regular-season game for them in ${seasonLabel(c.y)}.`);
   if (c.t === 'award') parts.push('The award counts for the team he played the most games for that season.');
   if (c.t === 'stat') parts.push(`A single season with ${STAT_MIN_GAMES}+ games for them${STAT[c.k].from ? ` (${STAT[c.k].word} are recorded from ${seasonLabel(STAT[c.k].from)})` : ''}.`);
   if (c.t === 'born' || c.t === 'bornout') parts.push('Birthplace, not nationality. U.S. territories count as outside the United States.');
@@ -232,6 +243,7 @@ export function whyText(c, p, F, score, link) {
   let linkText = null;
   if (c.t === 'stat') { const n = evaluate(c, p, F).ev.length; linkText = `${n === 1 ? 'one season' : (NUM[n] || n) + ' seasons'} like that for the ${team.short}`; }
   else if (c.t === 'mate') linkText = `${g(link)} alongside ${F.byId.get(c.p).n}`;
+  else if (c.t === 'roster') linkText = `${g(link)} for the ${team.short} that season`;
   else if (team && c.t !== 'colstart' && c.t !== 'colstar') linkText = `${g(link)} for the ${team.short}`;
   const career = p.g < 100 ? `Only ${g(p.g)} in his whole NBA career` : null;
   if (score >= 70) {

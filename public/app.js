@@ -295,7 +295,7 @@
   function showReveal(i) {
     renderStatus();
     const o = RUN.out[i] || {}, r = RUN.rounds[i];
-    $('rv-label').textContent = `Question ${i + 1}: ${r.text.replace(/^Name a player who /, '… ')}`;
+    $('rv-label').textContent = `Question ${i + 1}: ${r.text.replace(/^Name a player (who )?/, '… ')}`;
     const box = $('rv-body'); box.textContent = '';
     if (o.timeout || !o.pick) {
       box.appendChild(el('p', 'rv-line zero', '⏱ Time’s up: 0/100.'));
@@ -350,7 +350,7 @@
       const sc = scoreOf(v) || 0;
       const li = el('li');
       li.appendChild(el('span', 'es' + (sc ? '' : ' zero'), String(sc)));
-      li.appendChild(el('span', 'eq', `${i + 1}. ${r.text.replace(/^Name a player who /, '')}`));
+      li.appendChild(el('span', 'eq', `${i + 1}. ${r.text.replace(/^Name a player (who )?/, '')}`));
       const pk = el('span', 'ep');
       if (v === 't') pk.textContent = '⏱ Time ran out';
       else if (v && typeof v === 'object') { const p = { ...playerOf(v.i), name: (o.pick && o.pick.name) || playerOf(v.i).name }; pk.append(v.w ? '✗ ' : '✓ '); pk.appendChild(nameNode(p)); if (v.w) pk.append(' (doesn’t fit)'); }
@@ -361,43 +361,101 @@
     show('result');
   }
   function puzzleUrl(extra) { return RUN.kind === 'practice' ? SITE + '?mode=practice' : dayUrl(RUN.date) + (extra ? '?' + extra : ''); }
+  // Share text (Jorge, Nov 12): no answers anywhere.
+  //   Deep Cut #1 · 74/100
+  //   one square per question: green 67-100, yellow 34-66, orange 1-33, black 0
+  //   Deepest cut: 96/100
+  //   Can you go deeper? <exact puzzle link>
+  const square = (sc) => (!sc ? '\u2B1B' : sc >= 67 ? '\uD83D\uDFE9' : sc >= 34 ? '\uD83D\uDFE8' : '\uD83D\uDFE7');
   function shareText(channel) {
-    const s = RUN.state;
+    const s = RUN.state, scores = s.rounds.map((v) => scoreOf(v) || 0);
     const head = RUN.kind === 'practice' ? 'Deep Cut practice' : shareName(RUN.date);
-    return `${head} · ${s.score}/100\n${s.rounds.map((v) => scoreOf(v) || 0).join(' ')}\n${puzzleUrl(channel ? 'ref=share-deepcut-' + channel : '')}`;
+    const deepest = Math.max(...scores);
+    return `${head} \u00B7 ${s.score}/100\n${scores.map(square).join('')}\n` + (deepest ? `Deepest cut: ${deepest}/100\n` : '') + `Can you go deeper? ${puzzleUrl(channel ? 'ref=share-deepcut-' + channel : '')}`;
   }
+  // The result image (spoiler-free): the score and one square per question.
+  function resultCanvas() {
+    const s = RUN.state, scores = s.rounds.map((v) => scoreOf(v) || 0);
+    const W = 1080, H = 1080, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const g = cv.getContext('2d');
+    const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#15153a'); bg.addColorStop(1, '#0a0a1a');
+    g.fillStyle = '#0b0b1c'; g.fillRect(0, 0, W, H); g.fillStyle = bg; g.fillRect(40, 40, W - 80, H - 80);
+    g.strokeStyle = '#3a3a6a'; g.lineWidth = 3; g.strokeRect(40, 40, W - 80, H - 80);
+    g.textAlign = 'center';
+    g.fillStyle = '#aaaadd'; g.font = '600 34px Oswald, sans-serif'; g.fillText('HOOPSMATIC', W / 2, 150);
+    const tg = g.createLinearGradient(260, 0, 820, 0); tg.addColorStop(0, '#ff6b35'); tg.addColorStop(1, '#ffd700');
+    g.fillStyle = tg; g.font = '700 120px Oswald, sans-serif'; g.fillText('DEEP CUT', W / 2, 280);
+    g.fillStyle = '#ffd700'; g.font = '600 44px Oswald, sans-serif';
+    g.fillText((RUN.kind === 'practice' ? 'PRACTICE' : dayLabel(RUN.date).toUpperCase() + ' \u00B7 ' + longDate(RUN.date).toUpperCase()), W / 2, 350);
+    g.fillStyle = '#ffffff'; g.font = '700 170px "JetBrains Mono", monospace'; g.fillText(`${s.score}`, W / 2, 560);
+    g.fillStyle = '#aaaadd'; g.font = '600 44px "JetBrains Mono", monospace'; g.fillText('/100', W / 2, 620);
+    const n = scores.length, sz = Math.min(72, Math.floor((W - 200) / n) - 12), gap = 12, x0 = (W - (n * sz + (n - 1) * gap)) / 2;
+    scores.forEach((sc, k) => {
+      g.fillStyle = !sc ? '#2a2a3a' : sc >= 67 ? '#4ade80' : sc >= 34 ? '#facc15' : '#fb923c';
+      g.fillRect(x0 + k * (sz + gap), 690, sz, sz);
+    });
+    const deepest = Math.max(...scores);
+    g.fillStyle = '#e0e0ff'; g.font = '500 40px "DM Sans", sans-serif';
+    if (deepest) g.fillText(`Deepest cut: ${deepest}/100`, W / 2, 860);
+    g.fillStyle = '#888899'; g.font = '500 34px "DM Sans", sans-serif'; g.fillText('hoopsmatic.com/deep-cut', W / 2, 960);
+    return cv;
+  }
+const SOC_ICON={
+    x:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93zM17.61 20.64h2.04L6.49 3.24H4.3z"/></svg>',
+    bsky:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 10.8C10.91 8.69 7.95 4.75 5.2 2.81 2.57.94 1.56 1.27.9 1.57.14 1.91 0 3.08 0 3.77c0 .69.38 5.65.62 6.48.82 2.74 3.71 3.66 6.38 3.36-3.91.58-7.39 2.01-2.83 7.08 5.01 5.19 6.87-1.11 7.82-4.31.95 3.2 2.05 9.27 7.73 4.31 4.27-4.31 1.17-6.5-2.74-7.08 2.67.3 5.57-.63 6.38-3.36C23.62 9.42 24 4.46 24 3.77c0-.69-.14-1.86-.9-2.2-.66-.3-1.66-.62-4.3 1.24C16.05 4.75 13.09 8.69 12 10.8z"/></svg>',
+    fb:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07c0 6.02 4.39 11.01 10.13 11.93v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8v8.44C19.61 23.08 24 18.09 24 12.07z"/></svg>',
+    wa:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15s-.77.97-.94 1.16c-.17.2-.35.22-.64.08-.3-.15-1.26-.47-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.14-.18.19-.3.29-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.43 9.88-9.88 9.88M20.46 3.49A11.81 11.81 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89a11.82 11.82 0 0 0-3.48-8.42"/></svg>',
+    reddit:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.74c.69 0 1.25.56 1.25 1.25a1.25 1.25 0 0 1-2.5.06l-2.6-.55-.8 3.75c1.83.07 3.48.63 4.68 1.49.31-.31.73-.49 1.21-.49.97 0 1.75.79 1.75 1.75 0 .72-.44 1.33-1.01 1.61.03.17.04.34.04.52 0 2.7-3.13 4.87-7 4.87-3.88 0-7-2.17-7-4.87 0-.18.01-.37.04-.53A1.75 1.75 0 0 1 4.03 12c0-.97.79-1.75 1.75-1.75.46 0 .9.2 1.21.49 1.21-.88 2.88-1.43 4.74-1.49l.89-4.18a.34.34 0 0 1 .14-.2.35.35 0 0 1 .24-.04l2.91.62a1.21 1.21 0 0 1 1.11-.7zM9.25 12c-.69 0-1.25.56-1.25 1.25 0 .69.56 1.25 1.25 1.25.69 0 1.25-.56 1.25-1.25 0-.69-.56-1.25-1.25-1.25zm5.5 0c-.69 0-1.25.56-1.25 1.25 0 .69.56 1.25 1.25 1.25.69 0 1.25-.56 1.25-1.25 0-.69-.56-1.25-1.25-1.25zm-5.47 3.99a.33.33 0 0 0-.23.09.33.33 0 0 0 0 .47c.84.84 2.48.91 2.96.91.48 0 2.11-.06 2.96-.91a.36.36 0 0 0 .03-.47.33.33 0 0 0-.46 0c-.55.53-1.69.73-2.51.73-.83 0-1.98-.2-2.51-.73a.33.33 0 0 0-.24-.09z"/></svg>',
+    telegram:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M11.94 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.06 0zm4.96 7.22c.1 0 .32.02.47.14a.51.51 0 0 1 .17.33c.02.09.04.31.02.47-.18 1.9-.96 6.5-1.36 8.63-.17.9-.5 1.2-.82 1.23-.7.06-1.23-.46-1.9-.9-1.06-.7-1.65-1.12-2.68-1.8-1.19-.78-.42-1.21.26-1.91.18-.18 3.25-2.98 3.31-3.23 0-.03.01-.15-.06-.21-.07-.06-.17-.04-.25-.02-.1.02-1.79 1.14-5.06 3.34-.48.33-.91.49-1.3.48-.43 0-1.25-.24-1.86-.44-.75-.24-1.35-.37-1.3-.79.03-.21.33-.43.89-.66 3.5-1.52 5.83-2.53 7-3.01 3.33-1.39 4.02-1.63 4.48-1.63z"/></svg>'
+  };
+  const SOC = [['x', 'X'], ['bsky', 'Bluesky'], ['fb', 'Facebook'], ['wa', 'WhatsApp'], ['reddit', 'Reddit'], ['telegram', 'Telegram']];
+  function socialUrl(kind) {
+    const url = puzzleUrl('ref=share-deepcut-' + kind), text = shareText(kind).replace(/\nCan you go deeper\? .*$/, '\nCan you go deeper?');
+    const u = encodeURIComponent(url), t = encodeURIComponent(text), tu = encodeURIComponent(text + ' ' + url);
+    switch (kind) {
+      case 'x': return 'https://twitter.com/intent/tweet?text=' + t + '&url=' + u;
+      case 'bsky': return 'https://bsky.app/intent/compose?text=' + tu;
+      case 'fb': return 'https://www.facebook.com/sharer/sharer.php?u=' + u + '&quote=' + t;
+      case 'wa': return 'https://wa.me/?text=' + tu;
+      case 'reddit': return 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent(text.split('\n')[0]);
+      case 'telegram': return 'https://t.me/share/url?url=' + u + '&text=' + t;
+    }
+    return url;
+  }
+  let shareBlob = null;
   function drawShare() {
-    $('share-text').textContent = shareText('');
-    const box = $('shares'); box.textContent = '';
-    const enc = encodeURIComponent;
-    if (navigator.share) {
-      const b = el('button', 'primary', 'Share'); b.type = 'button';
-      b.addEventListener('click', () => navigator.share({ text: shareText('native') }).catch(() => {}));
-      box.appendChild(b);
+    const cv = resultCanvas();
+    $('share-img').src = cv.toDataURL('image/png');
+    cv.toBlob((b) => { shareBlob = b; }, 'image/png');
+    $('share-url').value = puzzleUrl('');
+    const soc = $('share-social'); soc.textContent = '';
+    for (const [k, name] of SOC) {
+      const b = el('button', 'soc soc-' + k); b.type = 'button'; b.setAttribute('aria-label', 'Share on ' + name);
+      b.innerHTML = SOC_ICON[k]; b.appendChild(el('span', null, name));
+      b.addEventListener('click', () => window.open(socialUrl(k), '_blank', 'noopener,noreferrer'));
+      soc.appendChild(b);
     }
-    const copy = (label, get) => {
-      const b = el('button', null, label); b.type = 'button';
-      b.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(get()); b.textContent = 'Copied'; } catch (e) { b.textContent = 'Copy failed'; }
-        setTimeout(() => { b.textContent = label; }, 2000);
-      });
-      box.appendChild(b);
-    };
-    copy('Copy result', () => shareText('copy'));
-    if (RUN.kind !== 'practice') { copy('Copy puzzle link', () => puzzleUrl('')); copy('Copy challenge link', () => puzzleUrl('c=' + RUN.state.score)); }
-    const targets = [
-      ['X', 'x', (t) => 'https://x.com/intent/post?text=' + enc(t)],
-      ['Bluesky', 'bluesky', (t) => 'https://bsky.app/intent/compose?text=' + enc(t)],
-      ['Facebook', 'facebook', (t, u) => 'https://www.facebook.com/sharer/sharer.php?u=' + enc(u)],
-      ['WhatsApp', 'whatsapp', (t) => 'https://wa.me/?text=' + enc(t)],
-      ['Reddit', 'reddit', (t, u) => 'https://www.reddit.com/submit?url=' + enc(u) + '&title=' + enc(t.split('\n')[0])],
-      ['Telegram', 'telegram', (t, u) => 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t.split('\n').slice(0, -1).join('\n'))],
-    ];
-    for (const [name, ch, url] of targets) {
-      const a = el('a', null, name); a.href = url(shareText(ch), puzzleUrl('ref=share-deepcut-' + ch)); a.target = '_blank'; a.rel = 'noopener';
-      box.appendChild(a);
+    $('sh-copy').classList.toggle('hide', !(navigator.clipboard && window.ClipboardItem));
+    $('sh-again').textContent = RUN.kind === 'practice' ? 'New set' : 'Play again';
+    // 73-9 has no challenge link: here it is a small text link below the block.
+    const small = $('share-small'); small.textContent = '';
+    if (RUN.kind === 'practice') small.textContent = 'A practice link starts a fresh set of ten for whoever opens it.';
+    else {
+      const a = el('a', null, 'Copy a challenge link'); a.href = '#';
+      a.addEventListener('click', async (e) => { e.preventDefault(); try { await navigator.clipboard.writeText(puzzleUrl('c=' + RUN.state.score)); msg('Challenge link copied. It shows your score as a target, not a verified record.'); } catch (x) { msg('Copy blocked here.'); } });
+      small.appendChild(a); small.append(' (your score as a target, not a verified record)');
     }
   }
+  const msg = (t) => { $('share-msg').textContent = t; };
+  $('share-url').addEventListener('click', () => $('share-url').select());
+  $('share-copylink').addEventListener('click', async () => { try { await navigator.clipboard.writeText(shareText('')); msg('Text + link copied.'); } catch (e) { msg('Copy blocked here.'); } });
+  $('sh-download').addEventListener('click', () => {
+    const a = document.createElement('a'); a.href = $('share-img').src; a.download = 'deep-cut-result.png'; document.body.appendChild(a); a.click(); a.remove(); msg('Saved to your downloads.');
+  });
+  $('sh-copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': shareBlob })]); msg('Image copied. Paste it anywhere.'); } catch (e) { msg('Copy blocked here. Use Download.'); }
+  });
+  $('sh-again').addEventListener('click', () => { location.href = SITE + '?mode=practice&new=1'; });
   // Every answer: only after a finished run, behind an inline warning.
   $('show-all').addEventListener('click', () => { $('show-all').classList.add('hide'); $('show-confirm').classList.remove('hide'); $('show-no').focus(); });
   $('show-no').addEventListener('click', () => { $('show-confirm').classList.add('hide'); $('show-all').classList.remove('hide'); });
@@ -409,7 +467,7 @@
       box.textContent = '';
       r.rounds.forEach((rd, i) => {
         const det = el('details', 'ans-round');
-        det.appendChild(el('summary', null, `${i + 1}. ${rd.text.replace(/^Name a player who /, '')} (${rd.answers.length})`));
+        det.appendChild(el('summary', null, `${i + 1}. ${rd.text.replace(/^Name a player (who )?/, '')} (${rd.answers.length})`));
         const total = rd.answers.reduce((a, x) => a + (x.picked || 0), 0);
         const ol = el('ol', 'ans-list');
         const v = RUN.state.rounds[i], mine = v && typeof v === 'object' ? v.i : null;
@@ -484,7 +542,18 @@
       ? `${s.n} questions, ${SECONDS} seconds each, one pick per question. The clock starts when you press the button.`
       : `Welcome back. ${RUN.cur} of ${s.n} answered. The clock for question ${RUN.cur + 1} starts when you press the button.`;
     $('begin').textContent = `Start question ${RUN.cur + 1}`;
+    drawMosaic();
     show('intro');
+  }
+  // Start screen: a mosaic of real headshots (public/mosaic.json), light grey.
+  let mosaicDone = false;
+  function drawMosaic() {
+    if (mosaicDone) return;
+    mosaicDone = true;
+    fetch('/deep-cut/mosaic.json').then((r) => r.json()).then((j) => {
+      const box = $('mosaic');
+      for (const p of j.players.slice(0, 18)) { const sp = el('span'); const img = new Image(); img.alt = ''; img.src = HEADS + p[2] + '.webp'; img.onerror = () => sp.remove(); sp.appendChild(img); box.appendChild(sp); }
+    }).catch(() => {});
   }
   $('begin').addEventListener('click', () => { $('begin').disabled = true; openQuestion().finally(() => { $('begin').disabled = false; }); });
 
@@ -508,11 +577,11 @@
     const first = store.get(key);
     const replay = params.get('replay') === '1' && first && first.state && first.state.done;
     const saved = replay ? store.get('dc-replay-' + wantDate) : first;
-    if (saved && saved.v === 3 && !(replay && saved.state.done)) RUN = saved;
+    if (saved && saved.v === 4 && !(replay && saved.state.done)) RUN = saved;
     else {
       let st;
       try { st = await api('start', { date: wantDate }); } catch (e) { $('sub').textContent = 'Couldn’t start the puzzle. Refresh to try again.'; return; }
-      RUN = { v: 3, kind: 'daily', date: wantDate, replay: !!replay, rounds: day.rounds, token: st.token, state: st.state, out: {}, cur: 0 };
+      RUN = { v: 4, kind: 'daily', date: wantDate, replay: !!replay, rounds: day.rounds, token: st.token, state: st.state, out: {}, cur: 0 };
       save();
     }
     await resume();
@@ -531,13 +600,13 @@
     $('sub').textContent = 'Unlimited practice: ten questions from past days and a practice-only set. Not part of your Daily record.';
     await loadPlayers();
     const cur = store.get('dc-run-practice');
-    if (cur && cur.v === 3 && !cur.state.done && params.get('new') !== '1') RUN = cur;
+    if (cur && cur.v === 4 && !cur.state.done && params.get('new') !== '1') RUN = cur;
     else {
       const seen = store.get('dc-seen') || [];
       let r;
       try { r = await api('practice/new', { seen: seen.slice(-1000) }); } catch (e) { $('sub').textContent = 'Couldn’t start a practice run. Refresh to try again.'; return; }
       store.set('dc-seen', seen.concat(r.refs).slice(-1000));
-      RUN = { v: 3, kind: 'practice', refs: r.refs, rounds: r.rounds, token: r.token, state: r.state, out: {}, cur: 0 };
+      RUN = { v: 4, kind: 'practice', refs: r.refs, rounds: r.rounds, token: r.token, state: r.state, out: {}, cur: 0 };
       save();
     }
     await resume();

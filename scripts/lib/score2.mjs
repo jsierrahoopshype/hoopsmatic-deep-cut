@@ -25,7 +25,9 @@
 // rounded, where N = valid answers, L = answers with a lower raw, T = answers
 // sharing this raw (itself included). The most obvious answer gets 1, the
 // least obvious 100, ties get the same score; 0 is only for a wrong name or
-// a timeout (Jorge, Nov 12, 2026). Fixed once a day is published.
+// a timeout (Jorge, Nov 12, 2026). The most obvious answers (all of them,
+// if tied) score exactly 1, the least obvious exactly 100; everyone else 2-99.
+// Fixed once a day is published.
 // Version 3 (1-100); version 2 days (10-100) keep their scores.
 export const VERSION = 3;
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -43,6 +45,11 @@ export function normalize(raws) {
   return raws.map((r) => {
     let L = 0, T = 0;
     for (const x of raws) { if (x < r) L++; else if (x === r) T++; }
-    return Math.round(1 + 99 * (L + (T - 1) / 2) / (n - 1));
+    // Absolute rule (Jorge, Nov 12): the most obvious answer scores exactly 1
+    // and the least obvious exactly 100, ties included; ties in between share
+    // the average of their places.
+    if (L === 0) return 1;
+    if (L + T === n) return 100;
+    return Math.min(99, Math.max(2, Math.round(1 + 99 * (L + (T - 1) / 2) / (n - 1))));
   });
 }

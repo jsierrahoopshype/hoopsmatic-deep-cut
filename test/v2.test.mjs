@@ -28,7 +28,7 @@ test('no prompt twice in the schedule', () => {
   // Same key on two days would give different hashes, so check per key via the candidate-free rule:
   // every v2 day has 5 distinct round hashes, and the schedule is one year at most.
   for (const d of schedule.days) if (d.v === 2) assert.equal(new Set(d.h).size, d.h.length);
-  for (const d of schedule.days) if (d.v === 2 && d.date >= '2026-11-13') assert.equal(d.h.length, 10, d.date + ' has 10 questions');
+  for (const d of schedule.days) assert.equal(d.v === 2 && d.h.length, 10, d.date + ' has 10 questions');
   assert.ok(schedule.days.length <= 365);
 });
 test('every scheduled day has its lock and the practice pool its locks', () => {
@@ -66,9 +66,19 @@ test('birthplace, not nationality', () => {
   assert.equal(r.ok, false);   // born in Melbourne, but never a Laker
   assert.match(r.fail, /Born in Melbourne, Australia/);
 });
-test('scores: fixed, 1 to 100, ties equal', () => {
+test('every scheduled and practice question: the most obvious answer scores exactly 1, the least obvious exactly 100', () => {
+  const ex = rd('data/extremes.json');
+  const days = Object.entries(ex.days);
+  assert.equal(days.length, schedule.days.length, 'every scheduled day checked');
+  for (const [date, qs] of days) { assert.equal(qs.length, 10, date); for (const q of qs) assert.deepEqual(q, [1, 100], date); }
+  assert.equal(ex.practice.length, practice.length, 'every practice question checked');
+  for (const q of ex.practice) assert.deepEqual(q, [1, 100]);
+});
+test('scores: fixed, 1 to 100, ties equal, ties at either end get exactly 1 or 100', () => {
   const s = normalize([0.1, 0.5, 0.5, 0.9]);
   assert.deepEqual(s, [1, 51, 51, 100]);
+  assert.deepEqual(normalize([0.1, 0.1, 0.5, 0.9, 0.9]), [1, 1, 51, 100, 100]);
+  assert.deepEqual(normalize([0.2, 0.3]), [1, 100]);
   const a = rawScore({ fame: 3, careerGames: 300, connGames: 4 });
   assert.equal(a, rawScore({ fame: 3, careerGames: 300, connGames: 4 }));
   assert.ok(rawScore({ fame: 1, careerGames: 2, connGames: 2 }) < rawScore({ fame: 1, careerGames: 200, connGames: 2 }), 'a 2-game career is damped');
@@ -106,4 +116,15 @@ test('the one-line reason reads as plain words', async () => {
   const t = whyText(c, p, F, 96, evaluate(c, p, F).link);
   assert.match(t, /^A two-time All-Star, but only 9 games for the Spurs, an easy one to forget\.$/);
   assert.ok(!/of the other/.test(t));
+});
+
+test('roster prompts: one team, one season, exact era name, 1+ game', () => {
+  const sonics = unit('Seattle SuperSonics');
+  const gp = P('gary-payton');
+  const ok = evaluate({ t: 'roster', u: sonics, y: 1996 }, gp, F);
+  assert.equal(ok.ok, true);
+  assert.match(ok.ev[0], /SuperSonics 1995-96 \(\d+ games\)/);
+  const no = evaluate({ t: 'roster', u: unit('Oklahoma City Thunder'), y: 1996 }, gp, F);
+  assert.equal(no.ok, false);
+  assert.match(no.fail, /SuperSonics, not the Oklahoma City Thunder/);
 });

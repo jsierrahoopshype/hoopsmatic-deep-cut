@@ -33,30 +33,36 @@ const html = (top, sub) => `<!doctype html><html><head><meta charset="utf-8"><st
 body { width: 1200px; height: 630px; background: #0b0b1c; font-family: "DM Sans", sans-serif; color: #e0e0ff; padding: 48px; }
 .card { width: 100%; height: 100%; background: linear-gradient(135deg, #15153a 0%, #0a0a1a 100%); border: 2px solid #3a3a6a; border-radius: 24px; padding: 56px 64px; display: flex; flex-direction: column; }
 .brand { font-family: "Oswald", sans-serif; font-size: 28px; letter-spacing: 6px; text-transform: uppercase; color: #aaaadd; }
-h1 { font-family: "Oswald", sans-serif; font-size: 112px; line-height: 1; letter-spacing: 10px; text-transform: uppercase; margin-top: 14px;
+h1 { font-family: "Oswald", sans-serif; font-size: 100px; line-height: 1; letter-spacing: 10px; text-transform: uppercase; margin-top: 14px;
   background: linear-gradient(90deg, #ff6b35, #ffd700); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .top { font-family: "Oswald", sans-serif; font-size: 44px; letter-spacing: 3px; text-transform: uppercase; color: #ffd700; margin-top: 18px; }
 .sub { font-size: 32px; color: #e0e0ff; margin-top: auto; line-height: 1.3; }
 .url { font-size: 26px; color: #888899; margin-top: 12px; }
-.rounds { position: absolute; right: 120px; top: 132px; display: grid; grid-template-columns: repeat(5, 40px); gap: 8px; }
-.rounds i { width: 40px; height: 40px; border-radius: 8px; background: #0e0e2a; border: 2px solid #ffd700; display: block; }
+.mosaic { position: absolute; right: 100px; top: 96px; display: grid; grid-template-columns: repeat(5, 72px); gap: 10px; }
+.mosaic span { width: 72px; height: 72px; border-radius: 50%; background: #eef0f3; overflow: hidden; display: block; border: 2px solid #3a3a6a; }
+.mosaic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sub { max-width: 600px; }
 </style></head><body><div class="card">
 <div class="brand">HoopsMatic</div><h1>Deep Cut</h1><div class="top">${top}</div>
-<div class="rounds"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="mosaic">${MOSAIC}</div>
 <div class="sub">${sub}</div><div class="url">hoopsmatic.com/deep-cut</div></div></body></html>`;
 
+// The headshot mosaic (public/mosaic.json): 10 players with real photos on
+// light-grey circles, stars and deep cuts mixed.
+const HEADS = 'https://jsierrahoopshype.github.io/nba-headshots/players/headshots/face-fill/';
+const MOSAIC = rd('public/mosaic.json').players.slice(0, 10).map((p) => `<span><img src="${HEADS}${p[2]}.webp" alt=""></span>`).join('');
 const jobs = [];
-if (!existsSync(ROOT + 'public/og/main.jpg') || index.main !== 'main-v3') jobs.push(['main', 'Ten NBA questions a day', 'Name the least obvious player who fits. The deeper the cut, the more points.']);
-for (const d of days) if (!existsSync(`${ROOT}public/og/${d}.jpg`) || index[d] !== labelOf(d) + '|v3') jobs.push([d, `${labelOf(d)} · ${longDate(d)}`, 'Ten NBA questions. Name the least obvious player who fits each one. Score out of 100.']);
+if (!existsSync(ROOT + 'public/og/main.jpg') || index.main !== 'main-v5') jobs.push(['main', 'Ten NBA questions a day', 'Name the least obvious player who fits. The deeper the cut, the more points.']);
+for (const d of days) if (!existsSync(`${ROOT}public/og/${d}.jpg`) || index[d] !== labelOf(d) + '|v5') jobs.push([d, `${labelOf(d)} · ${longDate(d)}`, 'Ten NBA questions. Name the least obvious player who fits each one. Score out of 100.']);
 if (!jobs.length) { console.log('cards: nothing to draw'); process.exit(0); }
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1 });
 for (const [key, top, sub] of jobs) {
-  await page.setContent(html(top, sub), { waitUntil: 'load' });
+  await page.setContent(html(top, sub), { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: `${ROOT}public/og/${key}.jpg`, type: 'jpeg', quality: 80 });
-  index[key] = key === 'main' ? 'main-v3' : labelOf(key) + '|v3';
+  index[key] = key === 'main' ? 'main-v5' : labelOf(key) + '|v5';
 }
 await browser.close();
 writeFileSync(idxPath, JSON.stringify(index, null, 1) + '\n');

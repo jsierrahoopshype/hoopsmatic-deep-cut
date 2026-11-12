@@ -103,6 +103,11 @@ button { font: inherit; color: inherit; }
 .head.sm { width: 28px; height: 28px; flex-basis: 28px; font-size: 11px; }
 .head.nba img { object-position: 50% 0; transform: scale(1.25); transform-origin: 50% 15%; }
 
+/* Start screen mosaic: real photos only, light-grey circles. */
+.mosaic { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 0 0 16px; }
+.mosaic span { aspect-ratio: 1; border-radius: 50%; background: var(--head-bg); overflow: hidden; border: 1px solid var(--line2); }
+.mosaic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* End of run */
 .big { font: 700 56px/1 var(--mono); margin: 4px 0 12px; color: var(--gold); text-align: center; }
 .end-list { list-style: none; margin: 0 0 8px; padding: 0; counter-reset: q; }
@@ -111,11 +116,28 @@ button { font: inherit; color: inherit; }
 .end-list .es.zero { color: var(--red); }
 .end-list .eq { color: var(--text2); }
 .end-list .ep { grid-column: 2; color: var(--text); }
-.sharebox { margin-top: 16px; }
-.sharebox pre { margin: 0 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.45 var(--mono); background: var(--deep); border: 1px solid var(--line); border-radius: 8px; padding: 10px; color: var(--text); }
-.shares { display: flex; flex-wrap: wrap; gap: 6px; }
-.shares a, .shares button { min-height: 40px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid var(--line2); background: var(--deep); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text); text-decoration: none; cursor: pointer; }
-.shares .primary { background: linear-gradient(90deg, var(--orange), var(--gold)); color: #111; border: 0; }
+/* The 73-9 game's share block (its CSS, inline instead of a modal). */
+.share-box { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 18px; }
+.share-img { width: 100%; max-height: 52vh; object-fit: contain; border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,.6); }
+.share-link { display: flex; width: 100%; gap: 8px; }
+.share-url { flex: 1; min-width: 0; background: #0f0f24; border: 1px solid #2a2a52; border-radius: 10px; color: #cfcff0; font-family: var(--mono); font-size: 12px; padding: 10px 12px; }
+.share-copybtn { flex: 0 0 auto; background: var(--gold); color: #1a1a2e; border: none; border-radius: 10px; padding: 0 16px; font-family: var(--oswald); font-weight: 600; font-size: 14px; cursor: pointer; }
+.share-social { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+.soc { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 8px; border-radius: 10px; border: none; color: #fff; font-family: var(--oswald); font-weight: 600; font-size: 14px; letter-spacing: .3px; cursor: pointer; }
+.soc svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.soc-x { background: #000; border: 1px solid #333; }
+.soc-bsky { background: #0a85ff; }
+.soc-fb { background: #1877f2; }
+.soc-wa { background: #25d366; }
+.soc-reddit { background: #ff4500; }
+.soc-telegram { background: #26a5e4; }
+.share-btns { display: flex; gap: 8px; flex-wrap: nowrap; justify-content: center; }
+.btn { font-family: var(--oswald); font-weight: 700; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; flex: 0 1 auto; padding: 13px 14px; font-size: 12px; letter-spacing: .5px; white-space: nowrap;
+  background: linear-gradient(135deg, var(--orange), var(--gold)); color: #1a1006; }
+.btn.ghost { background: transparent; color: var(--gold); border: 1px solid #4a4a7a; }
+.share-msg { font-family: var(--mono); font-size: 12px; color: var(--green); min-height: 16px; text-align: center; }
+.share-small { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+.share-small a { color: var(--text2); }
 .answers-box { margin-top: 16px; }
 .confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; padding: 10px; border: 1px solid var(--gold); border-radius: 8px; background: var(--deep); font-size: 14px; }
 .ans-round { border-top: 1px solid var(--line); padding: 8px 0; }
