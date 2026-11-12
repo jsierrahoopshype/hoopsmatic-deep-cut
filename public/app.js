@@ -375,6 +375,7 @@
     renderStatus();
     $('end-title').textContent = RUN.kind === 'practice' ? 'Practice score' : 'Final score';
     $('end-score').textContent = `${s.score}/100`;
+    document.querySelector('.end-fold summary').textContent = `Your ${s.n === 10 ? 'ten' : s.n} answer${s.n === 1 ? '' : 's'}`;
     $('end-tier').textContent = tierOf(s.score);
     $('end-line').textContent = statsLine(runStats());
     $('end-note').textContent = RUN.kind === 'practice' ? 'Practice: kept apart from your Daily record.' : RUN.replay ? 'Replay: your first attempt is the one on the leaderboard and in your record.' : '';
