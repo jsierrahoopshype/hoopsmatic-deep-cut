@@ -119,6 +119,15 @@ const MERGE_NAME = (n) => MERGE[n] || n;
 const GLEAGUE = JSON.parse(readFileSync(ROOT + 'rules/gleague.json', 'utf8')).teams;
 // Every NBA/BAA name in the franchise file, plus the Career Map's spelling of the Clippers.
 const NBA_NAMES = new Set(['LA Clippers', ...Object.values(F).flat().map((e) => `${e.city} ${e.nickname}`)]);
+// "6-9" -> 81 inches; "7' 1.25''" -> 85.25.
+function inches(h) {
+  if (!h) return null;
+  let m = String(h).match(/^(\d+)-(\d+)$/);
+  if (m) return +m[1] * 12 + +m[2];
+  m = String(h).match(/^(\d+)'\s*([\d.]+)''?$/);
+  return m ? +m[1] * 12 + +m[2] : null;
+}
+const SUFFIX = /,? (Jr\.?|Sr\.?|II|III|IV)$/i;
 const normName = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 export function buildPlayers() {
@@ -166,7 +175,8 @@ export function buildPlayers() {
       pick: s?.draft_pick || null, college,
       seasons: [], units: new Set(), gp: 0, min: 0,
       allStar: [], allRookie: [], allDefense: [], allNba: [], rings: [], aw: {},
-      salary: {}, solo: {}, potw: [], clubs: [],
+      salary: {}, solo: {}, potw: [], clubs: [], payTop: [], earnings: 0, votes: [], medals: 0, combine: null, highs: [],
+      ht: inches(b.HEIGHT), wt: +b.WEIGHT || null,
       firstYear: null, lastYear: null,
     };
     players.push(p);
@@ -261,6 +271,94 @@ export function buildPlayers() {
       const join = GLEAGUE[h.team];
       if (join !== undefined) { if (from >= join) p.clubs.push(['G', h.team, from, to, h.country || 'USA']); continue; }
       if (h.country && h.country !== 'USA') p.clubs.push(['O', h.team, from, to, h.country]);
+    }
+  }
+  // Highest-paid player on a team in a season (Salary Season Finder's
+  // salary_rank_team 1, single-team seasons only), and career earnings.
+  for (const r of ssf) {
+    const p = byName.get(r.player), y = +String(r.season).slice(0, 4) + 1;
+    if (!p) continue;
+    if (r.career_earnings > p.earnings && p.seasons.some((x) => x.y <= y)) p.earnings = r.career_earnings;
+    if (r.salary_rank_team === 1 && !String(r.team).includes(',') && p.seasons.some((x) => x.y === y)) {
+      const unit = unitOf(r.team, y);
+      if (unit && p.seasons.some((x) => x.y === y && x.unit === unit)) p.payTop.push({ y, unit });
+    }
+  }
+  // Award voting (nba-player-data awardVotes.json): [season, award, rank].
+  for (const v of src('awardVotes')) {
+    const p = byName.get(v.PLAYER), y = +v.YEAR;
+    if (!p || !y) continue;
+    const award = v.AWARD === 'Sixth' ? 'Sixth Man' : v.AWARD;
+    if (['MVP', 'DPOY', 'MIP', 'Sixth Man', 'ROY'].includes(award)) p.votes.push({ y, award, rank: +v.RNK || null, unit: unitsIn(p, y)[0] || null });
+  }
+  // Olympic and World Cup medals.
+  for (const a of awards) if (/^(Olympic|World Cup) (Gold|Silver|Bronze)$/.test(a.AWARD)) { const p = byName.get(a['PLAYER / COACH']); if (p) p.medals++; }
+  // Draft combine (nba-player-data combine-v3.json): wingspan, max vertical,
+  // height without shoes (inches), combine year.
+  for (const c of src('combine')) {
+    const p = byName.get(c.PLAYER);
+    if (!p) continue;
+    const ws = inches(c.WINGSPAN), hn = inches(c['HEIGHT W/O SHOES'] || c['HEIGHT\u00a0W/O\u00a0SHOES']), mv = +c['MAX VERT'] || null;
+    if (ws || mv || hn) p.combine = [ws, mv, hn, +c.YEAR || null];
+  }
+  // Single-game highs (data/game-highs.json from aderoa/nba-boxscores). The
+  // archive's team codes are the season's own (PHW); each is matched to the
+  // era unit the player's season row has for that code's franchise.
+  {
+    const G = {};   // keyed by normalized name, so accents and punctuation never split a player
+    for (const [k, v] of Object.entries(JSON.parse(readFileSync(ROOT + 'data/game-highs.json', 'utf8')).highs)) {
+      const [nm, y] = k.split('|'), key = normName(nm.replace(SUFFIX, '')) + '|' + y;
+      G[key] = G[key] ? { ...G[key], ...v } : v;
+    }
+    // box code + season -> unit, learned from players with one team that season
+    const vote = new Map();
+    for (const p of players) {
+      const bySeason = new Map();
+      for (const x of p.seasons) (bySeason.get(x.y) || bySeason.set(x.y, []).get(x.y)).push(x.unit);
+      for (const [y, us] of bySeason) {
+        if (new Set(us).size !== 1) continue;
+        const g = G[normName(p.name.replace(/ \(\d{4}\)$/, '').replace(SUFFIX, '')) + '|' + y];
+        if (!g || Object.keys(g).length !== 1) continue;
+        const k = Object.keys(g)[0] + '|' + y, m = vote.get(k) || vote.set(k, new Map()).get(k);
+        m.set(us[0], (m.get(us[0]) || 0) + 1);
+      }
+    }
+    const codeUnit = new Map([...vote].map(([k, m]) => [k, [...m].sort((a, b) => b[1] - a[1])[0][0]]));
+    // Box rows by season and unit: [name key, last name, highs].
+    const boxBy = new Map();
+    for (const [key, g] of Object.entries(G)) {
+      const [nk, y] = key.split('|');
+      for (const [code, h] of Object.entries(g)) {
+        const unit = codeUnit.get(code + '|' + y);
+        if (!unit) continue;
+        const k2 = unit + '|' + y;
+        (boxBy.get(k2) || boxBy.set(k2, []).get(k2)).push({ nk, h, used: false });
+      }
+    }
+    const lastOf = (n) => normName(n.replace(/ \(\d{4}\)$/, '').replace(SUFFIX, '').split(' ').pop());
+    const pending = [];
+    // 1. exact (normalized) name, same season, same era unit
+    for (const p of players) {
+      const nk = normName(p.name.replace(/ \(\d{4}\)$/, '').replace(SUFFIX, ''));
+      for (const x of p.seasons) {
+        const rows = boxBy.get(x.unit + '|' + x.y) || [];
+        const r = rows.find((z) => z.nk === nk && !z.used);
+        if (r) { r.used = true; p.highs.push({ y: x.y, unit: x.unit, h: r.h }); } else pending.push([p, x]);
+      }
+    }
+    // 2. a name spelled differently (Sasha / Aleksandar Pavlovic): the one
+    //    unmatched box row of that team-season with the same last name.
+    for (const [p, x] of pending) {
+      const rows = (boxBy.get(x.unit + '|' + x.y) || []).filter((z) => !z.used && z.nk.endsWith(lastOf(p.name)));
+      if (rows.length === 1) { rows[0].used = true; p.highs.push({ y: x.y, unit: x.unit, h: rows[0].h }); x.matched = true; }
+    }
+    // 3. what's left of a team-season pairs up when exactly one player and
+    //    one box row remain (Dennis Schroeder / Schröder).
+    const left = new Map();
+    for (const [p, x] of pending) if (!x.matched && !p.highs.some((h) => h.y === x.y && h.unit === x.unit)) (left.get(x.unit + '|' + x.y) || left.set(x.unit + '|' + x.y, []).get(x.unit + '|' + x.y)).push([p, x]);
+    for (const [k, ours] of left) {
+      const rows = (boxBy.get(k) || []).filter((z) => !z.used);
+      if (ours.length === 1 && rows.length === 1) { rows[0].used = true; ours[0][0].highs.push({ y: ours[0][1].y, unit: ours[0][1].unit, h: rows[0].h }); }
     }
   }
   for (const p of players) {

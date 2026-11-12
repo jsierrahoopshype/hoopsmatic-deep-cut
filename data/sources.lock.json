@@ -81,6 +81,24 @@
    "sha256": "e2c8444c31c18bd4e277aa9aa942cf6dab2afc7e96b17186d0408958839867cb",
    "bytes": 9375,
    "rows": 30
+  },
+  {
+   "id": "combine",
+   "repo": "jsierrahoopshype/nba-player-data",
+   "path": "combine-v3.json",
+   "commit": "b6e6e34fa7e530efbfe0b6a98c47f81215c54759",
+   "sha256": "d0f46e677adab388817b040e741141a68dd54f64843555ddc5d837c08c00ff18",
+   "bytes": 931806,
+   "rows": 1886
+  },
+  {
+   "id": "awardVotes",
+   "repo": "jsierrahoopshype/nba-player-data",
+   "path": "awardVotes.json",
+   "commit": "b6e6e34fa7e530efbfe0b6a98c47f81215c54759",
+   "sha256": "4b460b0503af3caa21c017cbe6b405b55bd9fe9c160681d2781ccb3fc2094599",
+   "bytes": 330681,
+   "rows": 3437
   }
  ],
  "births": {
