@@ -75,11 +75,17 @@
 //   { t: 'collegeany', c, cn }       went to college c
 //   { t: 'bornc', c }                born in country c
 //   { t: 'class', y }                drafted in the y draft
+//   { t: 'pickclass', y, lo, hi }    picked lo to hi in the y draft (1990 on: every pick is on record)
+//   { t: 'borncs', cs: [countries] } born in one of the countries (a continent or region)
 //   { t: 'debut', y }                first NBA season y
 //   { t: 'career', k, v }            v+ career regular-season k (pts|reb|ast|stl|blk|tpm|g)
 //   { t: 'count', k, v }             v+ allStar|allNba|allDefense selections, rings, franchises or seasons
 //   { t: 'medalkind', kind }         an Olympic Gold|Silver|Bronze or World Cup ... medal (kind: 'Olympic', 'Olympic Gold', ...)
 //   { t: 'abroadafter', c }          a pro club in country c that started after his NBA debut
+//   { t: 'salaryn', v, n }           $v M+ in n+ seasons
+//   { t: 'votesn', a, n }            votes for award a in n+ seasons
+//   { t: 'abroadreg', cs, when }     a pro club in one of countries cs, before or after his NBA debut
+//   combine k 'span': wingspan minus height without shoes
 //   { t: 'club', name, c }           played for club name (country c), any time, in his career history
 //   { t: 'game', k: pts|reb|ast|tpm|td, v, u }  a regular-season game with v+ of k for u
 //                                    (td: a triple-double)
@@ -335,6 +341,13 @@ function evalCore(c, p, F) {
       return { ok: true, link: stint(p, c.u).games, ev: [`Listed at ${ft(p.ht)}`, stintText(F, p, c.u)], fail: null };
     }
     case 'combine': {
+      if (c.k === 'span') {
+        const cb = p.cb;
+        if (!cb || cb[0] == null || cb[2] == null) return no('No wingspan and height at the draft combine for him in the data.');
+        const d = Math.round((cb[0] - cb[2]) * 100) / 100;
+        if (d < c.v) return no(`Wingspan ${ft(cb[0])}, height ${ft(cb[2])} without shoes: ${d} inches longer.`);
+        return { ok: true, link: p.g, ev: [`${cb[3]} combine: wingspan ${ft(cb[0])}, height ${ft(cb[2])} without shoes (+${d} in)`], fail: null };
+      }
       const cb = p.cb, i = { ws: 0, vert: 1, hgt: 2, reach: 4 }[c.k], label = { ws: 'wingspan', vert: 'max vertical', hgt: 'height without shoes', reach: 'standing reach' }[c.k];
       if (!cb || cb[i] == null) return no(`No ${label} at the draft combine for him in the data.`);
       if (cb[i] < c.v) return no(`${label[0].toUpperCase() + label.slice(1)} at the ${cb[3]} combine: ${c.k === 'vert' ? cb[i] + ' in' : ft(cb[i])}.`);
@@ -418,10 +431,10 @@ function evalCore(c, p, F) {
     case 'gameany': {
       const gh = p.gh || [];
       if (!gh.length) return no('No box scores for him in the archive.');
-      const COUNT = { td: 6, n40: 7, n50: 8 };
+      const COUNT = { td: 6, n40: 7, n50: 8, n30: 12, r20: 13, a15: 14, t5: 15, b5: 16 };
       if (COUNT[c.k] !== undefined) {
         const n = gh.reduce((a, g) => a + (g[COUNT[c.k]] || 0), 0);
-        const w = { td: 'triple-double', n40: '40-point game', n50: '50-point game' }[c.k];
+        const w = { td: 'triple-double', n40: '40-point game', n50: '50-point game', n30: '30-point game', r20: '20-rebound game', a15: '15-assist game', t5: 'game with 5+ threes', b5: 'game with 5+ blocks' }[c.k];
         if (n < c.v) return no(`${plural(n, w)} in the box scores.`);
         return { ok: true, link: n, ev: [`${plural(n, w)} in the regular season`], fail: null };
       }
@@ -467,6 +480,31 @@ function evalCore(c, p, F) {
     case 'class': {
       if (p.d !== c.y) return no(p.d ? `Drafted in ${p.d}.` : 'Not drafted, or no draft year in the data.');
       return { ok: true, link: p.g, ev: [`${p.d} draft${p.k ? `, No. ${p.k}` : ''}`, `${plural(p.g, 'NBA game')}`], fail: null };
+    }
+    case 'pickclass': {
+      if (p.d !== c.y) return no(p.d ? `Drafted in ${p.d}.` : 'Not drafted, or no draft year in the data.');
+      if (!(p.k >= c.lo && p.k <= c.hi)) return no(p.k ? `Pick ${p.k} in the ${p.d} draft.` : `No pick number in the data for him in the ${p.d} draft.`);
+      return { ok: true, link: p.g, ev: [`No. ${p.k} pick, ${p.d} draft`, `${plural(p.g, 'NBA game')}`], fail: null };
+    }
+    case 'borncs': {
+      if (!p.b) return no('His birthplace is not in the data.');
+      if (!c.cs.includes(p.b)) return no(`Born in ${p.bp}.`);
+      return { ok: true, link: p.g, ev: [`Born in ${p.bp}`], fail: null };
+    }
+    case 'salaryn': {
+      const n = (p.$ || []).filter((x) => x[1] >= c.v);
+      if (n.length < c.n) return no(`${plural(n.length, 'season')} at ${money(c.v)}+ (salaries are kept from 1990-91).`);
+      return { ok: true, link: n.length, ev: [`${plural(n.length, 'season')} at ${money(c.v)}+: ${seasonsText(n.map((x) => x[0]))}`], fail: null };
+    }
+    case 'votesn': {
+      const ys = new Set((p.vt || []).filter((v) => v[1] === c.a).map((v) => v[0]));
+      if (ys.size < c.n) return no(`${VOTE_NAME[c.a]} votes in ${plural(ys.size, 'season')}.`);
+      return { ok: true, link: ys.size, ev: [`${VOTE_NAME[c.a]} votes in ${plural(ys.size, 'season')}: ${seasonsText([...ys])}`], fail: null };
+    }
+    case 'abroadreg': {
+      const x = (p.x || []).filter((x) => x[0] === 'O' && c.cs.includes(x[4]) && (c.when === 'before' ? x[3] <= p.f - 1 : x[2] >= p.f));
+      if (!x.length) return no(`No pro club there ${c.when === 'before' ? 'before his NBA debut' : 'after his NBA debut'} in his career history.`);
+      return { ok: true, link: p.g, ev: [...x.slice(0, 3).map(clubText), `First NBA season ${seasonLabel(p.f)}`], fail: null };
     }
     case 'debut': {
       if (p.f !== c.y) return no(`His first NBA season was ${seasonLabel(p.f)}.`);
@@ -543,9 +581,13 @@ export function ruleText(c, F) {
   if (c.t === 'earnany') parts.push('Career earnings in Salary Season Finder (salaries from 1990-91).');
   if (c.t === 'votesany') parts.push(`${VOTE_NAME[c.a]} voting, any season.`);
   if (c.t === 'heightany') parts.push('His listed height (NBA.com).');
-  if (c.t === 'bornc') parts.push('Birthplace, not nationality.');
+  if (c.t === 'bornc' || c.t === 'borncs') parts.push('Birthplace, not nationality.');
+  if (c.t === 'pickclass') parts.push(c.hi <= 30 ? 'Picks 1 to 30.' : 'Picks 31 and later.');
   if (c.t === 'career') parts.push('Regular-season totals, whole career.');
   if (c.t === 'medalkind') parts.push('Olympic or FIBA World Cup, any country.');
+  if (c.t === 'salaryn') parts.push('Season salaries (Salary Season Finder, from 1990-91).');
+  if (c.t === 'votesn') parts.push(`${VOTE_NAME[c.a]} voting, separate seasons.`);
+  if (c.t === 'abroadreg') parts.push(c.when === 'before' ? 'A pro club that ended before his first NBA season, in his career history.' : 'A pro club that started after his first NBA season, in his career history.');
   if (c.t === 'club') parts.push('Any time in his career history (Wikipedia, via the NBA Career Map).');
   if (c.t === 'abroadafter') parts.push('A pro club in his career history that started after his first NBA season.');
   if (c.t === 'paytop') parts.push('Top salary on the team that season (Salary Season Finder, from 1990-91).');

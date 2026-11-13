@@ -11,8 +11,9 @@
 //   public/practice/<n>.lock      one practice round each, and index.json
 //   public/config.json            the launch day (rules/launch.json)
 //
-// DAILY (Jorge, Nov 13, 2026): 10 questions, every prompt used at most once
-// in a year; the day's mix is in fillDay (one question from each category,
+// DAILY (Jorge, Nov 13, 2026): 10 questions; a question comes back no
+// sooner than 60 days after it was used (Jorge, Nov 14), and the schedule
+// runs through END_DAY; the day's mix is in fillDay (one question from each category,
 // 6+ types, at most 3 two-team/teammate/roster, leaning recent); groups take
 // turns through the day. The schedule covers as many days (up to 365) as the pool allows;
 // the weekly refresh extends it.
@@ -36,7 +37,9 @@ import { checkQuestion } from './lib/answer-check.mjs';
 import { index } from './lib/cond.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const MAX_DAYS = 365;
+const END_DAY = '2027-12-31';   // Jorge, Nov 14: build the schedule through the end of 2027
+const REUSE_DAYS = 60;          // a question may come back after 60 days, never sooner (Jorge, Nov 14:
+                                // 120 left the day rules unfillable after day 61)
 const ROUNDS = 10;
 const PRACTICE_EVERY = 10;
 const DAY_MS = 86400000;
@@ -91,7 +94,10 @@ else practiceKeys = order.filter((c, i) => i % PRACTICE_EVERY === PRACTICE_EVERY
 const practice = new Set(practiceKeys);
 
 const pub = await fetchPubkey();
-const used = new Set([...excluded, ...practice]);
+const never = new Set([...excluded, ...practice]);   // never a Daily
+const lastDay = new Map();   // key -> index of the day it was last used
+let dayIdx = 0;
+const used = { has: (k) => never.has(k) || (lastDay.has(k) && dayIdx - lastDay.get(k) < REUSE_DAYS) };
 const days = [];
 const recent = [];   // units of the last days
 const recentT = [];  // themes of the last days
@@ -125,12 +131,14 @@ const typeTotal = {};
 for (const c of order) if (c.era !== 'old') typeTotal[c.type] = (typeTotal[c.type] || 0) + 1;
 const typeUsed = {};
 
+const MAX_DAYS = Math.round((Date.parse(END_DAY) - Date.parse(START)) / DAY_MS) + 1;
 for (let i = 0; i < MAX_DAYS; i++) {
+  dayIdx = i;
   const date = addDays(START, i);
   const prev = old && old.days[i] && old.days[i].date === date ? old.days[i] : null;
   const lockPath = `${ROOT}public/prompts/${date}.lock`;
   if (prev && isFrozen(date) && existsSync(lockPath)) {
-    for (const h of [].concat(prev.h)) { const k = keyFor(date, h); if (k) used.add(k); }
+    for (const h of [].concat(prev.h)) { const k = keyFor(date, h); if (k) lastDay.set(k, i); }
     recent.push([]);
     days.push(prev);
     kept++;
@@ -160,7 +168,7 @@ for (let i = 0; i < MAX_DAYS; i++) {
     }
     picks = out;
   }
-  for (const c of picks) used.add(c.key);
+  for (const c of picks) lastDay.set(c.key, i);
   recent.push(picks.flatMap((c) => c.units));
   recentT.push(picks.map((c) => c.theme));
   const rounds = picks.map(roundOf);
@@ -219,7 +227,7 @@ function dayOk(picks) {
   return picks.length === ROUNDS && team <= MAX_TEAM && head >= MIN_HEAD && hb <= 1 && modern >= MIN_MODERN && eighties <= MAX_80S && abf <= MAX_ABF
     && Object.keys(perType).length >= MIN_TYPES && CATS.every((k) => cats.has(k));
 }
-function fillDay(picks, recentUnits, recentThemes = []) {
+function fillDayOnce(picks, recentUnits, recentThemes, ord) {
   if (picks.length && !dayOk(picks)) picks = [];
   const perType = {}, cats = new Set();
   const dayUnits = new Set(), dayCodes = new Set();
@@ -249,16 +257,18 @@ function fillDay(picks, recentUnits, recentThemes = []) {
       const needTypes = Math.max(0, MIN_TYPES - Object.keys(perType).length);
       const needModern = Math.max(0, MIN_MODERN - modern);
       const needHead = Math.max(0, MIN_HEAD - head);
-      const fits = (c) => free(c) && (perType[c.type] || 0) < TYPE_CAP
+      const fits = (c, soft = strict) => free(c) && (perType[c.type] || 0) < TYPE_CAP
         && (!c.team || team < MAX_TEAM) && (!HB.has(c.type) || hb < 1) && !fams.has(c.family)
+        // keep team slots for missing categories (often only team questions have them left)
+        && (!c.team || needCats.includes(c.cat) || MAX_TEAM - team - 1 >= needCats.length)
         && (needHead < left || c.headline)
         && (!ABF.has(c.group) || abf < MAX_ABF)
         && (c.cat !== 'money' || !cats.has('money'))   // money is the scarcest pool: one a day
         && (c.era !== '80s' || eighties < MAX_80S)
         && !c.units.some((u) => dayUnits.has(u))
         && (c.group !== 'F' || !c.units.some((u) => dayCodes.has(u.split('|')[0])))
-        && (!strict || !c.units.some((u) => recentUnits.includes(u)))
-        && (!strict || !recentThemes.includes(c.theme)) && !picks.some((x) => x.theme === c.theme)
+        && (!soft || !c.units.some((u) => recentUnits.includes(u)))
+        && (!soft || !recentThemes.includes(c.theme)) && !picks.some((x) => x.theme === c.theme)
         // what this pick leaves must still be able to meet the day's minimums
         && (needCats.length < left || needCats.includes(c.cat))
         && (needTypes < left || !perType[c.type])
@@ -268,20 +278,38 @@ function fillDay(picks, recentUnits, recentThemes = []) {
       const types = Object.keys(typeTotal).filter((t) => (perType[t] || 0) < TYPE_CAP)
         .sort((a, b) => (perType[a] || 0) - (perType[b] || 0) || (typeUsed[a] || 0) / typeTotal[a] - (typeUsed[b] || 0) / typeTotal[b]);
       let got = null;
-      for (const pref of [(c) => (!want || c.cat === want) && (head >= MIN_HEAD || c.headline) && (modern >= MIN_MODERN || c.era === 'modern'),
-        (c) => (!want || c.cat === want) && (head >= MIN_HEAD || c.headline), (c) => !want || c.cat === want, () => true]) {
-        for (const t of types) { got = order.find((c) => c.type === t && fits(c) && pref(c)); if (got) break; }
+      // A missing category is filled first, even from a team or theme of the
+      // last days (soft rules) rather than leaving the day short.
+      const prefs = [(c) => (!want || c.cat === want) && (head >= MIN_HEAD || c.headline) && (modern >= MIN_MODERN || c.era === 'modern'),
+        (c) => (!want || c.cat === want) && (head >= MIN_HEAD || c.headline), (c) => !want || c.cat === want];
+      for (const [pref, soft] of [...prefs.map((f) => [f, strict]), ...(want ? prefs.map((f) => [f, false]) : []), [() => true, strict]]) {
+        for (const t of types) { got = ord.find((c) => c.type === t && fits(c, soft) && pref(c)); if (got) break; }
         if (got) break;
       }
       if (!got) break;
       take(got);
     }
   }
-  if (!dayOk(picks)) return [];
-  for (const c of picks) typeUsed[c.type] = (typeUsed[c.type] || 0) + 1;
-  return picks;
+  return dayOk(picks) ? picks : null;
 }
-function catLeft(k) { let n = 0; for (const c of order) if (c.cat === k && !used.has(c.key) && c.era !== 'old') n++; return n; }
+// The greedy fill can paint itself into a corner (the last slot has to be a
+// headline, modern and of a missing category at once), so a day is tried
+// again with the candidates in other seeded orders before the schedule ends.
+function fillDay(picks, recentUnits, recentThemes = []) {
+  for (let a = 0; a < 60; a++) {
+    let ord = order;
+    if (a) {
+      const r = rng(a * 7919 + picks.length);
+      ord = order.map((c) => [r(), c]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
+    }
+    const got = fillDayOnce([...picks], recentUnits, recentThemes, ord) || (picks.length ? fillDayOnce([], recentUnits, recentThemes, ord) : null);
+    if (got) { for (const c of got) typeUsed[c.type] = (typeUsed[c.type] || 0) + 1; return got; }
+  }
+  return [];
+}
+// How many no-team questions of a category are left: the category with the
+// fewest goes first, since team slots are the scarce ones.
+function catLeft(k) { let n = 0; for (const c of order) if (c.cat === k && !c.team && !used.has(c.key) && c.era !== 'old') n++; return n; }
 
 // Practice locks, numbered 1..N in a stable (sorted) order.
 for (const f of readdirSync(ROOT + 'public/practice')) if (f.endsWith('.lock')) unlinkSync(ROOT + 'public/practice/' + f);
