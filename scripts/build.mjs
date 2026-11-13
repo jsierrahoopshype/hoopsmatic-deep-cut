@@ -174,7 +174,7 @@ for (let i = 0; i < MAX_DAYS; i++) {
   const rounds = picks.map(roundOf);
   for (const c of picks) checkErrs.push(...checkQuestion(c, FACTS, FI));
   extremes.days[date] = picks.map((c) => checkExtremes(c, date));
-  dayMeta[date] = picks.map((c) => [c.type, c.era, c.cat, c.group, c.team ? 1 : 0, c.headline ? 1 : 0, c.family]);
+  dayMeta[date] = picks.map((c) => [c.type, c.era, c.cat, c.group, c.team ? 1 : 0, c.headline ? 1 : 0]);
   const entry = { date, v: 2, h: picks.map((c) => hashOf(date, c.key)), a: sha(JSON.stringify(rounds)) };
   if (!prev || prev.a !== entry.a || !existsSync(lockPath)) {
     const plain = { v: 2, game: 'deep-cut', date, scoring: cand.prompts[0].scoring, asOf: cand.asOf, rounds };
@@ -327,7 +327,8 @@ writeFileSync(ROOT + 'data/practice.json', JSON.stringify({ _about: 'Practice-on
 // public/<date>/index.html: the game page with the day's own title,
 // description, canonical, og: tags and preview card. Nothing of the puzzle
 // (no prompt, no answer) is in it, so a day's page can exist before its day.
-// noindex stays on (Jorge, Nov 12): the template's robots meta is kept.
+// Search is hoopsmatic-worker's job (X-Robots-Tag, deepCutNoindex): the
+// template carries no robots meta.
 const TEMPLATE = readFileSync(ROOT + 'public/index.html', 'utf8');
 const DAY_MS_ = 86400000;
 const longDate = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
@@ -361,7 +362,27 @@ for (const d of days) dayPage(d.date);
 for (const f of readdirSync(ROOT + 'public')) if (/^\d{4}-\d{2}-\d{2}$/.test(f) && !scheduled.has(f) && f > frozenThrough) rmSync(`${ROOT}public/${f}`, { recursive: true, force: true });
 
 if (checkErrs.length) { console.error(checkErrs.slice(0, 30).join('\n')); throw new Error(`answer check: ${checkErrs.length} problems`); }
-writeFileSync(ROOT + 'data/day-rules.json', JSON.stringify({ _about: 'Per scheduled day, each question\'s [type, era, category, group, mentions a team, headline, threshold family] (scripts/build.mjs). The tests check the day rules against it.', days: dayMeta }) + '\n');
+// ---------- sitemap state (Jorge, Nov 13, 2026) ----------
+// data/sitemap-state.json, committed, and public/sitemap-state.json for the
+// worker: per URL (the main page and every day page from #1 on) a sha256 of
+// its HTML and the lastmod, which moves only when that hash changes. The
+// worker's /deep-cut/sitemap.xml lists the main page and the days already
+// over, from the launch moment on.
+{
+  const prevState = existsSync(ROOT + 'data/sitemap-state.json') ? rd('data/sitemap-state.json').urls : {};
+  const urls = {};
+  const stamp = (path, file) => {
+    const h = sha(readFileSync(file, 'utf8'));
+    const old = prevState[path];
+    urls[path] = old && old.hash === h ? old : { hash: h, lastmod: today };
+  };
+  stamp('/deep-cut/', ROOT + 'public/index.html');
+  for (const d of days) if (d.date >= LAUNCH) stamp(`/deep-cut/${d.date}/`, `${ROOT}public/${d.date}/index.html`);
+  const state = { _about: 'Content hash and lastmod per Deep Cut URL (scripts/build.mjs). A URL\'s lastmod moves only when its hash changes; hoopsmatic-worker builds /deep-cut/sitemap.xml from this.', urls };
+  writeFileSync(ROOT + 'data/sitemap-state.json', JSON.stringify(state, null, 1) + '\n');
+  writeFileSync(ROOT + 'public/sitemap-state.json', JSON.stringify(state) + '\n');
+}
+writeFileSync(ROOT + 'data/day-rules.json', JSON.stringify({ _about: 'Per scheduled day, each question\'s [type, era, category, group, mentions a team, headline] (scripts/build.mjs; nothing that names a question). The tests check the day rules against it.', days: dayMeta }) + '\n');
 writeFileSync(ROOT + 'data/extremes.json', JSON.stringify({ _about: 'Lowest and highest score of every scheduled and practice question (scripts/build.mjs): always [1, 100].', ...extremes }) + '\n');
 writeFileSync(ROOT + 'data/schedule.json', JSON.stringify({
   _about: 'Deep Cut days (scripts/build.mjs). v2 days: h = sha256(date:key) per round, a = sha256(rounds). v1 days (before five rounds): one h. The prompts are only in the encrypted public/prompts/<date>.lock files.',

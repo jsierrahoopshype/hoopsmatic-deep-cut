@@ -91,7 +91,7 @@ test('day pages: own canonical and card, nothing of the puzzle in them', () => {
     assert.ok(h.includes(`<link rel="canonical" href="https://hoopsmatic.com/deep-cut/${d.date}/">`), d.date);
     assert.ok(h.includes(`window.DC_DATE = "${d.date}"`));
     assert.ok(h.includes(`https://hoopsmatic.com/deep-cut/og-card/${d.date}`));
-    assert.ok(h.includes('<meta name="robots" content="noindex, follow">'), 'noindex stays on');
+    assert.ok(!h.includes('name="robots"'), 'no robots meta: hoopsmatic-worker decides (X-Robots-Tag)');
     assert.ok(h.includes('<h2 class="prompt" id="prompt"></h2>'), 'no prompt text');   // the fixed "Name a player who…" line is page chrome
     assert.ok(existsSync(new URL(`../public/og/${d.date}.jpg`, import.meta.url)), 'card ' + d.date);
   }
@@ -149,7 +149,6 @@ test('every day: one of each category, 6+ types, none more than twice, at most 3
     assert.ok(qs.filter((q) => q[4]).length <= 4, `${date}: more than 4 questions mention a team`);
     assert.ok(qs.filter((q) => q[5]).length >= 3, `${date}: fewer than 3 headline questions`);
     assert.ok(qs.filter((q) => q[0] === 'height' || q[0] === 'birth-city').length <= 1, `${date}: height and birth city/state together`);
-    assert.equal(new Set(qs.map((q) => q[6])).size, 10, `${date}: two thresholds of one family`);
   }
 });
 const unitId = (name) => facts.units.findIndex((u) => u.name === name);
@@ -180,4 +179,21 @@ test('new question types read the facts', () => {
   assert.equal(evaluate({ t: 'votesany', a: 'MVP', top: 1 }, byN('Steve Nash'), F).ok, true, 'MVP voting');
   assert.equal(evaluate({ t: 'club', name: 'Real Madrid', c: 'Spain' }, byN('Luka Doncic'), F).ok, true, 'a club abroad');
   assert.equal(evaluate({ t: 'mateany', p: byN('Stephen Curry').i }, byN('Klay Thompson'), F).ok, true, 'teammate, any team');
+});
+
+test('sitemap state: the main page and every day from #1, each with a hash and a lastmod', () => {
+  const st = rd('data/sitemap-state.json').urls;
+  const launch = rd('rules/launch.json').launch;
+  assert.ok(st['/deep-cut/'] && /^[0-9a-f]{64}$/.test(st['/deep-cut/'].hash) && /^\d{4}-\d{2}-\d{2}$/.test(st['/deep-cut/'].lastmod));
+  const days = schedule.days.map((d) => d.date).filter((d) => d >= launch);
+  assert.deepEqual(Object.keys(st).filter((k) => k !== '/deep-cut/').sort(), days.map((d) => `/deep-cut/${d}/`).sort());
+  for (const [path, v] of Object.entries(st)) {
+    const file = path === '/deep-cut/' ? 'public/index.html' : `public/${path.slice(10)}index.html`;
+    assert.equal(v.hash, sha(readFileSync(new URL('../' + file, import.meta.url), 'utf8')), path + ': hash of the page as built');
+  }
+  assert.deepEqual(JSON.parse(readFileSync(new URL('../public/sitemap-state.json', import.meta.url), 'utf8')).urls, st, 'published copy matches');
+});
+test('launch: #1 is Nov 16, 2026, in rules/launch.json and the published config', () => {
+  assert.equal(rd('rules/launch.json').launch, '2026-11-16');
+  assert.equal(rd('public/config.json').launch, '2026-11-16');
 });
