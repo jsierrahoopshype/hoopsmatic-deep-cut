@@ -165,7 +165,9 @@ for (const u of U) {
   for (const [st, pn] of states) add(`bornin:${T}:${st}`, 'D', 'birth-city', { t: 'bornin', pl: st, pn, u }, `Was born in ${pn} and played for ${the(u)}.`);
   for (const c of COLS) add(`college:${T}:${c}`, 'D', 'college', { t: 'college', c, cn: collegeName(c), u }, `Played for ${the(u)} and went to college at ${collegeName(c)}.`);
   add(`abroad:any:${T}`, 'H', 'abroad', { t: 'abroad', u }, `Played for a pro club outside the U.S. before his NBA debut, then for ${the(u)}.`);
-  add(`gleague:${T}`, 'H', 'g-league', { t: 'gleague', u }, `Played in the G League (or D-League) and for ${the(u)}.`);
+  // No G League questions (Jorge, Nov 13): the team join years in
+  // rules/gleague.json couldn't be checked against the G League's own site
+  // (it refuses this build's network), and no wording makes them not matter.
   for (const [k, v, w] of [['ppg', 25, 'points'], ['ppg', 20, 'points'], ['rpg', 12, 'rebounds'], ['rpg', 10, 'rebounds'], ['apg', 9, 'assists'], ['apg', 7, 'assists'],
     ['spg', 2, 'steals'], ['bpg', 2, 'blocks'], ['tpg', 3, 'three-pointers']])
     add(`stat:${k}${v}:${T}`, 'E', 'stat', { t: 'stat', k, v, u }, `Averaged ${v}+ ${w} a game in a season for ${the(u)}.`);
@@ -201,12 +203,13 @@ for (const [k, vs, w] of [['pts', [40, 50, 60], 'points'], ['reb', [20, 25], 're
   ['stl', [8], 'steals'], ['blk', [8, 10], 'blocks']])
   for (const v of vs) add(`gameany:${k}${v}`, 'E', 'game-high', { t: 'gameany', k, v }, k === 'pts' ? `Scored ${v}+ points in a game.` : k === 'tpm' ? `Made ${v}+ threes in a game.` : `Had ${v}+ ${w} in a game.`, { ...H, family: 'gameany:' + k });
 add('gameany:p2020', 'E', 'game-high', { t: 'gameany', k: 'p2020', v: 1 }, 'Had a 20-20 game (20+ points, 20+ rebounds).', H);
-for (const v of [5, 10, 25, 50, 100]) add(`gameany:td${v}`, 'E', 'game-high', { t: 'gameany', k: 'td', v }, `Had ${v}+ triple-doubles.`, { ...H, family: 'gameany:td' });
-for (const v of [5, 10, 25, 50]) add(`gameany:n40${v}`, 'E', 'game-high', { t: 'gameany', k: 'n40', v }, `Had ${v}+ 40-point games.`, { ...H, family: 'gameany:n40' });
-for (const [k, vs, w] of [['n30', [50, 100, 200, 300], '30-point games'], ['r20', [10, 25, 50, 100], '20-rebound games'], ['a15', [10, 25, 50], '15-assist games'],
-  ['t5', [10, 25, 50, 100], 'games with 5+ threes'], ['b5', [10, 25, 50, 100], 'games with 5+ blocks']])
-  for (const v of vs) add(`gameany:${k}${v}`, 'E', 'game-high', { t: 'gameany', k, v }, `Had ${v}+ ${w}.`, { ...H, family: 'gameany:' + k });
-for (const v of [5, 10]) add(`gameany:n50${v}`, 'E', 'game-high', { t: 'gameany', k: 'n50', v }, `Had ${v}+ 50-point games.`, { ...H, family: 'gameany:n50' });
+for (const v of [5, 10, 25, 50, 100]) add(`gameany:td${v}`, 'E', 'game-high', { t: 'gameany', k: 'td', v }, `Had a triple-double at least ${v} times.`, { ...H, family: 'gameany:td' });
+for (const v of [5, 10, 25, 50]) add(`gameany:n40${v}`, 'E', 'game-high', { t: 'gameany', k: 'n40', v }, `Scored 40+ points in a game at least ${v} times.`, { ...H, family: 'gameany:n40' });
+// Counts read as "Had 15+ assists in a game at least 25 times" (Jorge, Nov 13).
+for (const [k, vs, w] of [['n30', [50, 100, 200, 300], 'Scored 30+ points'], ['r20', [10, 25, 50, 100], 'Had 20+ rebounds'], ['a15', [10, 25, 50], 'Had 15+ assists'],
+  ['t5', [10, 25, 50, 100], 'Made 5+ threes'], ['b5', [10, 25, 50, 100], 'Had 5+ blocks']])
+  for (const v of vs) add(`gameany:${k}${v}`, 'E', 'game-high', { t: 'gameany', k, v }, `${w} in a game at least ${v} times.`, { ...H, family: 'gameany:' + k });
+for (const v of [5, 10]) add(`gameany:n50${v}`, 'E', 'game-high', { t: 'gameany', k: 'n50', v }, `Scored 50+ points in a game at least ${v} times.`, { ...H, family: 'gameany:n50' });
 // combine
 const inch = (i) => `${Math.floor(i / 12)}-${i % 12}`;
 for (const v of [84, 86, 88, 90]) add(`combine:ws${v}`, 'P', 'combine', { t: 'combine', k: 'ws', v }, `Measured a ${inch(v)}+ wingspan at the draft combine.`, { ...H, family: 'combine:ws' });
@@ -218,7 +221,7 @@ for (const v of [108, 112]) add(`combine:reach${v}`, 'P', 'combine', { t: 'combi
 const VOTE_SHORT = { MVP: 'MVP', DPOY: 'Defensive Player of the Year', 'Sixth Man': 'Sixth Man', MIP: 'Most Improved Player', ROY: 'Rookie of the Year' };
 for (const [a, w] of [['MVP', 'MVP'], ['DPOY', 'Defensive Player of the Year'], ['Sixth Man', 'Sixth Man of the Year'], ['MIP', 'Most Improved Player'], ['ROY', 'Rookie of the Year']]) {
   add(`votesany:${a}`, 'C', 'award-votes', { t: 'votesany', a }, `Received ${w} votes.`, { ...H, family: 'votesany:' + a });
-  for (const n of [3, 5, 10]) add(`votesn:${a}:${n}`, 'C', 'award-votes', { t: 'votesn', a, n }, `Received ${w} votes in ${n}+ seasons.`, { ...H, family: 'votesany:' + a });
+  for (const n of [3, 5, 10]) add(`votesn:${a}:${n}`, 'C', 'award-votes', { t: 'votesn', a, n }, `Received ${w} votes in at least ${n} seasons.`, { ...H, family: 'votesany:' + a });
   for (const top of [3, 5]) add(`votesany:${a}:${top}`, 'C', 'award-votes', { t: 'votesany', a, top }, `Finished top ${top} in ${VOTE_SHORT[a]} voting.`, { ...H, family: 'votesany:' + a });
 }
 // clubs abroad
@@ -242,7 +245,7 @@ for (const [name, c, shown] of [['Real Madrid', 'Spain', 'Real Madrid'], ['FC Ba
   add(`club:${name}|${c}`, 'H', 'club', { t: 'club', name, c }, `Played for ${shown}.`, H);
 // single-season salary and career earnings
 for (const [v, ns] of [[10, [5, 10]], [20, [3, 5, 10]], [30, [3, 5]]])
-  for (const n of ns) add(`salaryn:${v}:${n}`, 'G', 'salary', { t: 'salaryn', v, n }, `Earned $${v}M+ in ${n}+ seasons.`, { ...H, family: 'salaryn:' + v });
+  for (const n of ns) add(`salaryn:${v}:${n}`, 'G', 'salary', { t: 'salaryn', v, n }, `Earned $${v}M+ in a season at least ${n} times.`, { ...H, family: 'salaryn:' + v });
 for (const v of [10, 20, 30, 40, 50]) add(`salaryany:${v}`, 'G', 'salary', { t: 'salaryany', v }, `Earned $${v}M+ in a season.`, { ...H, family: 'salaryany' });
 for (const v of [50, 100, 200, 300]) add(`earnany:${v}`, 'G', 'earnings', { t: 'earnany', v }, `Earned $${v}M+ in his career.`, { family: 'earnany' });
 // draft classes (the bio data has every player's draft year), and from the

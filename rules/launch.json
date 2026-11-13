@@ -1,5 +1,5 @@
 {
- "_about": "Deep Cut's public launch day (Jorge, Nov 12, 2026: game numbers count from it; #1 is the first public day, earlier days are previews). Placeholder until Jorge sets the date. scripts/build.mjs copies it to public/config.json, which the page reads. The day locks keep their own n (days since data/schedule.json start); the page does not show it. seconds: the time per question in the Daily and practice (Jorge, Nov 12: 20, may become 25 or 30); scripts/build.mjs copies it to public/config.json, which the page and the Deep Cut server read, so changing it needs no rebuild of the prompts.",
- "launch": "2026-12-01",
+ "_about": "Deep Cut's public launch day (Jorge, Nov 12, 2026: game numbers count from it; #1 is the first public day, earlier days are previews). Jorge set it on Nov 13, 2026: Monday, November 16, 2026, 9:00 AM ET. Everything launch-related switches on by itself from this date: the game numbers (here), the leaderboard and badge receipts (the Deep Cut server reads config.json), and search, sitemap, menu and games roster (hoopsmatic-worker DEEP_CUT_LAUNCH, the same moment). scripts/build.mjs copies it to public/config.json, which the page reads. The day locks keep their own n (days since data/schedule.json start); the page does not show it. seconds: the time per question in the Daily and practice (Jorge, Nov 12: 20, may become 25 or 30); scripts/build.mjs copies it to public/config.json, which the page and the Deep Cut server read, so changing it needs no rebuild of the prompts.",
+ "launch": "2026-11-16",
  "seconds": 20
 }
