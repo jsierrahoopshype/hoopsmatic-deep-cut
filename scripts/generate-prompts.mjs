@@ -76,7 +76,7 @@ const facts = {
       // career earnings ($M); single-game highs per team-season
       ht: p.ht, cb: p.combine, vt: p.votes.map((v) => [v.y, v.award, v.rank, v.unit ? u(v.unit) : -1]), md: p.medals,
       pt: p.payTop.map((x) => [x.y, u(x.unit)]), ce: Math.floor(p.earnings / 1e5) / 10,
-      gh: p.highs.map((x) => [x.y, u(x.unit), x.h[0], x.h[1], x.h[2], x.h[3], x.h[4], x.h[5], x.h[6], x.h[7] || 0, x.h[8] || 0, x.h[9] || 0]) };
+      gh: p.highs.map((x) => [x.y, u(x.unit), x.h[0], x.h[1], x.h[2], x.h[3], x.h[4], x.h[5], x.h[6], x.h[7] || 0, x.h[8] || 0, x.h[9] || 0, x.h[10] || 0, x.h[11] || 0, x.h[12] || 0, x.h[13] || 0, x.h[14] || 0]) };
   }),
 };
 mkdirSync(ROOT + 'data', { recursive: true });
@@ -123,6 +123,8 @@ for (let i = 0; i < U.length; i++) for (let j = i + 1; j < U.length; j++) {
   add(`teams:${factsUnits[a].id}:${factsUnits[b].id}`, 'A', 'two-teams', { t: 'teams', u: [a, b] }, `Played for ${the(a)} and ${the(b)}.`);
 }
 const stars = facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 30);
+for (const st of facts.players.filter((p) => (fameOf.get(p.i) || 0) >= 15 && (fameOf.get(p.i) || 0) < 30))
+  add(`mateany:${st.i}`, 'B', 'teammate', { t: 'mateany', p: st.i }, `Was a teammate of ${st.n}.`, { star: st.i });
 for (const st of stars) {
   add(`mateany:${st.i}`, 'B', 'teammate', { t: 'mateany', p: st.i }, `Was a teammate of ${st.n}.`, { star: st.i });
   for (const u of new Set(st.s.map((s) => s[1]))) if (U.includes(u))
@@ -176,8 +178,8 @@ for (const u of U) {
       add(`game:${k}${v}:${T}`, 'E', 'game-high', { t: 'game', k, v, u }, `${txt} for ${the(u)}.`);
     }
   }
-  for (const v of [5, 7.5, 10, 12.5, 15, 17.5, 20, 25, 30, 35, 40, 45]) add(`salary:${v}:${T}`, 'G', 'salary', { t: 'salary', v, u }, `Earned $${v}M+ in a season with ${the(u)}.`, { family: 'salary:' + T });
-  for (const v of [25, 50, 75, 100, 150, 200, 250]) add(`earn:${v}:${T}`, 'G', 'earnings', { t: 'earn', v, u }, `Earned $${v}M+ in his career and played for ${the(u)}.`, { family: 'earn:' + T });
+  for (const v of [10, 20, 30, 40]) add(`salary:${v}:${T}`, 'G', 'salary', { t: 'salary', v, u }, `Earned $${v}M+ in a season with ${the(u)}.`, { family: 'salary:' + T });
+  for (const v of [50, 100, 200]) add(`earn:${v}:${T}`, 'G', 'earnings', { t: 'earn', v, u }, `Earned $${v}M+ in his career and played for ${the(u)}.`, { family: 'earn:' + T });
   for (const [k, op, v, txt] of [['ge84', 'ge', 84, 'Is listed at 7-0 or taller'], ['le73', 'le', 73, 'Is listed at 6-1 or shorter']])
     add(`height:${k}:${T}`, 'P', 'height', { t: 'height', [op]: v, u }, `${txt} and played for ${the(u)}.`);
   add(`combine:ws84:${T}`, 'P', 'combine', { t: 'combine', k: 'ws', v: 84, u }, `Measured a 7-0+ wingspan at the draft combine and played for ${the(u)}.`);
@@ -194,50 +196,79 @@ const H = { headline: true };
 // from it, see gapPlayers, and are reported by the build). Several
 // thresholds per stat; build.mjs uses one threshold of a family per day.
 const range = (lo, hi, st = 1) => { const o = []; for (let v = lo; v <= hi + 1e-9; v += st) o.push(Math.round(v * 10) / 10); return o; };
-for (const [k, vs, w] of [['pts', range(42, 70, 2), 'points'], ['reb', range(18, 32), 'rebounds'], ['ast', range(14, 25), 'assists'], ['tpm', range(7, 13), 'threes'],
-  ['stl', range(7, 10), 'steals'], ['blk', range(8, 13), 'blocks']])
+// Round thresholds only (Jorge, Nov 14).
+for (const [k, vs, w] of [['pts', [40, 50, 60], 'points'], ['reb', [20, 25], 'rebounds'], ['ast', [15, 20], 'assists'], ['tpm', [8, 10], 'threes'],
+  ['stl', [8], 'steals'], ['blk', [8, 10], 'blocks']])
   for (const v of vs) add(`gameany:${k}${v}`, 'E', 'game-high', { t: 'gameany', k, v }, k === 'pts' ? `Scored ${v}+ points in a game.` : k === 'tpm' ? `Made ${v}+ threes in a game.` : `Had ${v}+ ${w} in a game.`, { ...H, family: 'gameany:' + k });
 add('gameany:p2020', 'E', 'game-high', { t: 'gameany', k: 'p2020', v: 1 }, 'Had a 20-20 game (20+ points, 20+ rebounds).', H);
-for (const v of [2, 3, 5, 10, 15, 20, 30, 50, 75, 100]) add(`gameany:td${v}`, 'E', 'game-high', { t: 'gameany', k: 'td', v }, `Had ${v}+ triple-doubles.`, { ...H, family: 'gameany:td' });
-for (const v of [2, 3, 5, 10, 15, 25, 50]) add(`gameany:n40${v}`, 'E', 'game-high', { t: 'gameany', k: 'n40', v }, `Had ${v}+ 40-point games.`, { ...H, family: 'gameany:n40' });
-for (const v of [1, 2, 3, 5]) add(`gameany:n50${v}`, 'E', 'game-high', { t: 'gameany', k: 'n50', v }, v === 1 ? 'Scored 50+ points in a game.' : `Had ${v}+ 50-point games.`, { ...H, family: 'gameany:n50' });
+for (const v of [5, 10, 25, 50, 100]) add(`gameany:td${v}`, 'E', 'game-high', { t: 'gameany', k: 'td', v }, `Had ${v}+ triple-doubles.`, { ...H, family: 'gameany:td' });
+for (const v of [5, 10, 25, 50]) add(`gameany:n40${v}`, 'E', 'game-high', { t: 'gameany', k: 'n40', v }, `Had ${v}+ 40-point games.`, { ...H, family: 'gameany:n40' });
+for (const [k, vs, w] of [['n30', [50, 100, 200, 300], '30-point games'], ['r20', [10, 25, 50, 100], '20-rebound games'], ['a15', [10, 25, 50], '15-assist games'],
+  ['t5', [10, 25, 50, 100], 'games with 5+ threes'], ['b5', [10, 25, 50, 100], 'games with 5+ blocks']])
+  for (const v of vs) add(`gameany:${k}${v}`, 'E', 'game-high', { t: 'gameany', k, v }, `Had ${v}+ ${w}.`, { ...H, family: 'gameany:' + k });
+for (const v of [5, 10]) add(`gameany:n50${v}`, 'E', 'game-high', { t: 'gameany', k: 'n50', v }, `Had ${v}+ 50-point games.`, { ...H, family: 'gameany:n50' });
 // combine
 const inch = (i) => `${Math.floor(i / 12)}-${i % 12}`;
-for (const v of range(80, 91)) add(`combine:ws${v}`, 'P', 'combine', { t: 'combine', k: 'ws', v }, `Measured a ${inch(v)}+ wingspan at the draft combine.`, { ...H, family: 'combine:ws' });
-for (const v of range(33, 45)) add(`combine:vert${v}`, 'P', 'combine', { t: 'combine', k: 'vert', v }, `Had a ${v}-inch+ max vertical at the draft combine.`, { ...H, family: 'combine:vert' });
-for (const v of range(80, 86)) add(`combine:hgt${v}`, 'P', 'combine', { t: 'combine', k: 'hgt', v }, `Measured ${inch(v)}+ without shoes at the draft combine.`, { ...H, family: 'combine:hgt' });
-for (const v of range(106, 116)) add(`combine:reach${v}`, 'P', 'combine', { t: 'combine', k: 'reach', v }, `Had a standing reach of ${inch(v)}+ at the draft combine.`, { ...H, family: 'combine:reach' });
+for (const v of [84, 86, 88, 90]) add(`combine:ws${v}`, 'P', 'combine', { t: 'combine', k: 'ws', v }, `Measured a ${inch(v)}+ wingspan at the draft combine.`, { ...H, family: 'combine:ws' });
+for (const v of [4, 6, 8]) add(`combine:span${v}`, 'P', 'combine', { t: 'combine', k: 'span', v }, `Had a wingspan ${v}+ inches longer than his height at the draft combine.`, { ...H, family: 'combine:span' });
+for (const v of [36, 38, 40, 42]) add(`combine:vert${v}`, 'P', 'combine', { t: 'combine', k: 'vert', v }, `Had a ${v}-inch+ max vertical at the draft combine.`, { ...H, family: 'combine:vert' });
+for (const v of [82, 84]) add(`combine:hgt${v}`, 'P', 'combine', { t: 'combine', k: 'hgt', v }, `Measured ${inch(v)}+ without shoes at the draft combine.`, { ...H, family: 'combine:hgt' });
+for (const v of [108, 112]) add(`combine:reach${v}`, 'P', 'combine', { t: 'combine', k: 'reach', v }, `Had a standing reach of ${inch(v)}+ at the draft combine.`, { ...H, family: 'combine:reach' });
 // award votes
+const VOTE_SHORT = { MVP: 'MVP', DPOY: 'Defensive Player of the Year', 'Sixth Man': 'Sixth Man', MIP: 'Most Improved Player', ROY: 'Rookie of the Year' };
 for (const [a, w] of [['MVP', 'MVP'], ['DPOY', 'Defensive Player of the Year'], ['Sixth Man', 'Sixth Man of the Year'], ['MIP', 'Most Improved Player'], ['ROY', 'Rookie of the Year']]) {
   add(`votesany:${a}`, 'C', 'award-votes', { t: 'votesany', a }, `Received ${w} votes.`, { ...H, family: 'votesany:' + a });
-  for (const top of range(2, 10)) add(`votesany:${a}:${top}`, 'C', 'award-votes', { t: 'votesany', a, top }, `Finished top ${top} in ${w} voting.`, { ...H, family: 'votesany:' + a });
+  for (const n of [3, 5, 10]) add(`votesn:${a}:${n}`, 'C', 'award-votes', { t: 'votesn', a, n }, `Received ${w} votes in ${n}+ seasons.`, { ...H, family: 'votesany:' + a });
+  for (const top of [3, 5]) add(`votesany:${a}:${top}`, 'C', 'award-votes', { t: 'votesany', a, top }, `Finished top ${top} in ${VOTE_SHORT[a]} voting.`, { ...H, family: 'votesany:' + a });
 }
 // clubs abroad
+const THE = (c) => (['Philippines', 'Netherlands', 'Dominican Republic', 'United Kingdom', 'Czech Republic', 'Bahamas', 'Democratic Republic of the Congo', 'United States Virgin Islands'].includes(c) ? 'the ' + c : c);
 const abroadBefore = count((p) => { const x = (p.x || []).find((x) => x[0] === 'O' && x[3] <= p.f - 1); return x ? x[4] : null; });
-for (const [c, n] of abroadBefore) if (n >= 15) add(`abroad:${c}`, 'H', 'abroad', { t: 'abroad', c }, `Played for a pro club in ${c} before the NBA.`, H);
+for (const [c, n] of abroadBefore) if (n >= 15) add(`abroad:${c}`, 'H', 'abroad', { t: 'abroad', c }, `Played in ${THE(c)} before the NBA.`, H);
 const abroadAfter = count((p) => { const x = (p.x || []).find((x) => x[0] === 'O' && x[2] >= p.f); return x ? x[4] : null; });
-for (const [c, n] of abroadAfter) if (n >= 15) add(`abroadafter:${c}`, 'H', 'abroad', { t: 'abroadafter', c }, `Played for a pro club in ${c} after his NBA debut.`, H);
-// clubs outside the NBA with 25+ NBA players in their history
-{
-  const m = new Map();
-  for (const p of facts.players) for (const k of new Set((p.x || []).filter((x) => x[0] === 'O').map((x) => x[1] + '|' + x[4]))) m.set(k, (m.get(k) || 0) + 1);
-  for (const [k, n] of m) if (n >= 25) { const [name, c] = k.split('|'); add(`club:${k}`, 'H', 'club', { t: 'club', name, c }, `Played for ${name} in ${c}.`, H); }
+for (const [c, n] of abroadAfter) if (n >= 15) add(`abroadafter:${c}`, 'H', 'abroad', { t: 'abroadafter', c }, `Played in ${THE(c)} after reaching the NBA.`, H);
+// regions abroad
+for (const [reg, list] of [['Asia', ['China', 'Japan', 'Philippines', 'South Korea', 'Taiwan', 'Iran', 'Lebanon', 'Indonesia', 'Qatar', 'Bahrain', 'Jordan', 'Kazakhstan']],
+  ['South America', ['Argentina', 'Brazil', 'Venezuela', 'Uruguay', 'Chile', 'Colombia', 'Ecuador', 'Paraguay', 'Peru', 'Bolivia']],
+  ['Australia or New Zealand', ['Australia', 'New Zealand']]]) {
+  add(`abroadreg:${reg}:before`, 'H', 'abroad', { t: 'abroadreg', cs: list, when: 'before' }, `Played in ${reg} before the NBA.`, H);
+  add(`abroadreg:${reg}:after`, 'H', 'abroad', { t: 'abroadreg', cs: list, when: 'after' }, `Played in ${reg} after reaching the NBA.`, H);
 }
+// clubs outside the NBA: the famous ones only (Jorge, Nov 14), by the name the
+// career histories use, shown as Jorge spells it.
+for (const [name, c, shown] of [['Real Madrid', 'Spain', 'Real Madrid'], ['FC Barcelona', 'Spain', 'Barcelona'], ['Olympiacos', 'Greece', 'Olympiacos'],
+  ['Panathinaikos', 'Greece', 'Panathinaikos'], ['Maccabi Tel Aviv', 'Israel', 'Maccabi Tel Aviv'], ['CSKA Moscow', 'Russia', 'CSKA Moscow'],
+  ['Fenerbahçe', 'Turkey', 'Fenerbahce'], ['Partizan', 'Serbia', 'Partizan'], ['Anadolu Efes', 'Turkey', 'Anadolu Efes'], ['Žalgiris', 'Lithuania', 'Zalgiris']])
+  add(`club:${name}|${c}`, 'H', 'club', { t: 'club', name, c }, `Played for ${shown}.`, H);
 // single-season salary and career earnings
-for (const v of range(10, 60, 2.5)) add(`salaryany:${v}`, 'G', 'salary', { t: 'salaryany', v }, `Earned $${v}M+ in a season.`, { ...H, family: 'salaryany' });
-for (const v of range(50, 450, 25)) add(`earnany:${v}`, 'G', 'earnings', { t: 'earnany', v }, `Earned $${v}M+ in his career.`, { family: 'earnany' });
-// draft classes (the bio data has every player's draft year)
-for (let y = 1960; y <= 2025; y++) add(`class:${y}`, 'P', 'draft', { t: 'class', y }, `Was drafted in the ${y} NBA draft.`, H);
+for (const [v, ns] of [[10, [5, 10]], [20, [3, 5, 10]], [30, [3, 5]]])
+  for (const n of ns) add(`salaryn:${v}:${n}`, 'G', 'salary', { t: 'salaryn', v, n }, `Earned $${v}M+ in ${n}+ seasons.`, { ...H, family: 'salaryn:' + v });
+for (const v of [10, 20, 30, 40, 50]) add(`salaryany:${v}`, 'G', 'salary', { t: 'salaryany', v }, `Earned $${v}M+ in a season.`, { ...H, family: 'salaryany' });
+for (const v of [50, 100, 200, 300]) add(`earnany:${v}`, 'G', 'earnings', { t: 'earnany', v }, `Earned $${v}M+ in his career.`, { family: 'earnany' });
+// draft classes (the bio data has every player's draft year), and from the
+// 1990 draft on, the round (Salary Season Finder has every pick from then)
+for (let y = 1990; y <= 2025; y++) {
+  add(`pickclass:${y}:1-30`, 'P', 'draft', { t: 'pickclass', y, lo: 1, hi: 30 }, `Was a first-round pick in the ${y} NBA draft.`, { ...H, family: 'class:' + y });
+  add(`pickclass:${y}:31-60`, 'P', 'draft', { t: 'pickclass', y, lo: 31, hi: 60 }, `Was a second-round pick in the ${y} NBA draft.`, { ...H, family: 'class:' + y });
+}
+for (let y = 1960; y <= 2025; y++) add(`class:${y}`, 'P', 'draft', { t: 'class', y }, `Was drafted in the ${y} NBA draft.`, { ...H, family: 'class:' + y });
 // medals
 for (const [kind, w] of [['Olympic', 'an Olympic medal'], ['Olympic Gold', 'Olympic gold'], ['Olympic Silver', 'Olympic silver'], ['Olympic Bronze', 'Olympic bronze'],
   ['World Cup', 'a World Cup medal'], ['World Cup Gold', 'World Cup gold'], ['World Cup Silver', 'World Cup silver'], ['World Cup Bronze', 'World Cup bronze']])
   add(`medalkind:${kind}`, 'C', 'medal', { t: 'medalkind', kind }, `Won ${w}.`, H);
 // birthplace
-for (const [c, n] of born) if (n >= 15) add(`bornc:${c}`, 'D', 'birthplace', { t: 'bornc', c }, `Was born in ${c}.`, H);
+// Regions with no border question (Europe is left out: Turkey and Israel
+// would make it arguable).
+const CONTINENT = {
+  Africa: ['Nigeria', 'Senegal', 'Cameroon', 'Democratic Republic of the Congo', 'Congo', 'South Sudan', 'Sudan', 'Mali', 'Egypt', 'Ghana', 'Guinea', 'Angola', 'Tanzania', 'Gabon', 'Cape Verde', 'Ivory Coast', 'South Africa', 'Kenya', 'Uganda', 'Chad', 'Morocco', 'Tunisia', 'Republic of the Congo'],
+  'South America': ['Brazil', 'Argentina', 'Venezuela', 'Colombia', 'Uruguay', 'Chile', 'Ecuador', 'Peru', 'Paraguay', 'Guyana'],
+  'the Caribbean': ['Dominican Republic', 'Bahamas', 'Jamaica', 'Puerto Rico', 'U.S. Virgin Islands', 'Haiti', 'Trinidad and Tobago', 'Saint Lucia', 'Cuba', 'Barbados', 'Guadeloupe', 'Saint Vincent and the Grenadines', 'United States Virgin Islands', 'Dominica'] };
+for (const [cont, list] of Object.entries(CONTINENT)) add(`borncont:${cont}`, 'D', 'birthplace', { t: 'borncs', cs: list }, `Was born in ${cont}.`, H);
+for (const [c, n] of born) if (n >= 15) add(`bornc:${c}`, 'D', 'birthplace', { t: 'bornc', c }, `Was born in ${THE(c)}.`, H);
 for (const [pl, pn] of cities) add(`bornin:${pl}`, 'D', 'birth-city', { t: 'bornin', pl, pn }, `Was born in ${pn}.`, H);
 for (const [st, pn] of states) add(`bornin:${st}`, 'D', 'birth-city', { t: 'bornin', pl: st, pn }, `Was born in ${pn}.`, H);
 // others with no team
-for (const [k, vs, w] of [['ppg', [24, 26, 28, 30], 'points'], ['rpg', [12, 13, 14, 15], 'rebounds'], ['apg', [9, 10, 11, 12], 'assists'], ['spg', [2, 2.3, 2.5], 'steals'], ['bpg', [2.5, 3, 3.5], 'blocks'], ['tpg', [3, 3.5, 4, 4.5], 'three-pointers']])
+for (const [k, vs, w] of [['ppg', [25, 30], 'points'], ['rpg', [12, 15], 'rebounds'], ['apg', [10, 12], 'assists'], ['spg', [2], 'steals'], ['bpg', [3], 'blocks'], ['tpg', [3, 4], 'three-pointers']])
   for (const v of vs) add(`statany:${k}${v}`, 'E', 'stat', { t: 'statany', k, v }, `Averaged ${v}+ ${w} a game in a season.`, { family: 'statany:' + k });
 for (const [k, vs, w] of [['pts', [15000, 20000, 25000], 'points'], ['reb', [8000, 10000, 12000], 'rebounds'], ['ast', [5000, 7000, 9000], 'assists'], ['stl', [1200, 1500, 1800], 'steals'],
   ['blk', [1200, 1600, 2000], 'blocks'], ['tpm', [1000, 1500, 2000], 'three-pointers'], ['g', [1000, 1200, 1300], 'regular-season games']])

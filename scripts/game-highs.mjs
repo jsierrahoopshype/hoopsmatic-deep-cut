@@ -7,7 +7,7 @@
 // Writes data/game-highs.json (committed: the weekly refresh can't download
 // the 420 MB archive), with the archive's commit in it. Regular-season games only (game
 // ids starting 002). Per player name and season ending year:
-//   { "<name>|<season>": { "<team code>": [pts, reb, ast, threes, triple-doubles, 40+ games, 50+ games, 20-20 games, steals, blocks] } }
+//   { "<name>|<season>": { "<team code>": [pts, reb, ast, threes, triple-doubles, 40+ games, 50+ games, 20-20 games, steals, blocks, 30-point games, 20-rebound games, 15-assist games, 5-three games, 5-block games] } }
 // Rebounds are null before 1950-51 and threes before 1979-80 in the archive
 // (the line didn't exist); a null never counts as a high.
 import { execFileSync, spawn } from 'node:child_process';
@@ -30,7 +30,7 @@ for (const f of files) {
     rows++;
     through = Math.max(through, r.sy);
     const k = r.name + '|' + r.sy;
-    const t = ((out[k] ??= {})[r.team] ??= [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    const t = ((out[k] ??= {})[r.team] ??= [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     t[0] = Math.max(t[0], r.pts);
     if (r.reb != null) t[1] = Math.max(t[1], r.reb);
     if (r.ast != null) t[2] = Math.max(t[2], r.ast);
@@ -41,8 +41,14 @@ for (const f of files) {
     if (r.pts >= 20 && r.reb != null && r.reb >= 20) t[7]++;
     if (r.stl != null) t[8] = Math.max(t[8], r.stl);
     if (r.blk != null) t[9] = Math.max(t[9], r.blk);
+    // counts of 30-point, 20-rebound, 15-assist, 5-three and 5-block games
+    if (r.pts >= 30) t[10]++;
+    if (r.reb != null && r.reb >= 20) t[11]++;
+    if (r.ast != null && r.ast >= 15) t[12]++;
+    if (r.tpm != null && r.tpm >= 5) t[13]++;
+    if (r.blk != null && r.blk >= 5) t[14]++;
   }
   console.log(f, rows);
 }
-writeFileSync(ROOT + 'data/game-highs.json', JSON.stringify({ _about: 'Single-game regular-season highs (scripts/game-highs.mjs) from aderoa/nba-boxscores: [pts, reb, ast, threes, triple-doubles, 40+ games, 50+ games, 20-20 games, steals, blocks] per name|season and team code (steals and blocks recorded from 1973-74).', repo: 'aderoa/nba-boxscores', commit, rows, through, highs: out }));
+writeFileSync(ROOT + 'data/game-highs.json', JSON.stringify({ _about: 'Single-game regular-season highs (scripts/game-highs.mjs) from aderoa/nba-boxscores: [pts, reb, ast, threes, triple-doubles, 40+ games, 50+ games, 20-20 games, steals, blocks, 30-point games, 20-rebound games, 15-assist games, 5-three games, 5-block games] per name|season and team code (steals and blocks recorded from 1973-74).', repo: 'aderoa/nba-boxscores', commit, rows, through, highs: out }));
 console.log('player-team-seasons', Object.keys(out).length, 'rows', rows, 'commit', commit);

@@ -29,7 +29,8 @@ test('no prompt twice in the schedule', () => {
   // every v2 day has 5 distinct round hashes, and the schedule is one year at most.
   for (const d of schedule.days) if (d.v === 2) assert.equal(new Set(d.h).size, d.h.length);
   for (const d of schedule.days) assert.equal(d.v === 2 && d.h.length, 10, d.date + ' has 10 questions');
-  assert.ok(schedule.days.length <= 365);
+  // Jorge, Nov 14: the schedule runs through the end of 2027; a question may come back after 60 days.
+  assert.ok(schedule.days[schedule.days.length - 1].date <= '2027-12-31');
 });
 test('every scheduled day has its lock and the practice pool its locks', () => {
   for (const d of schedule.days) assert.ok(existsSync(new URL(`../public/prompts/${d.date}.lock`, import.meta.url)), d.date);
@@ -91,7 +92,7 @@ test('day pages: own canonical and card, nothing of the puzzle in them', () => {
     assert.ok(h.includes(`window.DC_DATE = "${d.date}"`));
     assert.ok(h.includes(`https://hoopsmatic.com/deep-cut/og-card/${d.date}`));
     assert.ok(h.includes('<meta name="robots" content="noindex, follow">'), 'noindex stays on');
-    assert.ok(!/Name a player who/.test(h), 'no prompt text');
+    assert.ok(h.includes('<h2 class="prompt" id="prompt"></h2>'), 'no prompt text');   // the fixed "Name a player who…" line is page chrome
     assert.ok(existsSync(new URL(`../public/og/${d.date}.jpg`, import.meta.url)), 'card ' + d.date);
   }
 });
