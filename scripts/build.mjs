@@ -8,7 +8,8 @@
 //   public/prompts/<date>.lock    the Daily: 5 rounds (v2); days made before
 //                                 the five-round format keep their v1 lock
 //   data/practice.json            the practice-only prompt keys
-//   public/practice/<n>.lock      one practice round each, and index.json
+//   public/practice/<n>.lock      one practice round each, and index.json;
+//                                 a lock is rewritten only when its content changes
 //   public/config.json            the launch day (rules/launch.json)
 //
 // DAILY (Jorge, Nov 13, 2026): 10 questions; a question comes back no
@@ -38,6 +39,7 @@ import { lock, fetchPubkey } from './lib/lock.mjs';
 import { checkQuestion } from './lib/answer-check.mjs';
 import { index } from './lib/cond.mjs';
 import { planDays, seededOrder } from './lib/schedule.mjs';
+import { practiceBody, writePracticeLocks } from './lib/practice.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const END_DAY = '2027-12-31';   // Jorge, Nov 14: build the schedule through the end of 2027
@@ -163,17 +165,20 @@ for (const [i, d] of plan.entries()) {
 const scheduled = new Set(days.map((d) => d.date));
 for (const f of readdirSync(ROOT + 'public/prompts')) if (f.endsWith('.lock') && !scheduled.has(f.slice(0, 10)) && f.slice(0, 10) > frozenThrough) unlinkSync(ROOT + 'public/prompts/' + f);
 
-// Practice locks, numbered 1..N in a stable (sorted) order.
-for (const f of readdirSync(ROOT + 'public/practice')) if (f.endsWith('.lock')) unlinkSync(ROOT + 'public/practice/' + f);
+// Practice locks, numbered 1..N in a stable (sorted) order. A lock is
+// rewritten only when its content changes (lib/practice.mjs): data/practice.json
+// keeps a content hash per lock (a, aligned with keys).
 const pk = [...practice].sort();
-for (let n = 1; n <= pk.length; n++) {
-  const c = all.get(pk[n - 1]);
-  extremes.practice.push(checkExtremes(c, 'practice ' + n));
+const bodies = pk.map((k, i) => {
+  const c = all.get(k);
+  extremes.practice.push(checkExtremes(c, 'practice ' + (i + 1)));
   checkErrs.push(...checkQuestion(c, FACTS, FI));
-  writeFileSync(`${ROOT}public/practice/${n}.lock`, JSON.stringify(await lock({ v: 2, game: 'deep-cut', practice: n, scoring: c.scoring, asOf: cand.asOf, round: roundOf(c) }, pub)) + '\n');
-}
+  return practiceBody(i + 1, c.scoring, roundOf(c));
+});
+const prevPracticeHashes = existsSync(ROOT + 'data/practice.json') ? rd('data/practice.json').a || [] : [];
+const { a: practiceHashes, wrote: practiceWrote } = await writePracticeLocks({ dir: ROOT + 'public/practice', bodies, prevHashes: prevPracticeHashes, asOf: cand.asOf, pub, lock });
 writeFileSync(ROOT + 'public/practice/index.json', JSON.stringify({ v: 1, count: pk.length }) + '\n');
-writeFileSync(ROOT + 'data/practice.json', JSON.stringify({ _about: 'Practice-only prompt keys (scripts/build.mjs): never scheduled as a Daily.', keys: pk }, null, 1) + '\n');
+writeFileSync(ROOT + 'data/practice.json', JSON.stringify({ _about: 'Practice-only prompt keys (scripts/build.mjs): never scheduled as a Daily. a = sha256 of each practice lock\'s content but asOf (public/practice/<n>.lock is keys[n-1]); a lock is rewritten only when its a changes.', keys: pk, a: practiceHashes }, null, 1) + '\n');
 
 // ---------- one page per day (item 10) ----------
 // public/<date>/index.html: the game page with the day's own title,
@@ -241,4 +246,4 @@ writeFileSync(ROOT + 'data/schedule.json', JSON.stringify({
   v: 2, start: START, days,
 }, null, 1) + '\n');
 const last = days[days.length - 1].date;
-console.log(`start ${START}, today ${today}, frozen through ${frozenThrough}: ${kept} kept, ${wrote} locks written, ${replaced} days with a prompt replaced (${Object.entries(how).map(([k, n]) => `${n} ${k}`).join(', ')}); schedule ends ${last} (${days.length} days); practice pool ${pk.length}`);
+console.log(`start ${START}, today ${today}, frozen through ${frozenThrough}: ${kept} kept, ${wrote} locks written, ${replaced} days with a prompt replaced (${Object.entries(how).map(([k, n]) => `${n} ${k}`).join(', ')}); schedule ends ${last} (${days.length} days); practice pool ${pk.length}, ${practiceWrote} practice locks written`);
