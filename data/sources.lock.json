@@ -5,34 +5,34 @@
    "id": "bio",
    "repo": "jsierrahoopshype/nba-player-data",
    "path": "bio.json",
-   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
-   "sha256": "5cc5eb187d1bb430c15415066a98e78ac48f1e0ea9f022b319603f6172f4d9ac",
-   "bytes": 690944,
-   "rows": 5158
+   "commit": "919ff7d6de1c7a9ebe3c44c40e50f59f8f4337ab",
+   "sha256": "71213bb4f06e5f4a6c1794d59fe06df50f6813005f6acc2464675c0423a988ef",
+   "bytes": 691347,
+   "rows": 5161
   },
   {
    "id": "awards",
    "repo": "jsierrahoopshype/nba-player-data",
    "path": "awards.json",
-   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
-   "sha256": "6d29babd40a64057964d0055cb7fea0bf701a1ac86baeebeacdc4f3b8519b560",
-   "bytes": 1123862,
-   "rows": 10648
+   "commit": "919ff7d6de1c7a9ebe3c44c40e50f59f8f4337ab",
+   "sha256": "1a646db8fbc9a6d78e67af3f81625ba274f9405609d0f0fd43860744d083a95d",
+   "bytes": 1124707,
+   "rows": 10654
   },
   {
    "id": "rsStats",
    "repo": "jsierrahoopshype/nba-player-data",
    "path": "rsStats.json",
-   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
-   "sha256": "b591c919ce43c34a752496ac1ba9081e78af6e965839e0804f6281b9e0154f0b",
-   "bytes": 15554356,
-   "rows": 29195
+   "commit": "919ff7d6de1c7a9ebe3c44c40e50f59f8f4337ab",
+   "sha256": "f702c986e339c7ffe1edf3a2f1731411b745a19ab875018a86a80499612b795a",
+   "bytes": 15567516,
+   "rows": 29215
   },
   {
    "id": "poStats",
    "repo": "jsierrahoopshype/nba-player-data",
    "path": "poStats.json",
-   "commit": "e61c03828b86c9245290e84bb6a526fae1634cc8",
+   "commit": "919ff7d6de1c7a9ebe3c44c40e50f59f8f4337ab",
    "sha256": "ee52576154df9136533cb5cd4f02412eddb62819f4b684242383364c11be91bd",
    "bytes": 6176197,
    "rows": 11749
@@ -41,16 +41,16 @@
    "id": "ssf",
    "repo": "jsierrahoopshype/salary-season-finder",
    "path": "data/data.json",
-   "commit": "64d1599d6e28117eea47e126d4ec305ea56ea866",
-   "sha256": "7e861ae909ab7faed6b6b41250367c4191a41570af69e9cc5865a6de34e0235f",
-   "bytes": 10948678,
-   "rows": 18855
+   "commit": "2c112d6a4b06aa212049adaf7978fd67ff8b8147",
+   "sha256": "afcf9021d27a1ebffe13001d65ef28b2b5f80b248089ba687e496f4c7e36fe73",
+   "bytes": 10953467,
+   "rows": 18863
   },
   {
    "id": "slugs",
    "repo": "jsierrahoopshype/salary-season-finder",
    "path": "data/slugs.json",
-   "commit": "64d1599d6e28117eea47e126d4ec305ea56ea866",
+   "commit": "2c112d6a4b06aa212049adaf7978fd67ff8b8147",
    "sha256": "b35f528c335da439edbb5cf0ed06d628f991a7e5867ad29c07c4c70e52e302be",
    "bytes": 131623,
    "rows": 3407
@@ -59,25 +59,25 @@
    "id": "careers",
    "repo": "jsierrahoopshype/nba-career-map",
    "path": "data/players/nba_players_careers.json",
-   "commit": "d645f20e63b07d8987abd228ee23d71ac650d339",
-   "sha256": "c4372a0eadd9528427b1c451baa622baa748587d557aeaf5964ad9db853195d6",
-   "bytes": 8652248,
+   "commit": "f8932234074bdd51c068c8cb5d136ed0158e7c67",
+   "sha256": "fdd5213d1ef4b9f8000c21d406705571624822d11644777f305ede3358e4b835",
+   "bytes": 8667215,
    "rows": 5196
   },
   {
    "id": "hsPlayers",
    "repo": "jsierrahoopshype/nba-headshots",
    "path": "players/metadata/players.json",
-   "commit": "ce95ee4d1a3d28e0f386133e18e0f00cf06bf7b5",
-   "sha256": "c2d2ec30377332e93f6c91e1716bc77492e77e61f6d0c80272e1f53f928b84c6",
-   "bytes": 314504,
+   "commit": "43f756e5a00f1387b51f96ef143dce41bb5f71cf",
+   "sha256": "6071119d3492aa391f49af0f35fc2e80e6b32b7cdfb4feffbcc3160ce29c1d87",
+   "bytes": 314511,
    "rows": 692
   },
   {
    "id": "teams",
    "repo": "jsierrahoopshype/nba-headshots",
    "path": "teams/metadata/teams.json",
-   "commit": "ce95ee4d1a3d28e0f386133e18e0f00cf06bf7b5",
+   "commit": "43f756e5a00f1387b51f96ef143dce41bb5f71cf",
    "sha256": "e2c8444c31c18bd4e277aa9aa942cf6dab2afc7e96b17186d0408958839867cb",
    "bytes": 9375,
    "rows": 30
@@ -86,7 +86,7 @@
    "id": "combine",
    "repo": "jsierrahoopshype/nba-player-data",
    "path": "combine-v3.json",
-   "commit": "b6e6e34fa7e530efbfe0b6a98c47f81215c54759",
+   "commit": "919ff7d6de1c7a9ebe3c44c40e50f59f8f4337ab",
    "sha256": "d0f46e677adab388817b040e741141a68dd54f64843555ddc5d837c08c00ff18",
    "bytes": 931806,
    "rows": 1886
@@ -95,7 +95,7 @@
    "id": "awardVotes",
    "repo": "jsierrahoopshype/nba-player-data",
    "path": "awardVotes.json",
-   "commit": "b6e6e34fa7e530efbfe0b6a98c47f81215c54759",
+   "commit": "919ff7d6de1c7a9ebe3c44c40e50f59f8f4337ab",
    "sha256": "4b460b0503af3caa21c017cbe6b405b55bd9fe9c160681d2781ccb3fc2094599",
    "bytes": 330681,
    "rows": 3437
@@ -103,7 +103,7 @@
  ],
  "births": {
   "repo": "jsierrahoopshype/nba-born-died",
-  "commit": "dd1de9db0da0188ffb6e4f4013ae97869ce63d95",
+  "commit": "1e1e55e8473492837f092988ad2667540a50827e",
   "pages": "born/<year>/index.html (Birthplace column)"
  }
 }
