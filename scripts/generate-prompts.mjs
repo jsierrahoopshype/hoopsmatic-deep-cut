@@ -79,6 +79,13 @@ const facts = {
       gh: p.highs.map((x) => [x.y, u(x.unit), x.h[0], x.h[1], x.h[2], x.h[3], x.h[4], x.h[5], x.h[6], x.h[7] || 0, x.h[8] || 0, x.h[9] || 0, x.h[10] || 0, x.h[11] || 0, x.h[12] || 0, x.h[13] || 0, x.h[14] || 0]) };
   }),
 };
+// asOf is the day the facts last changed: a run whose facts match the
+// committed file keeps its asOf, so data/facts.json (and the asOf in every
+// lock built from this run) is unchanged when the data is.
+if (existsSync(ROOT + 'data/facts.json')) {
+  const prevAsOf = JSON.parse(readFileSync(ROOT + 'data/facts.json', 'utf8')).asOf;
+  if (prevAsOf && JSON.stringify({ ...facts, asOf: prevAsOf }) === readFileSync(ROOT + 'data/facts.json', 'utf8')) facts.asOf = prevAsOf;
+}
 mkdirSync(ROOT + 'data', { recursive: true });
 writeFileSync(ROOT + 'data/facts.json', JSON.stringify(facts));
 const F = index(facts);
@@ -336,7 +343,7 @@ for (const c of cands) {
     answers: ans.map((a) => ({ i: a.i, s: a.s })) });
 }
 mkdirSync(ROOT + '.cache', { recursive: true });
-writeFileSync(ROOT + '.cache/candidates.json', JSON.stringify({ v: 2, asOf, prompts: passed }));
+writeFileSync(ROOT + '.cache/candidates.json', JSON.stringify({ v: 2, asOf: facts.asOf, prompts: passed }));
 console.log('players', facts.players.length, 'candidates', cands.length, 'passed', passed.length);
 console.log(JSON.stringify(why));
 const byG = {}; for (const c of passed) byG[c.group] = (byG[c.group] || 0) + 1; console.log('passed by group', byG);
