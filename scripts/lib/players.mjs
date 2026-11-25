@@ -129,18 +129,111 @@ function inches(h) {
 }
 const SUFFIX = /,? (Jr\.?|Sr\.?|II|III|IV)$/i;
 const normName = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+// bio.json BIRTHDAY "5/13/2003" -> "2003-05-13"
+const isoDate = (d) => { const m = String(d || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m ? `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}` : null; };
+
+// HOW SOURCES ARE JOINED (owner's decision, Nov 25, 2026: never mix up two
+// people who share a name, such as a father and a son).
+// None of the pinned files except nba-headshots carries an NBA person ID,
+// and bio.json (the player list) has none, so the join key is the player
+// ID of nba-player-data itself: its PLAYER name, unique in bio.json, with
+// namesakes told apart there ("Kevin Porter (1950)" and "Kevin Porter",
+// "Jabari Smith Sr" and "Jabari Smith"). Salary Season Finder uses exactly
+// the same names (every shared name has the same draft year). Every source
+// from another repo is joined on that key plus a check that the row fits
+// the player's own life and career; a row that doesn't, or that two of our
+// players could both claim, is dropped, never guessed:
+//   - nba-career-map careers: the record's name or one of its aliases ("Kevin
+//     Porter (1950)"). The record is not his if its birth year is more than
+//     1 from his, or if every dated stint in it (NBA or not) ended before he
+//     was 14 or started when he was 45 or older; if two records fit, the one
+//     under his exact name; a record (one Wikipedia page) that fits two of
+//     our players goes to neither. A club that ended before he was 14 never
+//     counts. (Before this, the sons Jabari Smith, Kevin Porter, Santiago
+//     Aldama and Walker Russell got their fathers' clubs abroad.)
+//   - Salary Season Finder page links: see ssfPage below.
+//   - Born & Died births: name and exact birth date; with no exact match,
+//     the one Born & Died row of that name if its birth year is within 2
+//     of his (a typo in one source), never one of two namesakes.
+//   - nba-headshots: exact name, and its seasons must meet his.
+//   - season honors and award votes (nba-player-data's own files): only in
+//     a season from 3 before his first NBA season (ABA years) to his last;
+//     combine: only a year from when he was 17 to his first NBA season.
+const careerWindow = (span, y) => span && y >= span[0] - 3 && y <= span[1];
+// "2000-2001", "2009", "2025–present" -> [from, to]; null if not dated so.
+const stintYears = (h) => { const m = String(h.years || '').match(/^(\d{4})(?:\s*[-–]\s*(\d{4}|present))?$/); return m ? [+m[1], m[2] === 'present' ? 9999 : +(m[2] || m[1])] : null; };
+// Can this Career Map record be the player born in year `by`?
+export function careerFits(c, by) {
+  const cy = /^\d{4}/.test(c.birth_date || '') ? +c.birth_date.slice(0, 4) : null;
+  if (cy && by && Math.abs(cy - by) > 1) return false;
+  const all = (c.career_history || []).map(stintYears).filter(Boolean);
+  if (by && all.length && all.every(([f, t]) => t < by + 14 || f >= by + 45)) return false;
+  return true;
+}
+// Born & Died birthplace for a bio.json row ({PLAYER, BIRTHDAY}), from rows
+// [name, birth date, birthplace] grouped by normalized name.
+export function birthplaceFor(byNorm, b) {
+  const rows = byNorm.get(normName(b.PLAYER.replace(/ \(\d{4}\)$/, ''))) || [];
+  const d = isoDate(b.BIRTHDAY);
+  const exact = rows.filter((r) => d && r[1] === d);
+  if (exact.length === 1) return exact[0][2];
+  // A one-off typo in one of the two sources (a day or a year apart) is
+  // still him if Born & Died has nobody else of that name.
+  if (!exact.length && rows.length === 1 && (!d || !rows[0][1] || Math.abs(+rows[0][1].slice(0, 4) - +d.slice(0, 4)) <= 2)) return rows[0][2];
+  return null;
+}
+export const birthRowsByName = (rows) => { const m = new Map(); for (const r of rows) { const k = normName(r[0]); (m.get(k) || m.set(k, []).get(k)).push(r); } return m; };
 
 export function buildPlayers() {
   const bio = src('bio'), awards = src('awards'), rs = src('rsStats'), po = src('poStats');
   const ssf = src('ssf').seasons, slugs = src('slugs').slugs.player, careers = src('careers');
-  // Headshots: Jorge's nba-headshots face-fill set, by exact name (recent players only).
-  const heads = new Map(src('hsPlayers').players.filter((h) => h.headshot && h.headshot.filename).map((h) => [h.full_name, h.headshot.filename.replace(/\.png$/, '')]));
-  const births = new Map();
-  for (const [n, pl] of Object.entries(src('births'))) births.set(normName(n), pl);
+  // NBA seasons per nba-player-data name, [first, last], for the checks below.
+  const span = new Map();
+  for (const r of rs) if (+r.GP > 0) { const y = +r.YEAR, x = span.get(r.PLAYER); span.set(r.PLAYER, x ? [Math.min(x[0], y), Math.max(x[1], y)] : [y, y]); }
+  const bioOf = new Map(bio.map((b) => [b.PLAYER, b]));
+  const birthYear = (name) => { const d = isoDate(bioOf.get(name)?.BIRTHDAY); return d ? +d.slice(0, 4) : null; };
+  // Headshots: Jorge's nba-headshots face-fill set, by exact name (recent
+  // players only), and only if its seasons meet his (a 2020s Nate Williams
+  // is not the 1970s one).
+  const heads = new Map();
+  for (const h of src('hsPlayers').players) {
+    if (!h.headshot || !h.headshot.filename) continue;
+    const sp = span.get(h.full_name);
+    if (sp && h.seasons_from && h.seasons_to && (+h.seasons_to + 1 < sp[0] || +h.seasons_from + 1 > sp[1])) continue;
+    heads.set(h.full_name, h.headshot.filename.replace(/\.png$/, ''));
+  }
+  // Born & Died: by name (a "(1950)" disambiguator off) and birth date.
+  const bd = src('births');
+  if (!Array.isArray(bd.rows)) throw new Error('.cache/sources/births.json is the old format: run node scripts/pull-data.mjs');
+  const bdBy = birthRowsByName(bd.rows);
+  const birthplaceOf = (b) => birthplaceFor(bdBy, b);
 
+  // Salary Season Finder rows for college and draft pick: only rows whose
+  // draft year agrees with bio.json's.
   const ssfBy = new Map();
-  for (const s of ssf) if (!ssfBy.has(s.player) || (s.draft_pick && !ssfBy.get(s.player).draft_pick) || (s.college && !ssfBy.get(s.player).college)) ssfBy.set(s.player, s);
-  const carBy = new Map(careers.map((c) => [c.player, c]));
+  for (const s of ssf) {
+    const dy = bioOf.get(s.player)?.DRAFT;
+    if (s.draft_year && /^\d{4}$/.test(dy || '') && s.draft_year !== +dy) continue;
+    if (!ssfBy.has(s.player) || (s.draft_pick && !ssfBy.get(s.player).draft_pick) || (s.college && !ssfBy.get(s.player).college)) ssfBy.set(s.player, s);
+  }
+  // Salary Season Finder pages: its slugs file keeps old keys, so "Bobby
+  // Jones", "John Lucas" and "Nate Williams" all lead to a later namesake's
+  // page (Bobby Jones (1984), John Lucas III, Jeenathan Williams). A slug is
+  // his page only if he has salary rows there or his career reached 1990-91
+  // (the site's first season).
+  const ssfNames = new Set(ssf.map((r) => r.player));
+  const ssfPage = (name) => !!slugs[name] && (ssfNames.has(name) || (span.get(name)?.[1] || 0) >= 1991);
+  // Career Map records (see HOW SOURCES ARE JOINED above).
+  const carNames = new Map();
+  for (const c of careers) for (const k of new Set([c.player, ...(c.aliases || [])])) (carNames.get(k) || carNames.set(k, []).get(k)).push(c);
+  const fitsCareer = (c, name) => careerFits(c, birthYear(name));
+  const carBy = new Map(), claims = new Map();
+  for (const b of bio) {
+    let ok = (carNames.get(b.PLAYER) || []).filter((c) => fitsCareer(c, b.PLAYER));
+    if (ok.length > 1) ok = ok.filter((c) => c.player === b.PLAYER);
+    if (ok.length === 1) { carBy.set(b.PLAYER, ok[0]); const k = ok[0].wikipedia_url || ok[0]; claims.set(k, (claims.get(k) || 0) + 1); }
+  }
+  for (const [n, c] of carBy) if (claims.get(c.wikipedia_url || c) > 1) carBy.delete(n);
 
   // Career-map college spelling -> salary-season-finder spelling, by majority.
   const votes = {};
@@ -163,14 +256,16 @@ export function buildPlayers() {
     let college = s?.college || null;
     if (!college) { const a = cleanCareerCollege(c?.college); college = a ? (alias[a] || a.replace(/ State$/, ' St')) : null; }
     if (college && NOT_COLLEGE.test(college)) college = null;
+    // The id never moves (the Daily locks and the server use it), so it is
+    // still made from the slug key as before; the page link is checked.
     const slug = slugs[b.PLAYER] || null;
-    const link = slug ? `https://hoopsmatic.com/salary-season-finder/player/${slug}/`
-      : c ? `https://hoopsmatic.com/nba-career-map/player/${slugify(b.PLAYER)}.html` : null;
+    const link = ssfPage(b.PLAYER) ? `https://hoopsmatic.com/salary-season-finder/player/${slug}/`
+      : c ? `https://hoopsmatic.com/nba-career-map/player/${slugify(c.player)}.html` : null;   // the Career Map page is named after its record
     const p = {
       id: slug || slugify(b.PLAYER), name: b.PLAYER, link, head: heads.get(b.PLAYER) || null,
       country: b.NATIONALITY || null,
-      birthplace: births.get(normName(b.PLAYER)) || null,
-      bornIn: birthCountry(births.get(normName(b.PLAYER))),
+      birthplace: birthplaceOf(b) || null,
+      bornIn: birthCountry(birthplaceOf(b)),
       draftYear: /^\d{4}$/.test(b.DRAFT || '') ? +b.DRAFT : null,
       pick: s?.draft_pick || null, college,
       seasons: [], units: new Set(), gp: 0, min: 0,
@@ -234,6 +329,9 @@ export function buildPlayers() {
     const p = byName.get(a['PLAYER / COACH']);
     if (!p || !p.seasons.length) continue;   // coaches and non-players
     const y = /^\d{4}$/.test(a.YEAR) ? +a.YEAR : null;
+    // A season honor from outside his career is a namesake's (the 1965
+    // All-Star Luke Jackson is not the 2005-08 one): it doesn't count.
+    if (LIST[a.AWARD] && y && !careerWindow([p.firstYear, p.lastYear], y)) continue;
     p.aw[a.AWARD] = (p.aw[a.AWARD] || 0) + 1;
     if (a.AWARD === 'NBA Champion') {
       const t = champ[a.YEAR];
@@ -260,14 +358,17 @@ export function buildPlayers() {
   // Clubs outside the NBA (the Career Map's Wikipedia career histories):
   // G League teams (rules/gleague.json, from the year each joined) and pro
   // clubs outside the United States. [kind G|O, club, from, to, country].
-  for (const c of careers) {
-    const p = byName.get(c.player);
+  // Each record only for the player it was matched to above.
+  for (const [name, c] of carBy) {
+    const p = byName.get(name);
     if (!p) continue;
+    const by = birthYear(name);
     for (const h of c.career_history || []) {
       if (NBA_NAMES.has(h.team)) continue;
-      const m = String(h.years || '').match(/^(\d{4})(?:\s*[-–]\s*(\d{4}|present))?$/);
-      if (!m) continue;
-      const from = +m[1], to = m[2] === 'present' ? 9999 : +(m[2] || m[1]);
+      const sy = stintYears(h);
+      if (!sy) continue;
+      const [from, to] = sy;
+      if (by && to < by + 14) continue;   // before he was 14: not his club
       const join = GLEAGUE[h.team];
       if (join !== undefined) { if (from >= join) p.clubs.push(['G', h.team, from, to, h.country || 'USA']); continue; }
       if (h.country && h.country !== 'USA') p.clubs.push(['O', h.team, from, to, h.country]);
@@ -287,7 +388,9 @@ export function buildPlayers() {
   // Award voting (nba-player-data awardVotes.json): [season, award, rank].
   for (const v of src('awardVotes')) {
     const p = byName.get(v.PLAYER), y = +v.YEAR;
-    if (!p || !y) continue;
+    // Votes from outside his career are a namesake's (Tim Hardaway Jr.'s
+    // votes are filed under "Tim Hardaway", his father's name here).
+    if (!p || !y || !careerWindow([p.firstYear, p.lastYear], y)) continue;
     const award = v.AWARD === 'Sixth' ? 'Sixth Man' : v.AWARD;
     if (['MVP', 'DPOY', 'MIP', 'Sixth Man', 'ROY'].includes(award)) p.votes.push({ y, award, rank: +v.RNK || null, unit: unitsIn(p, y)[0] || null });
   }
@@ -296,8 +399,11 @@ export function buildPlayers() {
   // Draft combine (nba-player-data combine-v3.json): wingspan, max vertical,
   // height without shoes (inches), combine year, standing reach.
   for (const c of src('combine')) {
-    const p = byName.get(c.PLAYER);
+    const p = byName.get(c.PLAYER), by = birthYear(c.PLAYER);
     if (!p) continue;
+    // A combine before he was 17 or after his first NBA season is a
+    // namesake's (the 2009 Tyler Smith is not the 2024 one).
+    if (+c.YEAR && ((by && +c.YEAR < by + 17) || (p.firstYear && +c.YEAR > p.firstYear))) continue;
     const ws = inches(c.WINGSPAN), hn = inches(c['HEIGHT W/O SHOES'] || c['HEIGHT\u00a0W/O\u00a0SHOES']), mv = +c['MAX VERT'] || null;
     const reach = inches(c['STANDING REACH'] || c['STANDING\u00a0REACH']);
     if (ws || mv || hn || reach) p.combine = [ws, mv, hn, +c.YEAR || null, reach];

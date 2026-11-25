@@ -40,13 +40,15 @@ for (const s of lock.sources) {
 if (bad) process.exit(1);
 
 // Birthplaces: Jorge's Born & Died site (public repo nba-born-died) lists
-// every player's birthplace as "City, State" or "City, Country" on its
-// born/<year>/ pages. Pinned by commit in the lock (lock.births); only the
-// derived name -> birthplace table is kept, in .cache/sources/births.json.
+// every player's birth date and birthplace ("City, State" or "City,
+// Country") on its born/<year>/ pages. Pinned by commit in the lock
+// (lock.births); only the derived rows [name, birth date, birthplace] are
+// kept, in .cache/sources/births.json. Namesakes (two Kevin Porters) are two
+// rows: players.mjs joins them by name and birth date, never by name alone.
 {
   const b = lock.births;
   // One page per birth year that has players; a year with none is a 404.
-  const out = {};
+  const out = [];
   let pages = 0;
   for (let y = 1900; y <= new Date().getUTCFullYear() - 15; y++) {
     const res = await fetch(`https://raw.githubusercontent.com/${b.repo}/${b.commit}/born/${y}/index.html`);
@@ -57,12 +59,13 @@ if (bad) process.exit(1);
     for (const row of html.split('<tr')) {
       const m = row.match(/href="\.\.\/\.\.\/player\/[^/]+\/">([^<]+)<\/a>/);
       const pl = row.match(/data-label="Birthplace" data-v="([^"]*)"/);
-      if (m && pl) out[decode(m[1])] = decode(pl[1]);
+      const born = row.match(/data-label="Born" data-v="(\d{4}-\d{2}-\d{2})"/);
+      if (m && pl) out.push([decode(m[1]), born ? born[1] : null, decode(pl[1])]);
     }
   }
-  if (pages < 80 || Object.keys(out).length < 5000) throw new Error(`births: only ${pages} pages, ${Object.keys(out).length} players`);
-  writeFileSync(ROOT + '.cache/sources/births.json', JSON.stringify(out));
-  console.log(`births    ${b.commit.slice(0, 7)} ${Object.keys(out).length} players`);
+  if (pages < 80 || out.length < 5000) throw new Error(`births: only ${pages} pages, ${out.length} players`);
+  writeFileSync(ROOT + '.cache/sources/births.json', JSON.stringify({ v: 2, rows: out }));
+  console.log(`births    ${b.commit.slice(0, 7)} ${out.length} players`);
 }
 if (latest) writeFileSync(ROOT + 'data/sources.lock.json', JSON.stringify(lock, null, 1) + '\n');
 function decode(s) { return s.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&'); }
