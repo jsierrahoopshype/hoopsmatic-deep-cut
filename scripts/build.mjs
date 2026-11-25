@@ -57,12 +57,14 @@ export function dailyDate(ms) {
 }
 
 const today = dailyDate(Date.now());
-// Frozen: today and tomorrow, but only from the public launch day on (Jorge,
-// Nov 12, 2026: nobody else plays before launch, so preview days are rebuilt
-// freely). Before launch nothing is frozen.
+// Frozen: every past day, today and tomorrow, once the public launch is near
+// (Jorge, Nov 12, 2026: nobody else plays before launch, so before it nothing
+// is frozen and preview days were rebuilt freely). Since launch the preview
+// days (before the launch day) are past days too, replayed like any other,
+// so they stay frozen with the rest.
 const LAUNCH_DAY = JSON.parse(readFileSync(ROOT + 'rules/launch.json', 'utf8')).launch;
 const frozenThrough = addDays(today, 1) < LAUNCH_DAY ? '0000-00-00' : addDays(today, 1);
-const isFrozen = (date) => date >= LAUNCH_DAY && date <= frozenThrough;
+const isFrozen = (date) => date <= frozenThrough;
 const cand = rd('.cache/candidates.json');
 const excluded = new Set(rd('data/excluded.json').keys);
 const old = existsSync(ROOT + 'data/schedule.json') ? rd('data/schedule.json') : null;
@@ -113,6 +115,10 @@ const checkErrs = [];
 // Each day's questions as [type, era, category, group] (no keys, no
 // answers), for the tests: data/day-rules.json.
 const dayMeta = {};
+// A frozen day keeps its lock, so it keeps its lines in both files too (they
+// describe that lock, not today's pool).
+const oldExtremes = existsSync(ROOT + 'data/extremes.json') ? rd('data/extremes.json').days || {} : {};
+const oldMeta = existsSync(ROOT + 'data/day-rules.json') ? rd('data/day-rules.json').days || {} : {};
 function checkExtremes(c, where) {
   const sc = c.answers.map((a) => a.s);
   const lo = Math.min(...sc), hi = Math.max(...sc);
@@ -141,6 +147,8 @@ for (let i = 0; i < MAX_DAYS; i++) {
     for (const h of [].concat(prev.h)) { const k = keyFor(date, h); if (k) lastDay.set(k, i); }
     recent.push([]);
     days.push(prev);
+    if (oldExtremes[date]) extremes.days[date] = oldExtremes[date];
+    if (oldMeta[date]) dayMeta[date] = oldMeta[date];
     kept++;
     continue;
   }

@@ -10,6 +10,7 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { rowsOf } from './lib/rows.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const lock = JSON.parse(readFileSync(ROOT + 'data/sources.lock.json', 'utf8'));
@@ -18,7 +19,6 @@ mkdirSync(ROOT + '.cache/sources', { recursive: true });
 const latest = process.argv.includes('--latest');
 const heads = {};
 const head = (repo) => heads[repo] ??= execFileSync('git', ['ls-remote', `https://github.com/${repo}.git`, 'HEAD'], { encoding: 'utf8' }).split(/\s/)[0];
-const rowsOf = (j) => (Array.isArray(j) ? j.length : Array.isArray(j.players) ? j.players.length : Object.keys(j.seasons || j.slugs?.player || j).length);
 if (latest) for (const s of lock.sources) s.commit = head(s.repo);
 if (latest) lock.births.commit = head(lock.births.repo);
 
