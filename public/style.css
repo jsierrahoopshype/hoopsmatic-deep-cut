@@ -2,7 +2,7 @@
    dark navy page, indigo-bordered gradient panels, Oswald capitals in gold,
    the orange-to-gold call to action, JetBrains Mono for numbers. Mobile
    first; nothing floats over the page: suggestions, confirmations, warnings
-   and errors are all inline. Headshots sit on light-grey circles. */
+   and errors are all inline. Player headshots sit in one light-grey frame. */
 @font-face { font-family: "Oswald"; font-style: normal; font-weight: 200 700; font-display: swap; src: url("/deep-cut/fonts/oswald-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: "DM Sans"; font-style: normal; font-weight: 100 1000; font-display: swap; src: url("/deep-cut/fonts/dm-sans-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; font-display: swap; src: url("/deep-cut/fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
@@ -97,10 +97,12 @@ button { font: inherit; color: inherit; }
 .ends { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--deep); font-size: 14px; }
 .ends p { margin: 4px 0; display: flex; align-items: center; gap: 8px; }
 .ends .k { color: var(--muted); min-width: 7.5em; }
-.head { position: relative; width: 64px; height: 64px; flex: 0 0 64px; border-radius: 50%; background: var(--head-bg); overflow: hidden; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; color: #555; }
-.head img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.head.sm { width: 28px; height: 28px; flex-basis: 28px; font-size: 11px; }
-.head.nba img { object-position: 50% 0; transform: scale(1.25); transform-origin: 50% 15%; }
+/* The headshot frame: light-grey panel at the NBA.com cutout's own aspect
+   (260x190); the cutout sits bottom-aligned and never scales past the panel.
+   With no photo the frame stays, empty and light grey. */
+.head { position: relative; display: block; width: 88px; flex: 0 0 auto; aspect-ratio: 260 / 190; background: var(--head-bg); overflow: hidden; border-radius: 6px; }
+.head img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; }
+.head.sm { width: 52px; border-radius: 5px; }
 
 /* Start screen: the depth scale. One band from the most obvious answer
    (1, a big crisp star) to a deep cut (100, a silhouette), the faces getting
