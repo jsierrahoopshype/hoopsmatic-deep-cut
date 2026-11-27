@@ -27,12 +27,13 @@
   let SECONDS = 20;               // likewise
   // Headshots (public/players.json row[6], scripts/headshots.mjs): "f:<id>-<slug>"
   // and "n:<id>" both carry the NBA.com player ID; player rows show NBA.com's
-  // transparent 260x190 cutout (NBA_HEADS) in the HoopsMatic headshot frame
-  // (headNode). HEADS (Jorge's nba-headshots face-fill set) is the start
-  // screen's depth scale only. Logos: nba-headshots teams/logos/<path>.svg,
+  // transparent 260x190 cutout (NBA_HEADS, through hoopsmatic.com/img/nba-cdn/,
+  // which answers 404 for NBA.com's grey silhouette) in the HoopsMatic
+  // headshot frame (headNode). HEADS (Jorge's nba-headshots face-fill set) is
+  // the start screen's depth scale only. Logos: nba-headshots teams/logos/<path>.svg,
   // current eras and the historical ones it has.
   const HEADS = 'https://jsierrahoopshype.github.io/nba-headshots/players/headshots/face-fill/';
-  const NBA_HEADS = 'https://cdn.nba.com/headshots/nba/latest/260x190/';
+  const NBA_HEADS = 'https://hoopsmatic.com/img/nba-cdn/260x190/';
   const LOGOS = 'https://jsierrahoopshype.github.io/nba-headshots/teams/logos/';
   const DAY_MS = 86400000;
   const $ = (id) => document.getElementById(id);
@@ -142,18 +143,18 @@
   // (260x190) with the transparent cutout bottom-aligned, so every player is
   // head to shoulders at the same scale and nothing is cut at the top. No
   // initials anywhere (Jorge, Nov 12): a player without a photo, or whose
-  // photo fails to load, keeps the same empty light-grey frame.
+  // photo fails to load (NBA.com's silhouette is a 404), shows no frame at all.
   function headNode(p, size) {
     const m = p.head && String(p.head).match(/^(?:n:(\d+)|f:(\d+)-)/);
+    if (!m) return null;
     const box = el('span', 'head' + (size ? ' ' + size : ''));
-    if (!m) return box;
     const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.width = 260; img.height = 190;
     img.src = NBA_HEADS + (m[1] || m[2]) + '.png';
-    img.onerror = () => img.remove();
+    img.onerror = () => box.remove();
     box.appendChild(img);
     return box;
   }
-  const addHead = (parent, p, size) => parent.appendChild(headNode(p, size));
+  const addHead = (parent, p, size) => { const n = headNode(p, size); if (n) parent.appendChild(n); };
   function teamsNode(teams) {
     const box = el('div', 'teams');
     for (const t of teams || []) {

@@ -7,13 +7,16 @@
 //   f:<file>   Jorge's nba-headshots "face-fill" set (THE HoopsMatic headshot,
 //              transparent WebP, recent players); the file is <nbaId>-<slug>;
 //   n:<nbaId>  NBA.com's headshot by player ID (cdn.nba.com, transparent PNG).
-// The page shows both as NBA.com's 260x190 cutout by that ID, bottom-aligned
-// in a light-grey frame (public/app.js headNode).
+// The page shows both as NBA.com's 260x190 cutout by that ID (through
+// hoopsmatic.com/img/nba-cdn/), bottom-aligned in a light-grey frame
+// (public/app.js headNode).
 // Jorge's Born & Died faces are not used: they sit on a dark background
 // (Jorge: white or light-grey only).
-//              NBA.com answers every unknown ID with one placeholder image; a
-//              player whose image is that placeholder has no NBA.com headshot.
-// No source: the page shows the empty light-grey frame, never initials.
+// NBA.com answers every unknown ID with one grey silhouette, the same file
+// as its ID 0: a player whose image is byte-identical to that (SHA-256) has
+// no NBA.com headshot. This fetches cdn.nba.com directly (hoopsmatic.com
+// shows GitHub runners a bot check).
+// No source: the page shows no frame at all, never initials.
 //
 // NBA IDs come from Jorge's NBA Head to Head site (data/search.json: id,
 // name, slug, first and last season), matched by name and career years.
@@ -25,7 +28,6 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 const ROOT = new URL('..', import.meta.url).pathname;
 const H2H = 'https://jsierrahoopshype.github.io/nba-head-to-head/data/search.json';
 const CDN = 'https://cdn.nba.com/headshots/nba/latest/260x190/';
-const PLACEHOLDER_MD5 = '7475ba9619305909d7998dd9dba02481';
 const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
 const plist = JSON.parse(readFileSync(ROOT + 'public/players.json', 'utf8'));
@@ -45,6 +47,19 @@ function nbaIdOf(row) {
   return cands.find((s) => Math.abs(s[3] - first) <= 1) || null;
 }
 
+const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
+// The silhouette: this size's ID 0 file, fetched fresh each run.
+const SILHOUETTE = await (async () => {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(CDN + '0.png');
+      if (res.ok) return sha256(Buffer.from(await res.arrayBuffer()));
+    } catch (e) { /* retry */ }
+    await new Promise((r) => setTimeout(r, 1000 * attempt));
+  }
+  throw new Error('could not fetch NBA.com\'s ID 0 silhouette');
+})();
+
 async function cdnHas(id) {
   if (id in cache.nba) return cache.nba[id];
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -53,7 +68,7 @@ async function cdnHas(id) {
       if (res.status === 404) return (cache.nba[id] = false);
       if (!res.ok) throw new Error(String(res.status));
       const buf = Buffer.from(await res.arrayBuffer());
-      return (cache.nba[id] = createHash('md5').update(buf).digest('hex') !== PLACEHOLDER_MD5);
+      return (cache.nba[id] = sha256(buf) !== SILHOUETTE);
     } catch (e) { await new Promise((r) => setTimeout(r, 1000 * attempt)); }
   }
   return null;   // unknown this run: try again next time
