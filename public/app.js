@@ -25,10 +25,12 @@
   const START = '2026-11-11';     // first scheduled day (data/schedule.json start)
   let LAUNCH = '2026-12-01';      // from /deep-cut/config.json (rules/launch.json)
   let SECONDS = 20;               // likewise
-  // Headshots (public/players.json row[6], scripts/headshots.mjs): "f:<file>"
-  // Jorge's nba-headshots face-fill set, "n:<id>" NBA.com by player ID; both
-  // transparent, shown on a light-grey circle. Logos: nba-headshots
-  // teams/logos/<path>.svg, current eras and the historical ones it has.
+  // Headshots (public/players.json row[6], scripts/headshots.mjs): "f:<id>-<slug>"
+  // and "n:<id>" both carry the NBA.com player ID; player rows show NBA.com's
+  // transparent 260x190 cutout (NBA_HEADS) in the HoopsMatic headshot frame
+  // (headNode). HEADS (Jorge's nba-headshots face-fill set) is the start
+  // screen's depth scale only. Logos: nba-headshots teams/logos/<path>.svg,
+  // current eras and the historical ones it has.
   const HEADS = 'https://jsierrahoopshype.github.io/nba-headshots/players/headshots/face-fill/';
   const NBA_HEADS = 'https://cdn.nba.com/headshots/nba/latest/260x190/';
   const LOGOS = 'https://jsierrahoopshype.github.io/nba-headshots/teams/logos/';
@@ -136,20 +138,22 @@
     if (!url) return el('span', cls, p.name);
     const a = el('a', cls, p.name); a.href = url; return a;
   }
-  // A real headshot or nothing (Jorge, Nov 12): no initials anywhere. A
-  // player without a photo gets no image, and one whose photo fails to load
-  // loses the whole circle, so the layout closes up.
+  // The headshot frame: a light-grey panel at the NBA.com cutout's own aspect
+  // (260x190) with the transparent cutout bottom-aligned, so every player is
+  // head to shoulders at the same scale and nothing is cut at the top. No
+  // initials anywhere (Jorge, Nov 12): a player without a photo, or whose
+  // photo fails to load, keeps the same empty light-grey frame.
   function headNode(p, size) {
-    const src = !p.head ? null : p.head.startsWith('n:') ? NBA_HEADS + p.head.slice(2) + '.png' : HEADS + p.head.replace(/^f:/, '') + '.webp';
-    if (!src) return null;
+    const m = p.head && String(p.head).match(/^(?:n:(\d+)|f:(\d+)-)/);
     const box = el('span', 'head' + (size ? ' ' + size : ''));
-    const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.src = src;
-    if (p.head.startsWith('n:')) box.classList.add('nba');
-    img.onerror = () => box.remove();
+    if (!m) return box;
+    const img = new Image(); img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.width = 260; img.height = 190;
+    img.src = NBA_HEADS + (m[1] || m[2]) + '.png';
+    img.onerror = () => img.remove();
     box.appendChild(img);
     return box;
   }
-  const addHead = (parent, p, size) => { const h = headNode(p, size); if (h) parent.appendChild(h); };
+  const addHead = (parent, p, size) => parent.appendChild(headNode(p, size));
   function teamsNode(teams) {
     const box = el('div', 'teams');
     for (const t of teams || []) {

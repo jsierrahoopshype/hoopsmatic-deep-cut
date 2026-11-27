@@ -5,14 +5,15 @@
 //
 // Sources, best first:
 //   f:<file>   Jorge's nba-headshots "face-fill" set (THE HoopsMatic headshot,
-//              transparent WebP, recent players);
-//   n:<nbaId>  NBA.com's headshot by player ID (cdn.nba.com, transparent PNG,
-//              shown on the page's light-grey circle).
+//              transparent WebP, recent players); the file is <nbaId>-<slug>;
+//   n:<nbaId>  NBA.com's headshot by player ID (cdn.nba.com, transparent PNG).
+// The page shows both as NBA.com's 260x190 cutout by that ID, bottom-aligned
+// in a light-grey frame (public/app.js headNode).
 // Jorge's Born & Died faces are not used: they sit on a dark background
 // (Jorge: white or light-grey only).
 //              NBA.com answers every unknown ID with one placeholder image; a
 //              player whose image is that placeholder has no NBA.com headshot.
-// No source: the page shows initials on a light-grey circle.
+// No source: the page shows the empty light-grey frame, never initials.
 //
 // NBA IDs come from Jorge's NBA Head to Head site (data/search.json: id,
 // name, slug, first and last season), matched by name and career years.
