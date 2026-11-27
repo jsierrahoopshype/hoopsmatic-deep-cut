@@ -99,7 +99,7 @@ button { font: inherit; color: inherit; }
 .ends .k { color: var(--muted); min-width: 7.5em; }
 /* The headshot frame: light-grey panel at the NBA.com cutout's own aspect
    (260x190); the cutout sits bottom-aligned and never scales past the panel.
-   With no photo the frame stays, empty and light grey. */
+   With no photo (or NBA.com's silhouette, a 404) there is no frame at all. */
 .head { position: relative; display: block; width: 88px; flex: 0 0 auto; aspect-ratio: 260 / 190; background: var(--head-bg); overflow: hidden; border-radius: 6px; }
 .head img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; display: block; }
 .head.sm { width: 52px; border-radius: 5px; }
